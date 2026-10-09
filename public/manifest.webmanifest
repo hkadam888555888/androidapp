@@ -1,0 +1,17 @@
+{
+  "id": "/",
+  "name": "My Adaptive Routine",
+  "short_name": "Adaptive Routine",
+  "description": "A roadmap-driven daily planning and accountability app.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#090c11",
+  "theme_color": "#0d1117",
+  "orientation": "any",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
