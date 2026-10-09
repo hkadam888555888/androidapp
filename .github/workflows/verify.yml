@@ -27,19 +27,19 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache:  pm
+          cache: 'npm'
 
       - name: Install locked dependencies
-        run:  pm ci
+        run: npm ci
 
       - name: Run source audit
-        run:  pm run audit:source
+        run: npm run audit:source
 
       - name: Check lint
-        run:  pm run lint
+        run: npm run lint
 
       - name: Run tests
-        run:  pm test
+        run: npm test
 
       - name: Build production app
-        run:  pm run build
+        run: npm run build
