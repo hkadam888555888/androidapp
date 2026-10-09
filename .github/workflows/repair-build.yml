@@ -17,91 +17,16 @@ jobs:
         with:
           ref: main
 
-      - name: Apply exact TypeScript and ESLint fixes
+      - name: Apply TypeScript and ESLint fixes
         run: |
-          python3 - &lt;&lt;'PY'
-          from pathlib import Path
+          set -euo pipefail
+          python3 -c "from pathlib import Path; p=Path('src/application/appStore.ts'); s=p.read_text(); old='        exerciseType: entry.exerciseType,'; new='        exerciseType: entry.exerciseType ?? null,'; assert s.count(old)==1, f'expected one exerciseType line, got {s.count(old)}'; p.write_text(s.replace(old,new,1)); print('Patched appStore.ts')"
+          python3 -c "from pathlib import Path; p=Path('src/features/diagnostics/DiagnosticsPage.tsx'); s=p.read_text(); old='  const checks = ['; new='  const checks: [string, boolean, string][] = ['; assert s.count(old)==1, f'expected one checks declaration, got {s.count(old)}'; p.write_text(s.replace(old,new,1)); print('Patched DiagnosticsPage.tsx')"
+          python3 -c "import base64; from pathlib import Path; Path('eslint.config.js').write_bytes(base64.b64decode('aW1wb3J0IGpzIGZyb20gJ0Blc2xpbnQvanMnOwppbXBvcnQgdHNlc2xpbnQgZnJvbSAndHlwZXNjcmlwdC1lc2xpbnQnOwppbXBvcnQgcmVhY3RIb29rcyBmcm9tICdlc2xpbnQtcGx1Z2luLXJlYWN0LWhvb2tzJzsKaW1wb3J0IHJlYWN0UmVmcmVzaCBmcm9tICdlc2xpbnQtcGx1Z2luLXJlYWN0LXJlZnJlc2gnOwoKY29uc3QganNHbG9iYWxzID0gewogIEFib3J0Q29udHJvbGxlcjogJ3JlYWRvbmx5JywKICBCdWZmZXI6ICdyZWFkb25seScsCiAgVVJMOiAncmVhZG9ubHknLAogIGNsZWFySW50ZXJ2YWw6ICdyZWFkb25seScsCiAgY2xlYXJUaW1lb3V0OiAncmVhZG9ubHknLAogIGNvbnNvbGU6ICdyZWFkb25seScsCiAgZXhwb3J0czogJ3JlYWRvbmx5JywKICBmZXRjaDogJ3JlYWRvbmx5JywKICBtb2R1bGU6ICdyZWFkb25seScsCiAgcHJvY2VzczogJ3JlYWRvbmx5JywKICByZXF1aXJlOiAncmVhZG9ubHknLAogIHNldEludGVydmFsOiAncmVhZG9ubHknLAogIHNldFRpbWVvdXQ6ICdyZWFkb25seScsCiAgVGV4dERlY29kZXI6ICdyZWFkb25seScsCiAgVGV4dEVuY29kZXI6ICdyZWFkb25seScsCn07CgpleHBvcnQgZGVmYXVsdCB0c2VzbGludC5jb25maWcoCiAgewogICAgaWdub3JlczogWydkaXN0LyoqJywgJ2NvdmVyYWdlLyoqJywgJ25vZGVfbW9kdWxlcy8qKicsICdhbmRyb2lkLyoqJywgJ3BsYXl3cmlnaHQtcmVwb3J0LyoqJywgJ3Rlc3QtcmVzdWx0cy8qKiddLAogIH0sCiAgewogICAgLi4uanMuY29uZmlncy5yZWNvbW1lbmRlZCwKICAgIGZpbGVzOiBbJyoqLyoue2pzLG1qcyxjanN9J10sCiAgICBsYW5ndWFnZU9wdGlvbnM6IHsKICAgICAgLi4uanMuY29uZmlncy5yZWNvbW1lbmRlZC5sYW5ndWFnZU9wdGlvbnMsCiAgICAgIGdsb2JhbHM6IGpzR2xvYmFscywKICAgIH0sCiAgfSwKICAuLi50c2VzbGludC5jb25maWdzLnJlY29tbWVuZGVkLAogIHsKICAgIGZpbGVzOiBbJ3NyYy8qKi8qLnt0cyx0c3h9JywgJ3ZpdGUuY29uZmlnLnRzJywgJ3BsYXl3cmlnaHQuY29uZmlnLnRzJ10sCiAgICBwbHVnaW5zOiB7CiAgICAgICdyZWFjdC1ob29rcyc6IHJlYWN0SG9va3MsCiAgICAgICdyZWFjdC1yZWZyZXNoJzogcmVhY3RSZWZyZXNoLAogICAgfSwKICAgIHJ1bGVzOiB7CiAgICAgICdyZWFjdC1ob29rcy9ydWxlcy1vZi1ob29rcyc6ICdlcnJvcicsCiAgICAgICdyZWFjdC1ob29rcy9leGhhdXN0aXZlLWRlcHMnOiAnd2FybicsCiAgICAgICdyZWFjdC1yZWZyZXNoL29ubHktZXhwb3J0LWNvbXBvbmVudHMnOiBbJ3dhcm4nLCB7IGFsbG93Q29uc3RhbnRFeHBvcnQ6IHRydWUgfV0sCiAgICB9LAogIH0sCik7Cg==')); print('Wrote root eslint.config.js')"
 
-          replacements = [
-              (
-                  Path('src/application/appStore.ts'),
-                  'date, durationMinutes: roundedDuration, exerciseType: entry.exerciseType,',
-                  'date, durationMinutes: roundedDuration, exerciseType: entry.exerciseType ?? null,',
-              ),
-              (
-                  Path('src/features/diagnostics/DiagnosticsPage.tsx'),
-                  '  const checks = [',
-                  '  const checks: [string, boolean, string][] = [',
-              ),
-          ]
-
-          for path, old, new in replacements:
-              text = path.read_text(encoding='utf-8')
-              if new not in text:
-                  if text.count(old) != 1:
-                      raise SystemExit(f'Expected exactly one match for {old!r} in {path}; found {text.count(old)}')
-                  text = text.replace(old, new, 1)
-                  path.write_text(text, encoding='utf-8')
-                  print(f'Patched {path}')
-              else:
-                  print(f'Already patched: {path}')
-
-          eslint_config = '''import js from '@eslint/js';
-          import tseslint from 'typescript-eslint';
-          import reactHooks from 'eslint-plugin-react-hooks';
-          import reactRefresh from 'eslint-plugin-react-refresh';
-
-          const jsGlobals = {
-            AbortController: 'readonly',
-            Buffer: 'readonly',
-            URL: 'readonly',
-            clearInterval: 'readonly',
-            clearTimeout: 'readonly',
-            console: 'readonly',
-            exports: 'readonly',
-            fetch: 'readonly',
-            module: 'readonly',
-            process: 'readonly',
-            require: 'readonly',
-            setInterval: 'readonly',
-            setTimeout: 'readonly',
-            TextDecoder: 'readonly',
-            TextEncoder: 'readonly',
-          };
-
-          export default tseslint.config(
-            {
-              ignores: ['dist/**', 'coverage/**', 'node_modules/**', 'android/**', 'playwright-report/**', 'test-results/**'],
-            },
-            {
-              ...js.configs.recommended,
-              files: ['**/*.{js,mjs,cjs}'],
-              languageOptions: {
-                ...js.configs.recommended.languageOptions,
-                globals: jsGlobals,
-              },
-            },
-            ...tseslint.configs.recommended,
-            {
-              files: ['src/**/*.{ts,tsx}', 'vite.config.ts', 'playwright.config.ts'],
-              plugins: {
-                'react-hooks': reactHooks,
-                'react-refresh': reactRefresh,
-              },
-              rules: {
-                'react-hooks/rules-of-hooks': 'error',
-                'react-hooks/exhaustive-deps': 'warn',
-                'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
-              },
-            },
-          );
-          '''
-          Path('eslint.config.js').write_text(eslint_config, encoding='utf-8')
-          print('Wrote root-level eslint.config.js')
-          PY
-
-      - name: Check patch and commit
+      - name: Validate and commit fixes
         run: |
+          set -euo pipefail
           git diff --check
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -119,11 +44,7 @@ jobs:
         run: |
           set -euo pipefail
           for workflow in verify.yml android-apk.yml; do
-            code=$(curl -sS -o /tmp/dispatch-body -w "%{http_code}" -X POST \
-              -H "Accept: application/vnd.github+json" \
-              -H "Authorization: Bearer $GH_TOKEN" \
-              "https://api.github.com/repos/hkadam888555888/androidapp/actions/workflows/$workflow/dispatches" \
-              -d '{"ref":"main"}')
+            code=$(curl -sS -o /tmp/dispatch-body -w "%{http_code}" -X POST -H "Accept: application/vnd.github+json" -H "Authorization: Bearer $GH_TOKEN" "https://api.github.com/repos/hkadam888555888/androidapp/actions/workflows/$workflow/dispatches" -d '{"ref":"main"}')
             echo "$workflow dispatch returned HTTP $code"
             if [ "$code" != "204" ]; then cat /tmp/dispatch-body; exit 1; fi
           done
