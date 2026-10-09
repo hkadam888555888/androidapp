@@ -45,7 +45,7 @@ jobs:
         run: npm install --no-save --package-lock=false @capacitor/core@8 @capacitor/cli@8 @capacitor/android@8
 
       - name: Generate Capacitor configuration
-        run: npx cap init "My Adaptive Routine" "com.hkadam888555888.adaptiveroutine" --web-dir=dist --npm-client=npm
+        run: npx cap init "My Adaptive Routine" "com.hkadam888555888.adaptiveroutine" --web-dir=dist
 
       - name: Add Android platform
         run: npx cap add android
