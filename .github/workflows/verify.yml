@@ -1,0 +1,45 @@
+name: Verify
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Source, lint, tests, and production build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache:  pm
+
+      - name: Install locked dependencies
+        run:  pm ci
+
+      - name: Run source audit
+        run:  pm run audit:source
+
+      - name: Check lint
+        run:  pm run lint
+
+      - name: Run tests
+        run:  pm test
+
+      - name: Build production app
+        run:  pm run build
