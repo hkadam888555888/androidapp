@@ -1,0 +1,129 @@
+name: Repair and dispatch build checks
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Apply exact TypeScript and ESLint fixes
+        run: |
+          python3 - &lt;&lt;'PY'
+          from pathlib import Path
+
+          replacements = [
+              (
+                  Path('src/application/appStore.ts'),
+                  'date, durationMinutes: roundedDuration, exerciseType: entry.exerciseType,',
+                  'date, durationMinutes: roundedDuration, exerciseType: entry.exerciseType ?? null,',
+              ),
+              (
+                  Path('src/features/diagnostics/DiagnosticsPage.tsx'),
+                  '  const checks = [',
+                  '  const checks: [string, boolean, string][] = [',
+              ),
+          ]
+
+          for path, old, new in replacements:
+              text = path.read_text(encoding='utf-8')
+              if new not in text:
+                  if text.count(old) != 1:
+                      raise SystemExit(f'Expected exactly one match for {old!r} in {path}; found {text.count(old)}')
+                  text = text.replace(old, new, 1)
+                  path.write_text(text, encoding='utf-8')
+                  print(f'Patched {path}')
+              else:
+                  print(f'Already patched: {path}')
+
+          eslint_config = '''import js from '@eslint/js';
+          import tseslint from 'typescript-eslint';
+          import reactHooks from 'eslint-plugin-react-hooks';
+          import reactRefresh from 'eslint-plugin-react-refresh';
+
+          const jsGlobals = {
+            AbortController: 'readonly',
+            Buffer: 'readonly',
+            URL: 'readonly',
+            clearInterval: 'readonly',
+            clearTimeout: 'readonly',
+            console: 'readonly',
+            exports: 'readonly',
+            fetch: 'readonly',
+            module: 'readonly',
+            process: 'readonly',
+            require: 'readonly',
+            setInterval: 'readonly',
+            setTimeout: 'readonly',
+            TextDecoder: 'readonly',
+            TextEncoder: 'readonly',
+          };
+
+          export default tseslint.config(
+            {
+              ignores: ['dist/**', 'coverage/**', 'node_modules/**', 'android/**', 'playwright-report/**', 'test-results/**'],
+            },
+            {
+              ...js.configs.recommended,
+              files: ['**/*.{js,mjs,cjs}'],
+              languageOptions: {
+                ...js.configs.recommended.languageOptions,
+                globals: jsGlobals,
+              },
+            },
+            ...tseslint.configs.recommended,
+            {
+              files: ['src/**/*.{ts,tsx}', 'vite.config.ts', 'playwright.config.ts'],
+              plugins: {
+                'react-hooks': reactHooks,
+                'react-refresh': reactRefresh,
+              },
+              rules: {
+                'react-hooks/rules-of-hooks': 'error',
+                'react-hooks/exhaustive-deps': 'warn',
+                'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
+              },
+            },
+          );
+          '''
+          Path('eslint.config.js').write_text(eslint_config, encoding='utf-8')
+          print('Wrote root-level eslint.config.js')
+          PY
+
+      - name: Check patch and commit
+        run: |
+          git diff --check
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/application/appStore.ts src/features/diagnostics/DiagnosticsPage.tsx eslint.config.js
+          if git diff --cached --quiet; then
+            echo "No source changes needed; fixes already present."
+          else
+            git commit -m "fix: resolve TypeScript and ESLint build blockers"
+            git push origin HEAD:main
+          fi
+
+      - name: Dispatch verification and APK builds
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          for workflow in verify.yml android-apk.yml; do
+            code=$(curl -sS -o /tmp/dispatch-body -w "%{http_code}" -X POST \
+              -H "Accept: application/vnd.github+json" \
+              -H "Authorization: Bearer $GH_TOKEN" \
+              "https://api.github.com/repos/hkadam888555888/androidapp/actions/workflows/$workflow/dispatches" \
+              -d '{"ref":"main"}')
+            echo "$workflow dispatch returned HTTP $code"
+            if [ "$code" != "204" ]; then cat /tmp/dispatch-body; exit 1; fi
+          done
