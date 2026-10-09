@@ -353,7 +353,7 @@ class AppStore {
       const nextTasks = reported ? allTasks.map((task) => task.id === linked!.id ? reported : task) : allTasks;
       const review = reported ? buildDailyReview(nextTasks, date) : undefined;
       const audit = this.audit('exercise.logged', 'exerciseLog', entry.id, {
-        date, durationMinutes: roundedDuration, exerciseType: entry.exerciseType,
+        date, durationMinutes: roundedDuration, exerciseType: entry.exerciseType ?? null,
         habitId: exerciseHabit?.id ?? null, linkedTaskId: linked?.id ?? null, habitStatus: habitStatus ?? null,
       });
 

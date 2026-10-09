@@ -11,7 +11,7 @@ export function DiagnosticsPage() {
   const dependency = useMemo(() => validateDependencyGraph(state.roadmapTasks), [state.roadmapTasks]);
   const tasks = useMemo(() => validateTasks(state.taskDefinitions), [state.taskDefinitions]);
   const invariants = useMemo(() => evaluateInvariants(state.dailyTasks, state.roadmapTasks), [state.dailyTasks, state.roadmapTasks]);
-  const checks = [
+  const checks: [string, boolean, string][] = [
     ['Local storage', state.ready, state.error ?? 'IndexedDB state loaded'],
     ['Dependency graph', dependency.valid, dependency.valid ? 'No missing references or cycles' : `${dependency.cycles.length} cycle(s), ${dependency.missing.length} missing reference(s)`],
     ['Task contracts', tasks.valid, tasks.valid ? `${state.taskDefinitions.length} task definitions validated` : `${tasks.issues.length} validation issue(s)`],
