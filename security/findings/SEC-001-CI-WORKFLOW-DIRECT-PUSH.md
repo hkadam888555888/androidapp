@@ -1,6 +1,6 @@
 # SEC-001 — Manually dispatched workflow can write directly to main
 
-**Status:** FIXED—AWAITING RETEST (candidate Verify CI passed; independent retest pending; APK packaging job failed separately)  
+**Status:** FIXED—AWAITING RETEST (candidate Verify and Android APK CI pass; independent security retest pending)  
 **Severity:** MEDIUM  
 **Confidence:** CONFIRMED by source and repository configuration evidence  
 **First worker:** 001  
@@ -44,11 +44,11 @@ The workflow encoded an automated route for changing the default branch without 
 - **Command:** `npm run audit:source`
 - **Expected:** PASS only if the dispatch workflow retains its minimal permission and no direct-write/commit/push path.
 - **Baseline evidence:** main's run [37968141061](https://github.com/hkadam888555888/androidapp/actions/runs/37968141061) passed the prior source audit but failed lint; tests/build were skipped.
-- **Candidate Verify CI:** PASS at `6996bcf852a2a3193bd6ae8e079dd554cc77fc7b`: 17 source-audit checks passed; lint 0 errors / 1 warning; 96 tests passed across 23 files; TypeScript production web build and gzip bundle budgets passed. [Run #39012583195](https://github.com/hkadam888555888/androidapp/actions/runs/39012583195).
-- **Android APK CI:** FAIL at the temporary `npm install --no-save --package-lock=false @capacitor/core@8 @capacitor/cli@8 @capacitor/android@8` step with npm `Cannot read properties of null (reading 'edgesOut')`; Android project generation, assembly, and artifact upload were skipped. [Run #39012583171](https://github.com/hkadam888555888/androidapp/actions/runs/39012583171). No APK was produced. This is a separate packaging blocker and is not evidence that SEC-001 persists.
-- **Independent retest:** pending Worker 098; no bypass retest has been performed yet.
+- **Candidate Verify CI:** PASS at `c68cd32ae10d5566e0ae56ee3764deed4856fc41`: 17 source-audit checks passed; lint had 0 errors / 1 warning; 96 tests passed across 23 files; production TypeScript/web build and bundle-size checks passed. [Run #39012754842](https://github.com/hkadam888555888/androidapp/actions/runs/39012754842).
+- **Android APK CI:** PASS at the same candidate SHA. The runner pinned npm to `11.6.0` to avoid the observed npm 10.9.9 Arborist `edgesOut` crash, then installed Capacitor, generated/synced the Android project, assembled the debug APK and uploaded the artifact. [Run #39012754835](https://github.com/hkadam888555888/androidapp/actions/runs/39012754835). Artifact `my-adaptive-routine-debug-apk`, ID `12093199321`, size 3,958,798 bytes, expires 2026-10-31. This is a debug build, not a signed production release or physical-device verification.
+- **Independent retest:** pending Worker 098; the source-based CI regression guard passed, but no separate security actor/session has independently attempted the bypass yet.
 - **Independent retest:** worker 098 is assigned to inspect the merged candidate only after human approval, retry the direct-write paths, vary workflow permissions/commands, and re-run the regression check. Do not mark RETEST PASSED before that evidence exists.
 
 ## Residual risk / owner action
 
-This patch only removes the direct-to-main path in this workflow. It does not protect the branch from another workflow or any other write-capable actor. Enable required pull requests/reviews and appropriate status checks for `main` in GitHub settings as a separate owner-controlled action. The security branch must remain unmerged until reviewed. No automatic merge, release, or deployment is allowed. Although the Verify job passes, overall release readiness remains NOT GRADED because the Android APK job failed, broad audit coverage is incomplete, Worker 098 has not retested, and explicit human approval is still missing.
+This patch only removes the direct-to-main path in this workflow. It does not protect the branch from another workflow or any other write-capable actor. Enable required pull requests/reviews and appropriate status checks for `main` in GitHub settings as a separate owner-controlled action. The security branch must remain unmerged until reviewed. No automatic merge, release, or deployment is allowed. Although both Verify and Android APK CI pass, overall release readiness remains NOT GRADED because broad security coverage, Playwright end-to-end/device evidence, Worker 098's independent retest, branch-protection settings and explicit human approval are still missing.
