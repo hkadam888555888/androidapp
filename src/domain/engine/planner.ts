@@ -664,6 +664,3 @@ function dateDistance(a: string, b: string): number {
   return Math.round((bb - aa) / 86_400_000);
 }
 
-function dayOfWeek(date: ISODate): number {
-  return new Date(`${date}T00:00:00`).getDay();
-}
