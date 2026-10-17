@@ -40,7 +40,7 @@ Historical results for cycles 001–002 are retained accurately. They are **not*
 |---:|---|---|
 | 001 | CI/CD permissions, direct-to-main writes and workflow bypass | CANDIDATE FIX; independent retest pending |
 | 002 | Tracked-source secret-pattern screen | PARTIAL ONLY; history and candidate-wide scan pending |
-| 003 | Git history, old blobs, binary/assets and removed-file secret exposure | NOT RUN |
+| 003 | Git history, old blobs, binary/assets and removed-file secret exposure | PASS — 39 commits plus omitted historical lockfile and PNG blobs scanned for defined signatures; no matches; see Worker 003 report |
 | 004 | Dependency vulnerabilities, lockfile consistency and supply-chain risk | NOT RUN |
 | 005 | Workflow triggers, token permissions, third-party action pinning and untrusted PR boundaries | NOT RUN |
 | 006 | Branch protection/rulesets and alternate direct-write routes | NOT RUN |
@@ -151,7 +151,7 @@ Historical results for cycles 001–002 are retained accurately. They are **not*
 
 001. **CI/CD permissions, direct-to-main writes and workflow bypass** — CANDIDATE FIX; independent retest pending
 002. **Tracked-source secret-pattern screen** — PARTIAL ONLY; history and candidate-wide scan pending
-003. **Git history, old blobs, binary/assets and removed-file secret exposure** — NOT RUN
+003. **Git history, old blobs, binary/assets and removed-file secret exposure** — PASS for the defined signature scan; limits are recorded in the Worker 003 report
 004. **Dependency vulnerabilities, lockfile consistency and supply-chain risk** — NOT RUN
 005. **Workflow triggers, token permissions, third-party action pinning and untrusted PR boundaries** — NOT RUN
 006. **Branch protection/rulesets and alternate direct-write routes** — NOT RUN
