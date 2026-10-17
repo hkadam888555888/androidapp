@@ -103,6 +103,17 @@ describe('service-worker cache security boundary', () => {
     expect(htmlHarness.cache.put).toHaveBeenCalledTimes(1);
   });
 
+  it('does not cache a non-HTML root response as the app shell', async () => {
+    const harness = makeHarness('application/json');
+    const rootNavigation = harness.dispatch('https://routine.test/', { mode: 'navigate' });
+    expect(rootNavigation.responsePromise).toBeDefined();
+
+    await rootNavigation.responsePromise;
+
+    expect(harness.cacheStorage.open).not.toHaveBeenCalled();
+    expect(harness.cache.put).not.toHaveBeenCalled();
+  });
+
   it('runtime-caches an allow-listed production asset', async () => {
     const harness = makeHarness();
 
