@@ -124,3 +124,43 @@ The AI is ready for production consideration only when it:
 7. Has reproducible model/data versions, a model card, known limitations, and a rollback path.
 
 **Production-grade means evidence-backed reliability and safe failure—not simply a large model or a successful demo.**
+
+
+## 11. Pet-style AI companion — interaction layer, not a second AI mission
+
+### Goal
+
+Offer an optional, expressive creature companion that makes daily progress updates feel friendly and approachable. Think “desktop-pet charm” adapted for a mobile routine app: a small animated character on the Today screen, with a compact/minimizable presence where the platform supports it. This is a UX feature, not a reason to turn the specialized roadmap model into a general chatbot.
+
+### User-controlled task updates
+
+Users must always retain the direct task controls. The pet provides an equally understandable alternate route:
+
+1. It may ask about the current task, for example, “Did you finish this one today?”
+2. It presents task-specific **Done**, **Not yet**, **Skip**, and **Change today's plan** actions.
+3. A deliberate tap or unambiguous, deliberate text/voice instruction is routed to an existing typed application use case.
+4. If the target task or intent is ambiguous, the pet asks one brief clarification and changes nothing until resolved.
+5. The same task event, persistence, re-planning, and undo rules apply regardless of whether the update came from the normal UI or the pet. Preserve an event source such as `manual` or `pet` for diagnostics and history where appropriate.
+
+The pet must not auto-complete or skip tasks based on elapsed time, inactivity, app usage, sentiment, opening a task, guessed intent, or calendar inference. A supportive reminder is not evidence of completion. Never use guilt, shame, or manipulative streak pressure.
+
+### Architecture boundary
+
+The pet is a presentation and interaction adapter around existing application use cases. It is not a separate planner or persistence store. Its progress summaries read saved app state; its buttons and resolved commands call the same validated task-result and rescheduling flows as the standard UI.
+
+The dedicated roadmap model remains narrowly scoped to converting plain-text roadmaps into structured tasks. Do not use it as an unrestricted companion/chat model. Prefer deterministic contextual prompts and typed intents. If a separate speech recognizer or intent component is added later, it must return a supported intent plus a verified task reference; invalid or uncertain results must not mutate task state.
+
+### Comfort, accessibility, and platform behavior
+
+- The pet is optional and can be hidden in settings without affecting any core feature.
+- Do not require Android overlay permission or a persistent background service for the default in-app pet.
+- Do not keep the microphone listening in the background. Voice use must be an explicit opt-in interaction with a visible activation state.
+- Support reduced motion, sound-off, screen readers, text scaling, sufficient contrast, large touch targets, and small displays.
+- Keep the character away from critical controls and never force animation or dialogue before a user can update a task.
+- Avoid external network transmission of roadmap content or private task notes by default.
+
+### Required tests
+
+Verify manual and pet updates result in equivalent state; the intended task is always targeted; ambiguous commands make no change; duplicate actions are idempotent or safely prevented; undo, restart, and replanning preserve history; voice denial and disabled-voice paths work; reduced-motion and no-sound settings are respected; assistive technology can operate every action; and the pet can be hidden while the app remains fully usable.
+
+**Release rule:** the pet is an optional enhancement. It must never weaken explicit user consent, privacy, deterministic scheduling, or task-history integrity.
