@@ -6,6 +6,7 @@ const read = (file) => readFile(file, 'utf8');
 const [repair, verify, apk, index, worker, localAI, backup, store, factory, settings, app, privacy, packageText] = await Promise.all([
   read('.github/workflows/repair-build.yml'), read('.github/workflows/verify.yml'), read('.github/workflows/android-apk.yml'),
   read('index.html'), read('public/sw.js'), read('src/domain/ai/openAICompatibleLocalProvider.ts'),
+  read('src/application/backupValidation.ts'), read('src/application/appStore.ts'),
   read('src/domain/ai/aiProviderFactory.ts'), read('src/features/settings/SettingsPage.tsx'), read('src/app/App.tsx'),
   read('PRIVACY_POLICY.md'), read('package.json'),
 ]);
