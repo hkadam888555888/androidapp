@@ -35,7 +35,8 @@ self.addEventListener('fetch', (event) => {
   if (request.mode === 'navigate') {
     event.respondWith(
       fetch(request).then(async (response) => {
-        if (response.ok) {
+        const contentType = response.headers.get('content-type') ?? '';
+        if (response.ok && url.pathname === '/' && contentType.toLowerCase().includes('text/html')) {
           const cache = await caches.open(CACHE_NAME);
           await cache.put('/', response.clone());
         }

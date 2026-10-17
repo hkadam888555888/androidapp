@@ -11,7 +11,7 @@ type WorkerEvent = {
   respondWith: (response: Promise<unknown>) => void;
 };
 
-function makeHarness() {
+function makeHarness(contentType = 'text/javascript') {
   const listeners = new Map<string, (...args: never[]) => unknown>();
   const cache = {
     addAll: vi.fn().mockResolvedValue(undefined),
@@ -31,7 +31,12 @@ function makeHarness() {
     skipWaiting: vi.fn().mockResolvedValue(undefined),
     clients: { claim: vi.fn().mockResolvedValue(undefined) },
   };
-  const response = { ok: true, type: 'basic', clone: vi.fn(() => ({ cached: true })) };
+  const response = {
+    ok: true,
+    type: 'basic',
+    headers: { get: vi.fn((name: string) => name.toLowerCase() === 'content-type' ? contentType : null) },
+    clone: vi.fn(() => ({ cached: true })),
+  };
   const fetchMock = vi.fn().mockResolvedValue(response);
 
   vm.runInNewContext(workerSource, {
@@ -72,6 +77,29 @@ describe('service-worker cache security boundary', () => {
     expect(exportRoute.responsePromise).toBeUndefined();
     expect(harness.cacheStorage.match).not.toHaveBeenCalled();
     expect(harness.fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('does not cache an API response even if the URL is navigated to', async () => {
+    const harness = makeHarness('application/json');
+
+    const apiNavigation = harness.dispatch('https://routine.test/api/private-data', { mode: 'navigate' });
+    expect(apiNavigation.responsePromise).toBeDefined();
+
+    await apiNavigation.responsePromise;
+
+    expect(harness.cacheStorage.open).not.toHaveBeenCalled();
+    expect(harness.cache.put).not.toHaveBeenCalled();
+  });
+
+  it('caches a root navigation only when the response is HTML', async () => {
+    const htmlHarness = makeHarness('text/html; charset=utf-8');
+    const rootNavigation = htmlHarness.dispatch('https://routine.test/', { mode: 'navigate' });
+    expect(rootNavigation.responsePromise).toBeDefined();
+
+    await rootNavigation.responsePromise;
+
+    expect(htmlHarness.cacheStorage.open).toHaveBeenCalledWith('my-adaptive-routine-shell-v1.0.5');
+    expect(htmlHarness.cache.put).toHaveBeenCalledTimes(1);
   });
 
   it('runtime-caches an allow-listed production asset', async () => {
