@@ -346,3 +346,38 @@ Do not keep a microphone open in the background. Voice is optional, visibly acti
 Tests must cover: pet hidden/shown; manual action works identically; Done/Skip/change-plan target the correct task; ambiguous requests cause no mutation; repeated confirmations do not duplicate events; undo/restart/replan preserve state; voice permission denied; no-microphone path; reduced motion and sound-off; screen-reader labels and touch targets; and no pet surface obscures critical controls.
 
 **Acceptance principle:** the pet makes routine updates more delightful and accessible, but never makes task-state changes less explicit or less reliable.
+
+
+## 13. Pet choice catalog and reference-app research
+
+### Use reverse engineering as research, not an asset-copy shortcut
+
+The existing reverse-engineering workspace may support a structured study of companion-pet experiences in apps the team can legitimately access. Record observable product behavior and general design patterns, such as:
+- how users preview, select, rename, or switch a companion;
+- how idle, happy, encouraging, resting, and task-check-in states transition;
+- animation performance, touch behavior, customization flows, accessibility, and settings;
+- friction points, failure cases, and ideas that improve this app's own experience.
+
+Only inspect software and behavior within applicable permissions and terms. Do not bypass paywalls, DRM, authentication, license checks, or technical access controls; do not extract or redistribute proprietary source code, paid pet artwork, animation files, sounds, models, or other protected assets without explicit rights. A paid app being installed or purchased does not by itself grant a right to copy its assets into this product. Keep research notes focused on general functionality and independently implementable ideas.
+
+### Build a selectable catalog with verified rights
+
+Offer users a library of distinct pets they can preview and choose. Sources should be:
+1. original characters created for My Adaptive Routine;
+2. open or commercially licensed asset packs whose terms explicitly permit embedding and redistribution in this app; or
+3. assets the project has explicit written permission to use.
+
+Before integrating any third-party pet, verify the exact license version, commercial-use permission where relevant, redistribution/embedding rights, attribution conditions, modification rights, and any restrictions on AI training or generated variants. Record the source URL, creator, license, required attribution, asset version/hash, allowed uses, and approval status in a checked-in asset manifest. Do not place assets with unclear rights into release builds. A purchase receipt is not a substitute for checking the license's redistribution terms.
+
+Keep the catalog data-driven so new original or properly licensed pets can be added without rewriting the task system. Each pet option may define its display name, preview, supported expression/animation states, animation fallback, size limits, accessibility description, and asset provenance. Avoid copying a paid app's exact character, distinctive styling, name, animations, or branding.
+
+### Pet catalog acceptance checks
+
+- Users can preview and select a pet, switch later, and return to a safe default.
+- A missing or invalid asset falls back gracefully without affecting task tracking.
+- Catalog metadata and assets pass a license/provenance review before release.
+- CI verifies that every bundled third-party asset has a manifest entry and an approved license status.
+- Pet choice persists across app restart without creating duplicate task or progress records.
+- All pets support reduced motion or an equivalent static presentation, accessibility descriptions, and layouts on small screens.
+
+**Principle:** learn from the market's interaction patterns; ship original or rights-cleared characters.
