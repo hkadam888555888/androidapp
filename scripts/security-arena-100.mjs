@@ -3,10 +3,9 @@ import { constants } from 'node:fs';
 import path from 'node:path';
 
 const read = (file) => readFile(file, 'utf8');
-const [repair, verify, apk, index, worker, localAI, aiIntelligence, backup, store, factory, settings, app, privacy, packageText] = await Promise.all([
+const [repair, verify, apk, index, worker, localAI, backup, store, factory, settings, app, privacy, packageText] = await Promise.all([
   read('.github/workflows/repair-build.yml'), read('.github/workflows/verify.yml'), read('.github/workflows/android-apk.yml'),
   read('index.html'), read('public/sw.js'), read('src/domain/ai/openAICompatibleLocalProvider.ts'),
-  read('src/domain/ai/aiIntelligence.ts'), read('src/application/backupValidation.ts'), read('src/application/appStore.ts'),
   read('src/domain/ai/aiProviderFactory.ts'), read('src/features/settings/SettingsPage.tsx'), read('src/app/App.tsx'),
   read('PRIVACY_POLICY.md'), read('package.json'),
 ]);
@@ -97,16 +96,16 @@ check('59 Parsed model envelope rejects arrays', localAI.includes("typeof parsed
 check('60 Model requests send JSON and no authorization header', localAI.includes("headers: { 'Content-Type': 'application/json' }") && !localAI.includes("'Authorization':"));
 
 // 61–70: model output is bounded before becoming app data.
-check('61 Concept proposals are capped at five', aiIntelligence.includes('asArray(output.concepts).slice(0, 5)'));
-check('62 Task proposals are capped at eight', aiIntelligence.includes('asArray(output.tasks).slice(0, 8)'));
-check('63 Task type is validated against an allow-list', aiIntelligence.includes('TASK_TYPES.has(rawType)'));
-check('64 Difficulty is validated against an allow-list', aiIntelligence.includes('DIFFICULTIES.has(rawDifficulty)'));
-check('65 Priority is validated against an allow-list', aiIntelligence.includes('PRIORITIES.has(rawPriority)'));
-check('66 Model-suggested duration is clamped to 15–90 minutes', aiIntelligence.includes('clamp(Math.round(asNumber(item.estimatedMinutes, 30) / 5) * 5, 15, 90)'));
-check('67 Model confidence is clamped to 0–1', aiIntelligence.includes('clamp(asNumber(output.confidence, 0.65), 0, 1)'));
-check('68 Dependency suggestions build a set of known task IDs', aiIntelligence.includes('const known = new Set(tasks.map((task) => task.id))'));
-check('69 Dependency suggestions reject unknown task IDs', aiIntelligence.includes('!known.has(fromTaskId) || !known.has(toTaskId)'));
-check('70 Dependency suggestions reject self-links', aiIntelligence.includes('fromTaskId === toTaskId'));
+check('61 Concept proposals are capped at five', localAI.includes('asArray(output.concepts).slice(0, 5)'));
+check('62 Task proposals are capped at eight', localAI.includes('asArray(output.tasks).slice(0, 8)'));
+check('63 Task type is validated against an allow-list', localAI.includes('TASK_TYPES.has(rawType)'));
+check('64 Difficulty is validated against an allow-list', localAI.includes('DIFFICULTIES.has(rawDifficulty)'));
+check('65 Priority is validated against an allow-list', localAI.includes('PRIORITIES.has(rawPriority)'));
+check('66 Model-suggested duration is clamped to 15–90 minutes', localAI.includes('clamp(Math.round(asNumber(item.estimatedMinutes, 30) / 5) * 5, 15, 90)'));
+check('67 Model confidence is clamped to 0–1', localAI.includes('clamp(asNumber(output.confidence, 0.65), 0, 1)'));
+check('68 Dependency suggestions build a set of known task IDs', localAI.includes('const known = new Set(tasks.map((task) => task.id))'));
+check('69 Dependency suggestions reject unknown task IDs', localAI.includes('!known.has(fromTaskId) || !known.has(toTaskId)'));
+check('70 Dependency suggestions reject self-links', localAI.includes('fromTaskId === toTaskId'));
 
 // 71–90: imported backup validation.
 check('71 Backup validator requires plain records', backup.includes('function isPlainRecord(value: unknown)'));
@@ -141,7 +140,7 @@ check('94 Loaded AI settings pass through safe sanitization', store.includes('sa
 check('95 Local-data deletion requires exact DELETE confirmation', settings.includes("disabled={deleteConfirmation !== 'DELETE'}") && settings.includes('Type DELETE to confirm'));
 check('96 Notification delivery stops unless explicitly enabled', app.includes('if (stateNow.preferences?.notificationsEnabled !== true) return;'));
 check('97 Privacy page is routed and linked from settings', app.includes('path="/privacy"') && settings.includes('to="/privacy"'));
-check('98 Privacy notice documents browser-local storage and cloud AI disabled', privacy.includes('IndexedDB database on the browser') && privacy.includes('Cloud AI is disabled'));
+check('98 Privacy notice documents browser-local storage and cloud AI disabled', privacy.includes("browser's IndexedDB database on the device") && privacy.includes('Cloud AI is disabled in this build.'));
 check('99 Source excludes dangerous HTML sinks and dynamic code execution', !/dangerouslySetInnerHTML|\.innerHTML\s*=|\beval\s*\(|document\.write\s*\(/u.test(sourceText));
 const allDependencies = { ...pkg.dependencies, ...pkg.devDependencies };
 const hasTelemetrySdk = Object.keys(allDependencies).some((name) => /^(?:@sentry\/|posthog-js$|mixpanel-browser$|segment$|@segment\/|@amplitude\/)/u.test(name));
