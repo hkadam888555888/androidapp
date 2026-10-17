@@ -218,3 +218,94 @@ Test empty, malformed, long, and repeated imports; offline operation; interrupte
 A non-technical first-time user can open the app without an account or setup wizard, import a roadmap without changing its format, wait while the app processes and checks it, start a usable task without manually reviewing every generated item, track completion with one clear action, return the next day to a sensible updated routine, and recover from a confusing section without losing the rest of the roadmap.
 
 **North star:** one simple user action in; a useful, validated, adaptable routine out. The app owns the complexity, and only genuinely necessary choices reach the user.
+
+
+## 11. Single-purpose AI: production-grade scope
+
+### Sole mission
+
+The AI exists for exactly one product task: **convert an arbitrary plain-text learning roadmap into a complete, structured, traceable, actionable learning-task plan**.
+
+It is not a general assistant, tutor chatbot, open-ended content generator, calendar agent, or autonomous completion agent. Keep the model objective narrow so data collection, evaluation, model choice, and failure analysis all measure the same outcome. Other app responsibilities (persistence, scheduling, notifications, progress, permissions, accessibility, and UI) belong to deterministic application code and must not be delegated to the model.
+
+### Input/output contract
+
+Input:
+- Raw UTF-8 text from a user-selected TXT file or pasted text.
+- Source boundaries and optional user choices already known to the app.
+- A versioned output schema and permitted task-generation policy.
+
+Output:
+- A schema-valid roadmap tree with stable node references.
+- Task candidates with title, plain-language instructions, estimated duration range, completion criterion, order, prerequisite references where supported, and provenance to source text.
+- Per-segment confidence/ambiguity markers.
+- A coverage map showing how every meaningful source segment was treated.
+
+The model does not write directly to the live database or change completion status. The application validates the response, compiles it into domain entities, and only then saves a new plan revision.
+
+### Separate model intelligence from reliability controls
+
+The production pipeline is intentionally hybrid:
+
+1. Deterministic input safety, normalization, source preservation, and segmentation.
+2. The specialized model extracts semantics and suggests the roadmap/task structure.
+3. Schema validation and domain validation check the output.
+4. Provenance and coverage checks ensure meaningful input was not silently lost.
+5. Deterministic dependency validation rejects cycles and invalid references.
+6. Bounded repair retries only targeted invalid portions.
+7. A safe parser/fallback preserves common outline structure when inference is unavailable.
+8. A final plan compiler and scheduler produce the routine.
+9. The plan is committed atomically or through a recoverable draft/commit flow.
+10. Automated telemetry-free local diagnostics and regression fixtures support quality analysis without exporting user roadmaps.
+
+This division prevents model mistakes from becoming persistence corruption, fabricated completion, or silent data loss. A fallback keeps the product useful but must not be falsely described as having the same semantic accuracy as the model.
+
+### Training and evaluation discipline
+
+Create a dataset of real-world-style roadmaps with verified structured targets. Include a wide variety of formats, subject areas, indentation styles, typos, nested and unnumbered lists, long documents, mixed notes, project-based paths, duplicate sections, malformed sections, and ambiguous dependencies. Remove personal information from examples and document dataset provenance and licensing.
+
+Partition data by entire roadmap and source lineage into training, validation, and held-out test sets. Near-duplicate roadmaps must not appear across splits. Maintain regression sets that are never used to tune thresholds. Report results per failure class as well as overall; aggregate scores must not hide bad performance on long, messy, or unfamiliar inputs.
+
+Compare the model against the deterministic baseline and simpler alternatives. Prefer the smallest model that meets pre-agreed quality, latency, memory, and offline constraints. Do not assume that fine-tuning or a larger parameter count automatically improves the task.
+
+### Proposed production release gates
+
+A build must not be labelled production-ready until the team has agreed numerical thresholds, run the full test suite on a documented held-out corpus, recorded results, and reviewed every release-blocking failure. The following are required measurement areas:
+
+- **Contract reliability:** 100% of accepted outputs pass the versioned schema and domain validation.
+- **Source accounting:** 100% of meaningful input spans are mapped, classified as legitimate non-task content, or preserved for review. No span may disappear silently.
+- **Coverage and fidelity:** measure how many required topics and hierarchy edges are retained, duplicate/missing task rates, and unsupported-topic generation. Set and meet target thresholds on held-out data before release.
+- **Task usefulness:** evaluate whether tasks are actionable, appropriately sized, faithful to the source, and have observable completion criteria.
+- **Ambiguity handling:** low-confidence cases must preserve the text or use a conservative fallback; report false-confidence and missed-ambiguity rates.
+- **Robustness:** test empty, malformed, adversarially structured, repeated, exceptionally long, mixed-language where in scope, and out-of-domain files within documented size limits.
+- **Determinism/repeatability:** measure stability for identical input and output schema versions, and verify re-imports do not duplicate existing tasks.
+- **Offline behavior:** core plan generation must continue without network access when the supported local model is installed; verify that no source text is transmitted.
+- **Mobile performance:** measure cold/warm latency, peak RAM, model disk size, battery impact, app bundle impact, and low-memory behavior on supported devices, not only developer laptops.
+- **End-to-end correctness:** import, review if necessary, commit, first task, done/skip/undo, app restart, and replan must work as one journey.
+- **Security and privacy:** test file input limits, safe model asset/version handling, local data integrity, log redaction, backup/restore validation, and interruption recovery.
+- **Accessibility and UX:** first-time users must be able to complete the main journey without technical setup; validate screen-reader labels, touch target sizes, contrast, reduced-motion behavior where relevant, and small displays.
+- **Regression control:** every fixed model/pipeline failure becomes a stable test case. A release candidate that regresses a release-blocking metric cannot ship.
+- **Operations and supportability:** retain model version, schema version, and non-sensitive local processing diagnostics so a bug can be reproduced without collecting private roadmap content.
+
+The actual target values for semantic accuracy, omission rate, unsupported-topic rate, and latency should be set before the final evaluation based on an agreed risk budget and target devices. Do not invent a percentage target after seeing the test results, and do not describe the model as production-grade until the evidence meets those thresholds.
+
+### Versioning, rollback, and failure boundaries
+
+Version the model, prompt/template policy if used, output schema, parser, and task compiler separately. Pin compatibility among them in the application. Validate an updated model against the full frozen regression suite before promoting it. If a new model fails quality or performance gates, retain the previous validated model or deterministic fallback. Never silently replace a working model with an unverified artifact.
+
+The model adapter must enforce time and memory budgets, catch malformed outputs, and return typed failures. A model timeout, unsupported format, failed model download, or invalid prediction should not crash the app or destroy the draft. Preserve the original text and explain only the necessary recovery action in everyday language.
+
+### Completion definition for this AI project
+
+The AI project is done only when:
+1. A documented, licensed, reproducible dataset and split exist.
+2. Baselines and model candidates have been evaluated on held-out roadmaps.
+3. Metrics and known limitations are documented honestly.
+4. All accepted model outputs pass deterministic validation and source coverage accounting.
+5. No source text is lost through import, repair, retry, or app restart.
+6. The supported offline path is proven on target Android devices.
+7. Memory, latency, storage, battery, and failure recovery stay within measured product budgets.
+8. End-to-end and accessibility tests pass for the user journey.
+9. The release candidate passes the frozen regression suite and has a tested rollback/fallback path.
+
+**Non-negotiable:** one AI task, engineered deeply. Production grade is an evidence-based release status, not a label earned by a demo.
