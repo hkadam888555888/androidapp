@@ -17,7 +17,8 @@
     "test:coverage": "vitest run --coverage",
     "lint": "eslint .",
     "audit:source": "node scripts/source-audit.mjs",
-    "test:e2e": "npm run build && playwright test"
+    "test:e2e": "npm run build && playwright test",
+    "security:arena100": "node scripts/security-arena-100.mjs"
   },
   "dependencies": {
     "idb": "8.0.4",

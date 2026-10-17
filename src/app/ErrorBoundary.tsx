@@ -13,8 +13,10 @@ export class ErrorBoundary extends Component<{ children: ReactNode }, ErrorBound
     return { hasError: true, message: error.message };
   }
 
-  componentDidCatch(_error: Error, _info: ErrorInfo): void {
-    // Avoid sending app data or stack traces to a third party. Diagnostics remain local.
+  componentDidCatch(error: Error, info: ErrorInfo): void {
+    // Intentionally consume these arguments without logging personal data or stack traces.
+    void error;
+    void info;
   }
 
   render() {
