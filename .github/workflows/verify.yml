@@ -43,3 +43,6 @@ jobs:
 
       - name: Build production app
         run: npm run build
+
+      - name: Audit locked dependencies for high and critical vulnerabilities
+        run: npm audit --audit-level=high
