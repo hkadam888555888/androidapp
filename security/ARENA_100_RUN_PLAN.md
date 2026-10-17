@@ -27,7 +27,7 @@ Every status below means the worker's assigned checks have not run unless an evi
 
 | Worker | Assigned primary focus | Status |
 |---:|---|---|
-| 001 | CI/CD permissions, direct-to-main writes, workflow dispatch and review bypass | **PATCH PROPOSED; CI + independent retest pending** — [SEC-001](findings/SEC-001-CI-WORKFLOW-DIRECT-PUSH.md) |
+| 001 | CI/CD permissions, direct-to-main writes, workflow dispatch and review bypass | **Candidate Verify PASS; APK job FAIL at temporary Capacitor install; independent retest pending** — [SEC-001](findings/SEC-001-CI-WORKFLOW-DIRECT-PUSH.md) |
 | 002 | Secrets accidentally committed in current tracked files | NOT RUN |
 | 003 | Secret exposure in Git history and old blobs | NOT RUN |
 | 004 | Secrets or private configuration embedded in public JS/CSS bundles | NOT RUN |
@@ -130,6 +130,6 @@ Every status below means the worker's assigned checks have not run unless an evi
 
 ## Initial CI evidence observed
 
-The main-branch Verify run [37968141061](https://github.com/hkadam888555888/androidapp/actions/runs/37968141061) completed source audit and `npm ci`, but failed at lint with 10 errors and 1 warning; unit tests and production build were skipped. Its install output reported 0 dependency vulnerabilities. The Android APK workflow [37970479906](https://github.com/hkadam888555888/androidapp/actions/runs/37970479906) succeeded for the same baseline SHA. These are historical main-branch results, not evidence for the proposed fix branch.
+The main-branch Verify run [37968141061](https://github.com/hkadam888555888/androidapp/actions/runs/37968141061) completed source audit and `npm ci`, but failed at lint with 10 errors and 1 warning; unit tests and production build were skipped. Its install output reported 0 dependency vulnerabilities. The Android APK workflow [37970479906](https://github.com/hkadam888555888/androidapp/actions/runs/37970479906) succeeded for the same baseline SHA. These are historical main-branch results, not evidence for the proposed fix branch. Candidate PR #3 run [39012583195](https://github.com/hkadam888555888/androidapp/actions/runs/39012583195) passed all 17 source-audit checks, lint with 0 errors and 1 warning, all 96 Vitest tests across 23 files, and the production web build plus bundle-size gates at candidate head `6996bcf852a2a3193bd6ae8e079dd554cc77fc7b`. The separate Android APK run [39012583171](https://github.com/hkadam888555888/androidapp/actions/runs/39012583171) failed while installing temporary Capacitor packages with `Cannot read properties of null (reading 'edgesOut')`; Android generation and APK assembly were skipped. These are candidate test results; the APK artifact was not produced.
 
-**Current gate:** NOT GRADED. SEC-001 is a confirmed medium-severity change-control finding, with a proposed fix awaiting PR CI and independent retest. The default branch remains the user's responsibility to protect through GitHub branch rules.
+**Current gate:** NOT GRADED. The candidate Verify workflow passed, but the Android APK job failed at the temporary Capacitor dependency-install step, so no APK was produced. SEC-001 remains FIXED—AWAITING RETEST until Worker 098 independently challenges the direct-write path on the reviewed candidate. Workers 002–100 remain NOT RUN. The `main` branch is still reported unprotected; the owner must separately configure required pull requests/reviews and status checks.
