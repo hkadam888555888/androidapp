@@ -144,7 +144,8 @@ check('97 Privacy page is routed and linked from settings', app.includes('path="
 check('98 Privacy notice documents browser-local storage and cloud AI disabled', privacy.includes('IndexedDB database on the browser') && privacy.includes('Cloud AI is disabled'));
 check('99 Source excludes dangerous HTML sinks and dynamic code execution', !/dangerouslySetInnerHTML|\.innerHTML\s*=|\beval\s*\(|document\.write\s*\(/u.test(sourceText));
 const allDependencies = { ...pkg.dependencies, ...pkg.devDependencies };
-check('100 Dependencies are exactly pinned and package lock exists', lockfilePresent && Object.values(allDependencies).every((version) => typeof version === 'string' && /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/u.test(version)));
+const hasTelemetrySdk = Object.keys(allDependencies).some((name) => /^(?:@sentry\/|posthog-js$|mixpanel-browser$|segment$|@segment\/|@amplitude\/)/u.test(name));
+check('100 Dependencies are exactly pinned, lockfile exists, and known telemetry SDKs are absent', lockfilePresent && !hasTelemetrySdk && Object.values(allDependencies).every((version) => typeof version === 'string' && /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/u.test(version)));
 
 for (const [index, result] of checks.entries()) {
   console.log(\`\${result.pass ? 'PASS' : 'FAIL'} [\${String(index + 1).padStart(3, '0')}/100] \${result.name}\`);
