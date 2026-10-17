@@ -164,3 +164,21 @@ The dedicated roadmap model remains narrowly scoped to converting plain-text roa
 Verify manual and pet updates result in equivalent state; the intended task is always targeted; ambiguous commands make no change; duplicate actions are idempotent or safely prevented; undo, restart, and replanning preserve history; voice denial and disabled-voice paths work; reduced-motion and no-sound settings are respected; assistive technology can operate every action; and the pet can be hidden while the app remains fully usable.
 
 **Release rule:** the pet is an optional enhancement. It must never weaken explicit user consent, privacy, deterministic scheduling, or task-history integrity.
+
+
+## 12. Pet selection catalog and reverse-engineering guardrails
+
+The app may use the reverse-engineering workspace to study legally accessible reference apps for general pet-companion UX patterns: selection and preview flows, animation states, personalization controls, performance, accessibility, and user friction. The output of that research should be a written behavior/feature matrix and independently implemented improvements—not copied proprietary assets or source code.
+
+Do not bypass payment gates, DRM, authentication, licensing checks, or other technical access controls. Do not extract, copy, package, or redistribute paid-app characters, sprites, animations, sounds, 3D models, proprietary code, or branding unless the project has explicit permission or a license that clearly permits that specific use. Buying or installing an app is not automatically permission to redistribute its assets inside another app.
+
+The selectable pet library should be populated with:
+- original, project-owned characters;
+- third-party assets under a license that explicitly permits the intended embedding, modification, and redistribution; or
+- assets with documented, explicit permission from the rights holder.
+
+For every third-party asset, maintain a manifest with asset ID, creator, exact source URL, license name/version, license text or archived evidence, attribution requirements, modification and redistribution rights, file hash/version, and reviewer approval. Block assets with unclear or incompatible terms from production builds. Verify whether an asset pack's purchase license allows redistribution inside an app; do not infer this from the purchase alone.
+
+Treat the catalog as presentation data. A pet selection changes appearance and possibly the set of supported cosmetic animations, but never changes task state, roadmap interpretation, scheduling rules, or saved learning history. Provide a default pet, an option to hide the pet, reduced-motion support, accessible descriptions, and robust fallback when an animation asset fails.
+
+Release tests should verify catalog selection/switching persistence, app restart, missing-asset fallback, small-screen and assistive-technology behavior, reduced motion, and a complete license manifest for every bundled third-party asset.
