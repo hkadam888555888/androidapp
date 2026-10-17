@@ -106,6 +106,17 @@ await check('release verification and bundle-budget checks are wired', async () 
   assert(budgetScript.includes('totals.js === 0 || totals.css === 0'), 'bundle budget does not reject missing JS/CSS output');
   await access('scripts/check-bundle-size.mjs', constants.R_OK);
 });
+await check('repair workflow cannot push source changes directly', async () => {
+  const workflow = await read('.github/workflows/repair-build.yml');
+  assert(/^permissions:\s*\n\s+actions:\s*write\s*$/mu.test(workflow), 'workflow permissions must be limited to actions:write');
+  assert(!/^\s*contents:\s*write\s*$/mu.test(workflow), 'workflow must not have contents:write permission');
+  assert(!/\bgit\s+push\b/iu.test(workflow), 'workflow must not push directly to any branch');
+  assert(!/\bgit\s+commit\b/iu.test(workflow), 'workflow must not create source commits');
+  assert(!/Apply TypeScript fixes/iu.test(workflow), 'workflow must not mutate source files');
+  assert(workflow.includes('/actions/workflows/verify.yml/dispatches'), 'verification workflow dispatch is missing');
+  assert(workflow.includes('/actions/workflows/android-apk.yml/dispatches'), 'APK workflow dispatch is missing');
+});
+
 for (const icon of ['public/icons/icon-192.png', 'public/icons/icon-512.png', 'public/icons/icon-512-maskable.png']) {
   await check(`icon asset exists: ${path.basename(icon)}`, async () => {
     const info = await stat(icon);
