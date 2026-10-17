@@ -51,14 +51,15 @@ function makeHarness(contentType = 'text/javascript') {
     console,
   });
 
-  const fetchHandler = listeners.get('fetch');
-  if (!fetchHandler) throw new Error('Service worker did not register its fetch handler.');
+  if (!listeners.has('fetch')) throw new Error('Service worker did not register its fetch handler.');
 
   function dispatch(url: string, options: { method?: string; mode?: string } = {}): WorkerEvent {
     const event: WorkerEvent = {
       request: { url, method: options.method ?? 'GET', mode: options.mode ?? 'cors' },
       respondWith(responsePromise) { event.responsePromise = responsePromise; },
     };
+    const fetchHandler = listeners.get('fetch');
+    if (!fetchHandler) throw new Error('Service worker fetch handler disappeared.');
     fetchHandler(event as never);
     return event;
   }
