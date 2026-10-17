@@ -309,3 +309,40 @@ The AI project is done only when:
 9. The release candidate passes the frozen regression suite and has a tested rollback/fallback path.
 
 **Non-negotiable:** one AI task, engineered deeply. Production grade is an evidence-based release status, not a label earned by a demo.
+
+
+## 12. Optional AI pet companion: friendly progress interaction
+
+### Product experience
+
+Add an appealing, pet-like animated creature that represents the app's companion inside the experience. It should feel like a small desktop-pet character brought into the routine app: expressive, welcoming, and useful—not a second dashboard or a chatbot that gets in the way.
+
+The pet can sit on the Today screen and optionally appear as a small, movable/minimizable companion surface where the platform supports it. The core app must not require Android overlay permissions or persistent background activity just to display the pet. If a floating surface is not supported or would require intrusive permissions, keep the companion in-app.
+
+The user must always be able to use ordinary task controls without interacting with the pet. Provide a clear setting to hide the pet, reduce motion, or mute its sounds/animations. Respect screen readers, text scaling, contrast, reduced-motion preferences, and small screens. Animation must never block a task button or cover important content.
+
+### What the pet can do
+
+- Offer a contextual check-in about the current or recently scheduled task: “Did you finish this one?”
+- Present simple, large actions such as **Done**, **Not yet**, **Skip**, and **Change today's plan**.
+- Let the user report a result through a deliberate text or voice interaction, when those capabilities are enabled.
+- Summarize progress already stored by the app, point to the next task, and offer a user-controlled replan for a busy day.
+- Celebrate progress kindly without streak-shaming, guilt, pressure, or pretending that a task was completed.
+
+### Explicit-action and state contract
+
+The pet is an alternate interaction surface over the same task and routine use cases—not a second source of truth. A task result is recorded only after an unambiguous user action: a tap on a task-specific action or a clearly understood, deliberate command. If the task or intent is unclear, ask one short clarification and do not change state yet.
+
+The pet must never infer completion from inactivity, elapsed time, calendar events, app usage, sentiment, an opened task, or a guessed answer. It must never silently skip, complete, or reschedule work. Manual controls remain available for every action. Record pet-originated and manually originated updates through the same validated application use case, with an auditable event source and undo where the app supports undo. Preserve the event history during replanning and restart.
+
+### Keep the roadmap AI specialized
+
+The roadmap-to-structured-tasks model still has exactly one responsibility: interpreting TXT roadmap input. Do not broaden it into a general companion chatbot. The pet's task actions, confirmations, progress summaries, and rescheduling should call typed application use cases and use bounded, contextual dialogue. If speech-to-intent is added, treat its result as a proposal that must resolve to a supported intent and the correct task ID before any state change; unclear speech must not trigger an action.
+
+### Privacy and acceptance checks
+
+Do not keep a microphone open in the background. Voice is optional, visibly activated by the user, and should use on-device processing where available; explain any future external processing before it is enabled. Do not transmit roadmap text or private task notes for pet dialogue by default.
+
+Tests must cover: pet hidden/shown; manual action works identically; Done/Skip/change-plan target the correct task; ambiguous requests cause no mutation; repeated confirmations do not duplicate events; undo/restart/replan preserve state; voice permission denied; no-microphone path; reduced motion and sound-off; screen-reader labels and touch targets; and no pet surface obscures critical controls.
+
+**Acceptance principle:** the pet makes routine updates more delightful and accessible, but never makes task-state changes less explicit or less reliable.
