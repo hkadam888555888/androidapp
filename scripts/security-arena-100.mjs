@@ -148,12 +148,12 @@ const hasTelemetrySdk = Object.keys(allDependencies).some((name) => /^(?:@sentry
 check('100 Dependencies are exactly pinned, lockfile exists, and known telemetry SDKs are absent', lockfilePresent && !hasTelemetrySdk && Object.values(allDependencies).every((version) => typeof version === 'string' && /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/u.test(version)));
 
 for (const [index, result] of checks.entries()) {
-  console.log(\`\${result.pass ? 'PASS' : 'FAIL'} [\${String(index + 1).padStart(3, '0')}/100] \${result.name}\`);
+  console.log((result.pass ? 'PASS' : 'FAIL') + ' [' + String(index + 1).padStart(3, '0') + '/100] ' + result.name);
 }
 const failures = checks.filter((result) => !result.pass);
-console.log(\`Arena Security 100: \${checks.length - failures.length}/\${checks.length} checks passed.\`);
+console.log('Arena Security 100: ' + (checks.length - failures.length) + '/' + checks.length + ' checks passed.');
 if (checks.length !== 100) {
-  console.error(\`Expected exactly 100 checks, but defined \${checks.length}.\`);
+  console.error('Expected exactly 100 checks, but defined ' + checks.length + '.');
   process.exitCode = 1;
 }
 if (failures.length) process.exitCode = 1;
