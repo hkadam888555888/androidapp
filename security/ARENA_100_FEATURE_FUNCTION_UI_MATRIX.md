@@ -41,7 +41,7 @@ Historical results for cycles 001–002 are retained accurately. They are **not*
 | 001 | CI/CD permissions, direct-to-main writes and workflow bypass | CANDIDATE FIX; independent retest pending |
 | 002 | Tracked-source secret-pattern screen | PARTIAL ONLY; history and candidate-wide scan pending |
 | 003 | Git history, old blobs, binary/assets and removed-file secret exposure | PASS — 39 commits plus omitted historical lockfile and PNG blobs scanned for defined signatures; no matches; see Worker 003 report |
-| 004 | Dependency vulnerabilities, lockfile consistency and supply-chain risk | NOT RUN |
+| 004 | Dependency vulnerabilities, lockfile consistency and supply-chain risk | PASS — npm ci and explicit npm audit reported 0 vulnerabilities at candidate commit a3303aa; supply-chain risks remain separate |
 | 005 | Workflow triggers, token permissions, third-party action pinning and untrusted PR boundaries | NOT RUN |
 | 006 | Branch protection/rulesets and alternate direct-write routes | NOT RUN |
 | 007 | Secret-scanning and push-protection configuration evidence | NOT RUN |
@@ -152,7 +152,7 @@ Historical results for cycles 001–002 are retained accurately. They are **not*
 001. **CI/CD permissions, direct-to-main writes and workflow bypass** — CANDIDATE FIX; independent retest pending
 002. **Tracked-source secret-pattern screen** — PARTIAL ONLY; history and candidate-wide scan pending
 003. **Git history, old blobs, binary/assets and removed-file secret exposure** — PASS for the defined signature scan; limits are recorded in the Worker 003 report
-004. **Dependency vulnerabilities, lockfile consistency and supply-chain risk** — NOT RUN
+004. **Dependency vulnerabilities, lockfile consistency and supply-chain risk** — PASS for npm advisory audit (0 reported); workflow-action/toolchain supply chain remains for cycle 005
 005. **Workflow triggers, token permissions, third-party action pinning and untrusted PR boundaries** — NOT RUN
 006. **Branch protection/rulesets and alternate direct-write routes** — NOT RUN
 007. **Secret-scanning and push-protection configuration evidence** — NOT RUN
