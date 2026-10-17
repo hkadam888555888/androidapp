@@ -1,49 +1,34 @@
-name: Repair and dispatch build checks
+name: Dispatch verification and Android APK checks
 
 on:
   workflow_dispatch:
 
+# This workflow only dispatches the normal read-only checks. It must never
+# modify source files or push commits to the default branch.
 permissions:
-  contents: write
   actions: write
 
 jobs:
-  repair:
+  dispatch:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
     steps:
-      - name: Check out main
-        uses: actions/checkout@v4
-        with:
-          ref: main
-
-      - name: Apply TypeScript fixes
-        run: |
-          set -euo pipefail
-          python3 -c "from pathlib import Path; p=Path('src/application/appStore.ts'); s=p.read_text(); old='exerciseType: entry.exerciseType,'; new='exerciseType: entry.exerciseType ?? null,'; assert s.count(old)==1, f'expected one exerciseType line, got {s.count(old)}'; p.write_text(s.replace(old,new,1)); print('Patched appStore.ts')"
-          python3 -c "from pathlib import Path; p=Path('src/features/diagnostics/DiagnosticsPage.tsx'); s=p.read_text(); old='  const checks = ['; new='  const checks: [string, boolean, string][] = ['; assert s.count(old)==1, f'expected one checks declaration, got {s.count(old)}'; p.write_text(s.replace(old,new,1)); print('Patched DiagnosticsPage.tsx')"
-
-      - name: Validate and commit fixes
-        run: |
-          set -euo pipefail
-          git diff --check
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add src/application/appStore.ts src/features/diagnostics/DiagnosticsPage.tsx eslint.config.js
-          if git diff --cached --quiet; then
-            echo "No source changes needed; fixes already present."
-          else
-            git commit -m "fix: resolve TypeScript and ESLint build blockers"
-            git push origin HEAD:main
-          fi
-
-      - name: Dispatch verification and APK builds
+      - name: Dispatch verification and Android APK workflows on main
         env:
           GH_TOKEN: ${{ github.token }}
+        shell: bash
         run: |
           set -euo pipefail
           for workflow in verify.yml android-apk.yml; do
-            code=$(curl -sS -o /tmp/dispatch-body -w "%{http_code}" -X POST -H "Accept: application/vnd.github+json" -H "Authorization: Bearer $GH_TOKEN" "https://api.github.com/repos/hkadam888555888/androidapp/actions/workflows/$workflow/dispatches" -d '{"ref":"main"}')
-            echo "$workflow dispatch returned HTTP $code"
-            if [ "$code" != "204" ]; then cat /tmp/dispatch-body; exit 1; fi
+            response_file="$(mktemp)"
+            trap 'rm -f "$response_file"' EXIT
+            code="$(curl --silent --show-error --output "$response_file" --write-out '%{http_code}' \
+              --request POST \
+              --header 'Accept: application/vnd.github+json' \
+              --header "Authorization: Bearer ${GH_TOKEN}" \
+              --header 'X-GitHub-Api-Version: 2022-11-28' \
+              "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/workflows/${workflow}/dispatches" \
+              --data '{"ref":"main"}')"
+            printf '%s dispatch returned HTTP %s\n' "$workflow" "$code"
+            if [[ "$code" != "204" ]]; then cat "$response_file"; exit 1; fi
           done

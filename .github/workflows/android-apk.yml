@@ -29,6 +29,12 @@ jobs:
           node-version: 22
           cache: 'npm'
 
+      # npm 10.9.9 on the current runner crashes in Arborist while adding
+      # the temporary Capacitor toolchain (edgesOut null dereference).
+      # Pin a known fixed npm release so this build is reproducible.
+      - name: Pin npm version for temporary Capacitor install
+        run: npm install --global npm@11.6.0
+
       - name: Set up Java
         uses: actions/setup-java@v4
         with:

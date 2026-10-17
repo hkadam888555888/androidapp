@@ -1,4 +1,4 @@
-import { Component, type ErrorInfo, type ReactNode } from 'react';
+import { Component, type ReactNode } from 'react';
 
 interface ErrorBoundaryState {
   hasError: boolean;
@@ -13,7 +13,7 @@ export class ErrorBoundary extends Component<{ children: ReactNode }, ErrorBound
     return { hasError: true, message: error.message };
   }
 
-  componentDidCatch(_error: Error, _info: ErrorInfo): void {
+  componentDidCatch(): void {
     // Avoid sending app data or stack traces to a third party. Diagnostics remain local.
   }
 

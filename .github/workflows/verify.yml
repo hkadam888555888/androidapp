@@ -43,3 +43,21 @@ jobs:
 
       - name: Build production app
         run: npm run build
+
+      - name: Install Playwright Chromium for real browser flows
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Playwright end-to-end flows
+        run: npm run test:e2e
+
+      - name: Upload Playwright artifacts for diagnosis
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-test-results
+          path: test-results/
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Audit locked dependencies for high and critical vulnerabilities
+        run: npm audit --audit-level=high
