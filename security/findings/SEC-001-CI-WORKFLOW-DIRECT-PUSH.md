@@ -1,6 +1,6 @@
 # SEC-001 — Manually dispatched workflow can write directly to main
 
-**Status:** FIXED—AWAITING RETEST (proposed patch only; PR/CI evidence pending)  
+**Status:** FIXED—AWAITING RETEST (candidate Verify CI passed; independent retest pending; APK packaging job failed separately)  
 **Severity:** MEDIUM  
 **Confidence:** CONFIRMED by source and repository configuration evidence  
 **First worker:** 001  
@@ -44,9 +44,11 @@ The workflow encoded an automated route for changing the default branch without 
 - **Command:** `npm run audit:source`
 - **Expected:** PASS only if the dispatch workflow retains its minimal permission and no direct-write/commit/push path.
 - **Baseline evidence:** main's run [37968141061](https://github.com/hkadam888555888/androidapp/actions/runs/37968141061) passed the prior source audit but failed lint; tests/build were skipped.
-- **Proposed fix evidence:** pending pull request CI on the candidate revision.
+- **Candidate Verify CI:** PASS at `6996bcf852a2a3193bd6ae8e079dd554cc77fc7b`: 17 source-audit checks passed; lint 0 errors / 1 warning; 96 tests passed across 23 files; TypeScript production web build and gzip bundle budgets passed. [Run #39012583195](https://github.com/hkadam888555888/androidapp/actions/runs/39012583195).
+- **Android APK CI:** FAIL at the temporary `npm install --no-save --package-lock=false @capacitor/core@8 @capacitor/cli@8 @capacitor/android@8` step with npm `Cannot read properties of null (reading 'edgesOut')`; Android project generation, assembly, and artifact upload were skipped. [Run #39012583171](https://github.com/hkadam888555888/androidapp/actions/runs/39012583171). No APK was produced. This is a separate packaging blocker and is not evidence that SEC-001 persists.
+- **Independent retest:** pending Worker 098; no bypass retest has been performed yet.
 - **Independent retest:** worker 098 is assigned to inspect the merged candidate only after human approval, retry the direct-write paths, vary workflow permissions/commands, and re-run the regression check. Do not mark RETEST PASSED before that evidence exists.
 
 ## Residual risk / owner action
 
-This patch only removes the direct-to-main path in this workflow. It does not protect the branch from another workflow or any other write-capable actor. Enable required pull requests/reviews and appropriate status checks for `main` in GitHub settings as a separate owner-controlled action. The security branch must remain unmerged until reviewed. No automatic merge, release, or deployment is allowed.
+This patch only removes the direct-to-main path in this workflow. It does not protect the branch from another workflow or any other write-capable actor. Enable required pull requests/reviews and appropriate status checks for `main` in GitHub settings as a separate owner-controlled action. The security branch must remain unmerged until reviewed. No automatic merge, release, or deployment is allowed. Although the Verify job passes, overall release readiness remains NOT GRADED because the Android APK job failed, broad audit coverage is incomplete, Worker 098 has not retested, and explicit human approval is still missing.
