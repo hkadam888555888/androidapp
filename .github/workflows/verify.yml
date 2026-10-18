@@ -53,5 +53,14 @@ jobs:
       - name: Run critical-flow end-to-end tests
         run: npx playwright test
 
+      - name: Upload Arena browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: arena-browser-evidence
+          path: test-results/
+          if-no-files-found: ignore
+          retention-days: 7
+
       - name: Audit locked dependencies for high and critical vulnerabilities
         run: npm audit --audit-level=high
