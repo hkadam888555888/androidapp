@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { Activity, CalendarDays, CheckCircle2, Command, Droplets, Gauge, HeartPulse, Map, Search, Settings, ShieldCheck, Sparkles, X } from 'lucide-react';
 import { getCurrentDate, useAppStore } from '../../application/appStore';
@@ -26,6 +27,7 @@ export function QuickActionsDialog({ onClose, onOpenTask, returnFocusRef }: Quic
   const state = useAppStore();
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
+  const [visibleViewport, setVisibleViewport] = useState(() => ({ top: 0, height: typeof window === 'undefined' ? 0 : window.innerHeight }));
   const dialogRef = useRef<HTMLElement | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(
@@ -33,6 +35,23 @@ export function QuickActionsDialog({ onClose, onOpenTask, returnFocusRef }: Quic
   );
   const onCloseRef = useRef(onClose);
   const returnFocusRefRef = useRef(returnFocusRef);
+  useEffect(() => {
+    const viewport = window.visualViewport;
+    const updateVisibleViewport = () => setVisibleViewport({
+      top: viewport?.offsetTop ?? 0,
+      height: viewport?.height ?? window.innerHeight,
+    });
+    updateVisibleViewport();
+    window.addEventListener('resize', updateVisibleViewport);
+    viewport?.addEventListener('resize', updateVisibleViewport);
+    viewport?.addEventListener('scroll', updateVisibleViewport);
+    return () => {
+      window.removeEventListener('resize', updateVisibleViewport);
+      viewport?.removeEventListener('resize', updateVisibleViewport);
+      viewport?.removeEventListener('scroll', updateVisibleViewport);
+    };
+  }, []);
+
   useEffect(() => { onCloseRef.current = onClose; }, [onClose]);
   useEffect(() => { returnFocusRefRef.current = returnFocusRef; }, [returnFocusRef]);
   const normalized = query.trim().toLocaleLowerCase();
@@ -107,8 +126,8 @@ export function QuickActionsDialog({ onClose, onOpenTask, returnFocusRef }: Quic
     onClose();
   }
 
-  return (
-    <div className="command-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+  return createPortal(
+    <div className="command-backdrop" style={{ top: `${visibleViewport.top}px`, height: `${visibleViewport.height}px`, bottom: 'auto' }} onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
       <section ref={dialogRef} className="command-dialog" role="dialog" aria-modal="true" aria-labelledby="command-title" tabIndex={-1}>
         <h2 id="command-title" className="sr-only">Search and quick actions</h2>
         <div className="command-search-row">
@@ -154,6 +173,7 @@ export function QuickActionsDialog({ onClose, onOpenTask, returnFocusRef }: Quic
         </div>
         <div className="command-footer"><span><Command size={13} aria-hidden="true" /> Search stays local to this device</span><span><kbd>Esc</kbd> to close</span></div>
       </section>
-    </div>
+    </div>,
+    document.body,
   );
 }

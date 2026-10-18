@@ -595,4 +595,39 @@ test.describe('My Adaptive Routine critical flow', () => {
     await expect(page.getByRole('heading', { name: 'What the planner has learned', exact: true })).toHaveCount(0);
   });
 
+  test('mobile quick search is body-ported and constrained to the visible viewport', async ({ page }) => {
+    await finishFirstRunSetup(page);
+    await page.setViewportSize({ width: 360, height: 800 });
+    await page.goto('/today');
+    await page.getByRole('button', { name: 'Menu', exact: true }).click();
+    await page.getByRole('button', { name: 'Search tasks and pages', exact: true }).click();
+
+    const backdrop = page.locator('.command-backdrop');
+    const search = page.getByRole('textbox', { name: 'Search tasks, roadmaps, habits and pages' });
+    await expect(backdrop).toBeVisible();
+    await expect(search).toBeFocused();
+    expect(await backdrop.evaluate((element) => element.parentElement === document.body)).toBe(true);
+
+    const bounds = await backdrop.evaluate((element) => {
+      const rect = element.getBoundingClientRect();
+      const viewport = window.visualViewport;
+      return {
+        top: rect.top,
+        height: rect.height,
+        left: rect.left,
+        right: rect.right,
+        visibleTop: viewport?.offsetTop ?? 0,
+        visibleHeight: viewport?.height ?? window.innerHeight,
+      };
+    });
+    expect(Math.abs(bounds.top - bounds.visibleTop)).toBeLessThanOrEqual(2);
+    expect(Math.abs(bounds.height - bounds.visibleHeight)).toBeLessThanOrEqual(2);
+    expect(bounds.left).toBeGreaterThanOrEqual(0);
+    expect(bounds.right).toBeLessThanOrEqual(360);
+
+    await search.fill('planner');
+    await expect(page.locator('.command-results .command-result').first()).toBeVisible();
+    expect(await page.locator('.command-results').evaluate((element) => getComputedStyle(element).overflowY)).toBe('auto');
+  });
+
 });
