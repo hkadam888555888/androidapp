@@ -15,6 +15,7 @@ async function createSyntheticRoadmap(page: import('@playwright/test').Page) {
     await expect(page.getByText('Generated tasks')).toBeVisible();
   await page.getByRole('button', { name: 'Generated work', exact: true }).click();
     await page.getByRole('button', { name: /Approve & use/ }).click();
+  await page.getByRole('button', { name: 'Roadmap library', exact: true }).click();
   await expect(page.locator('.portfolio-main').filter({ hasText: 'Arena oversized backup preservation' })).toBeVisible();
 }
 
@@ -29,5 +30,6 @@ test('Arena cycle 040: oversized backup is rejected without clearing existing ap
   });
   await expect(page.locator('.notice-bar')).toContainText('Backup is too large (maximum 5 MB).');
   await page.goto('/roadmap');
+  await page.getByRole('button', { name: 'Roadmap library', exact: true }).click();
   await expect(page.locator('.portfolio-main').filter({ hasText: 'Arena oversized backup preservation' })).toBeVisible();
 });
