@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { NavLink, Route, Routes, useNavigate } from 'react-router-dom';
-import { Activity, CalendarDays, CheckCircle2, ClipboardList, Droplets, Gauge, HeartPulse, Map, Moon, MoreHorizontal, Settings, ShieldCheck, Sparkles, Sun } from 'lucide-react';
+import { Activity, CalendarDays, CheckCircle2, ClipboardList, Droplets, Gauge, HeartPulse, Map, Moon, MoreHorizontal, Search, Settings, ShieldCheck, Sparkles, Sun } from 'lucide-react';
 import { DashboardPage } from '../features/dashboard/DashboardPage';
 import { OnboardingPage } from '../features/dashboard/OnboardingPage';
 import { ReviewPage } from '../features/review/ReviewPage';
@@ -15,6 +15,7 @@ import { PrivacyPage } from '../features/settings/PrivacyPage';
 import { DiagnosticsPage } from '../features/diagnostics/DiagnosticsPage';
 import { appStore, bootstrapApp, useAppStore } from '../application/appStore';
 import { deliverDueNotifications } from '../domain/services/notificationService';
+import { QuickActionsDialog } from '../components/overlays/QuickActionsDialog';
 
 const primaryNav = [
   ['/today', 'Today', Gauge],
@@ -35,6 +36,8 @@ const secondaryNav = [
 
 export default function App() {
   const state = useAppStore();
+  const navigate = useNavigate();
+  const [quickActionsOpen, setQuickActionsOpen] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     try {
       const saved = window.localStorage.getItem('mar-theme');
@@ -51,10 +54,23 @@ export default function App() {
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#0E1617' : '#F7F9F8');
     try { window.localStorage.setItem('mar-theme', theme); } catch {
       // The visual preference is best-effort; app data remains in IndexedDB.
     }
   }, [theme]);
+
+  useEffect(() => {
+    function onShortcut(event: KeyboardEvent) {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault();
+        setQuickActionsOpen((open) => !open);
+      }
+      if (event.key === 'Escape') setQuickActionsOpen(false);
+    }
+    window.addEventListener('keydown', onShortcut);
+    return () => window.removeEventListener('keydown', onShortcut);
+  }, []);
 
   useEffect(() => { void bootstrapApp(); }, []);
   useEffect(() => {
@@ -87,11 +103,15 @@ export default function App() {
           <div className="brand-mark" aria-hidden="true">AR</div>
           <div><strong>Adaptive Routine</strong><span>Make room for what matters</span></div>
         </div>
+        <button type="button" className="quick-search-launcher" onClick={() => setQuickActionsOpen(true)} aria-keyshortcuts="Control+K Meta+K">
+          <Search size={17} aria-hidden="true" /><span>Search your routine</span><kbd>Ctrl K</kbd>
+        </button>
         <nav className="nav-list primary-nav" aria-label="Primary navigation">
           {primaryNav.map(([to, label, Icon]) => <NavLink key={to} to={to} className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}><Icon size={19} aria-hidden="true" /><span>{label}</span></NavLink>)}
           <details className="nav-more-mobile">
             <summary className="nav-item"><MoreHorizontal size={19} aria-hidden="true" /><span>More</span></summary>
             <div className="mobile-more-menu">
+              <button type="button" className="nav-item mobile-search-launcher" onClick={() => setQuickActionsOpen(true)}><Search size={18} aria-hidden="true" /><span>Search & quick actions</span></button>
               {secondaryNav.map(([to, label, Icon]) => <NavLink key={to} to={to} className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}><Icon size={18} aria-hidden="true" /><span>{label}</span></NavLink>)}
               <button type="button" className="theme-toggle mobile-theme" aria-pressed={theme === 'dark'} onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
                 {theme === 'dark' ? <Sun size={18} aria-hidden="true" /> : <Moon size={18} aria-hidden="true" />}
@@ -118,6 +138,13 @@ export default function App() {
         <Route path="/calendar" element={<CalendarPage />} /><Route path="/statistics" element={<StatisticsPage />} />
         <Route path="/notifications" element={<NotificationsPage />} /><Route path="/diagnostics" element={<DiagnosticsPage />} /><Route path="/settings" element={<SettingsPage />} /><Route path="/privacy" element={<PrivacyPage />} />
       </Routes></main>
+      {quickActionsOpen && <QuickActionsDialog
+        onClose={() => setQuickActionsOpen(false)}
+        onOpenTask={(taskId) => {
+          setQuickActionsOpen(false);
+          navigate('/today', { state: { focusTaskId: taskId } });
+        }}
+      />}
     </div>
   );
 }
