@@ -1,6 +1,6 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { NavLink, Route, Routes } from 'react-router-dom';
-import { Activity, CalendarDays, CheckCircle2, ClipboardList, Droplets, Gauge, HeartPulse, Map, Settings, Sparkles } from 'lucide-react';
+import { Activity, CalendarDays, CheckCircle2, ClipboardList, Droplets, Gauge, HeartPulse, Map, Moon, MoreHorizontal, Settings, ShieldCheck, Sparkles, Sun } from 'lucide-react';
 import { DashboardPage } from '../features/dashboard/DashboardPage';
 import { OnboardingPage } from '../features/dashboard/OnboardingPage';
 import { ReviewPage } from '../features/review/ReviewPage';
@@ -16,14 +16,46 @@ import { DiagnosticsPage } from '../features/diagnostics/DiagnosticsPage';
 import { appStore, bootstrapApp, useAppStore } from '../application/appStore';
 import { deliverDueNotifications } from '../domain/services/notificationService';
 
-const nav = [
-  ['/today', 'Today', Gauge], ['/review', 'Review', CheckCircle2], ['/roadmap', 'Roadmap', Map],
-  ['/planner', 'Planner', Sparkles], ['/habits', 'Habits', HeartPulse], ['/calendar', 'Calendar', CalendarDays],
-  ['/statistics', 'Statistics', ClipboardList], ['/notifications', 'Alerts', Droplets], ['/diagnostics', 'Diagnostics', Activity], ['/settings', 'Settings', Settings],
+const primaryNav = [
+  ['/today', 'Today', Gauge],
+  ['/planner', 'Plan', Sparkles],
+  ['/roadmap', 'Learn', Map],
+  ['/habits', 'Habits', HeartPulse],
+  ['/statistics', 'Progress', ClipboardList],
+] as const;
+
+const secondaryNav = [
+  ['/review', 'Review', CheckCircle2],
+  ['/calendar', 'Calendar', CalendarDays],
+  ['/notifications', 'Alerts', Droplets],
+  ['/diagnostics', 'Diagnostics', Activity],
+  ['/settings', 'Settings', Settings],
+  ['/privacy', 'Privacy', ShieldCheck],
 ] as const;
 
 export default function App() {
   const state = useAppStore();
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    try {
+      const saved = window.localStorage.getItem('mar-theme');
+      if (saved === 'light' || saved === 'dark') return saved;
+    } catch {
+      // Theme persistence is optional.
+    }
+    try {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    } catch {
+      return 'light';
+    }
+  });
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    try { window.localStorage.setItem('mar-theme', theme); } catch {
+      // The visual preference is best-effort; app data remains in IndexedDB.
+    }
+  }, [theme]);
+
   useEffect(() => { void bootstrapApp(); }, []);
   useEffect(() => {
     const tick = async () => {
@@ -51,11 +83,32 @@ export default function App() {
   return (
     <div className="app-shell">
       <aside className="sidebar">
-        <div className="brand"><div className="brand-mark">AR</div><div><strong>Adaptive Routine</strong><span>Personal execution OS</span></div></div>
-        <nav className="nav-list" aria-label="Primary navigation">
-          {nav.map(([to, label, Icon]) => <NavLink key={to} to={to} className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}><Icon size={18} /><span>{label}</span></NavLink>)}
+        <div className="brand">
+          <div className="brand-mark" aria-hidden="true">AR</div>
+          <div><strong>Adaptive Routine</strong><span>Make room for what matters</span></div>
+        </div>
+        <nav className="nav-list primary-nav" aria-label="Primary navigation">
+          {primaryNav.map(([to, label, Icon]) => <NavLink key={to} to={to} className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}><Icon size={19} aria-hidden="true" /><span>{label}</span></NavLink>)}
+          <details className="nav-more-mobile">
+            <summary className="nav-item"><MoreHorizontal size={19} aria-hidden="true" /><span>More</span></summary>
+            <div className="mobile-more-menu">
+              {secondaryNav.map(([to, label, Icon]) => <NavLink key={to} to={to} className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}><Icon size={18} aria-hidden="true" /><span>{label}</span></NavLink>)}
+              <button type="button" className="theme-toggle mobile-theme" aria-pressed={theme === 'dark'} onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
+                {theme === 'dark' ? <Sun size={18} aria-hidden="true" /> : <Moon size={18} aria-hidden="true" />}
+                <span>Use {theme === 'dark' ? 'light' : 'dark'} theme</span>
+              </button>
+            </div>
+          </details>
         </nav>
-        <div className="sidebar-note"><span className="status-dot" /><span>{state.error ? 'Storage error' : 'Local-first mode'}</span></div>
+        <div className="nav-divider" aria-hidden="true" />
+        <nav className="nav-list secondary-nav" aria-label="Secondary navigation">
+          {secondaryNav.map(([to, label, Icon]) => <NavLink key={to} to={to} className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}><Icon size={18} aria-hidden="true" /><span>{label}</span></NavLink>)}
+        </nav>
+        <button type="button" className="theme-toggle desktop-theme" aria-pressed={theme === 'dark'} onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
+          {theme === 'dark' ? <Sun size={18} aria-hidden="true" /> : <Moon size={18} aria-hidden="true" />}
+          <span>Use {theme === 'dark' ? 'light' : 'dark'} theme</span>
+        </button>
+        <div className="sidebar-note"><span className="status-dot" /><span>{state.error ? 'Storage needs attention' : 'Your data stays on this device'}</span></div>
       </aside>
       <a className="skip-link" href="#main-content">Skip to content</a>
       <main id="main-content" className="main-content"><Routes>
