@@ -364,4 +364,46 @@ test.describe('My Adaptive Routine critical flow', () => {
     expect(await page.evaluate(() => (window as Window & { __arenaXss?: boolean }).__arenaXss)).not.toBe(true);
   });
 
+
+  test('JSON backup exports and restores records in a clean isolated browser profile', async ({ page, browser }) => {
+    await finishFirstRunSetup(page);
+    await page.goto('/roadmap');
+    await page.getByLabel('Roadmap name').fill('Arena round-trip roadmap');
+    await page.getByRole('textbox', { name: 'Roadmap source text' }).fill([
+      '# Arena round-trip roadmap',
+      '## Foundations',
+      '### Variables',
+      '### Functions',
+      '## Practice',
+      '### Small exercise',
+    ].join('\\n'));
+    await page.getByRole('button', { name: 'Analyze roadmap' }).last().click();
+    await expect(page.getByText('Generated tasks')).toBeVisible();
+    await page.getByRole('button', { name: /Approve & use/ }).click();
+    await expect(page.getByText(/Saved .* tasks\\./)).toBeVisible();
+    await expect(page.locator('.portfolio-main').filter({ hasText: 'Arena round-trip roadmap' })).toBeVisible();
+
+    await page.goto('/settings');
+    const [download] = await Promise.all([
+      page.waitForEvent('download'),
+      page.getByRole('button', { name: 'Export JSON backup' }).click(),
+    ]);
+    const downloadPath = await download.path();
+    expect(downloadPath).toBeTruthy();
+
+    const baseURL = new URL(page.url()).origin;
+    const cleanContext = await browser.newContext({ baseURL });
+    try {
+      const cleanPage = await cleanContext.newPage();
+      await finishFirstRunSetup(cleanPage);
+      await cleanPage.goto('/settings');
+      await cleanPage.locator('input[type="file"][accept="application/json"]').setInputFiles(downloadPath!);
+      await expect(cleanPage.locator('.notice-bar')).toContainText('Backup restored successfully.');
+      await cleanPage.goto('/roadmap');
+      await expect(cleanPage.locator('.portfolio-main').filter({ hasText: 'Arena round-trip roadmap' })).toBeVisible();
+    } finally {
+      await cleanContext.close();
+    }
+  });
+
 });
