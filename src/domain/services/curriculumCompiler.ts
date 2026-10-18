@@ -17,6 +17,20 @@ export function compileCurriculum(nodes: NormalizedRoadmapNode[]): CompiledCurri
     outcomes: [`Explain ${node.cleanedTitle}`, `Apply ${node.cleanedTitle} in a small practical context`],
   }));
 
-  const tasks = concepts.flatMap((concept, index) => generateTasksForConcept(concept, index));
+  // Keep every node for hierarchy/context, but create schedulable work only from
+  // actionable leaves. Parent modules are labels for their children, not extra
+  // duplicate lessons. Parent projects/milestones retain one checkpoint task.
+  const nodeById = new Map(nodes.map((node) => [node.id, node]));
+  const parentIds = new Set(nodes.flatMap((node) => node.parentId ? [node.parentId] : []));
+  const tasks = concepts.flatMap((concept, index) => {
+    const node = nodeById.get(concept.sourceNodeId);
+    if (!node || node.nodeType === 'subject') return [];
+
+    const hasChildren = parentIds.has(node.id);
+    const isCheckpointContainer = node.nodeType === 'project' || node.nodeType === 'milestone';
+    if (hasChildren && !isCheckpointContainer) return [];
+
+    return generateTasksForConcept(concept, index, { checkpointOnly: hasChildren });
+  });
   return { concepts, tasks };
 }

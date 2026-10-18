@@ -1,11 +1,15 @@
 import type { CurriculumConcept, Difficulty, TaskDefinition, TaskPriority } from '../entities/models';
 
-export function generateTasksForConcept(concept: CurriculumConcept, orderIndex: number): TaskDefinition[] {
+export function generateTasksForConcept(
+  concept: CurriculumConcept,
+  orderIndex: number,
+  options: { checkpointOnly?: boolean } = {},
+): TaskDefinition[] {
   const base = concept.title;
   const rootPriority: TaskPriority = concept.nodeType === 'milestone' || concept.nodeType === 'project' ? 'high' : 'medium';
   const difficulty: Difficulty = concept.nodeType === 'project' ? 'very_hard' : concept.nodeType === 'concept' ? 'medium' : 'easy';
 
-  const templates: Array<Omit<TaskDefinition, 'id' | 'roadmapId' | 'sourceNodeId' | 'conceptId'>> = [
+  const templates: Array<Omit<TaskDefinition, 'id' | 'roadmapId' | 'sourceNodeId' | 'conceptId'>> = options.checkpointOnly ? [] : [
     {
       title: `Understand ${base}`,
       objective: `Build a clear mental model of ${base} and its key terms.`,
