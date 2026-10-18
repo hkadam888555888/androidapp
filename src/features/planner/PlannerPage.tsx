@@ -4,11 +4,13 @@ import { appStore, useAppStore, getCurrentDate } from '../../application/appStor
 import { createId } from '../../lib/id';
 import type { BusyEvent, ExternalTaskCategory, TaskPriority } from '../../domain/entities/models';
 import { explainPlannerDecisionWithAI } from '../../domain/ai/aiService';
+import { UrgentDayAdaptationPanel } from './UrgentDayAdaptationPanel';
 
 export function PlannerPage() {
   const state = useAppStore();
   const date = getCurrentDate();
   const [notice, setNotice] = useState('');
+  const [adaptationOpen, setAdaptationOpen] = useState(false);
   const [building, setBuilding] = useState(false);
   const [busyOpen, setBusyOpen] = useState(false);
   const [externalOpen, setExternalOpen] = useState(false);
@@ -62,8 +64,9 @@ export function PlannerPage() {
   const shareTotal = activeRoadmaps.reduce((sum, roadmap) => sum + (roadmap.capacitySharePercentage ?? 0), 0);
 
   return <section className="page">
-    <header className="page-header"><div><p className="eyebrow">Scheduling engine</p><h1>Planner</h1><p className="muted">One global capacity pool across active roadmaps, habits, external work, busy windows, and review constraints.</p></div><div className="header-actions"><button className="button secondary" onClick={() => setExternalOpen((v) => !v)}>+ External task</button><button className="button secondary" onClick={() => setBusyOpen((v) => !v)}>Add busy block</button><button className="button primary" onClick={generate} disabled={building}>{building ? 'Building…' : 'Generate today'}</button></div></header>
-    {notice && <div className="notice-bar">{notice}</div>}
+    <header className="page-header"><div><p className="eyebrow">Scheduling engine</p><h1>Planner</h1><p className="muted">One global capacity pool across active roadmaps, habits, external work, busy windows, and review constraints.</p></div><div className="header-actions"><button className="button secondary" onClick={() => setExternalOpen((v) => !v)}>+ External task</button><button className="button secondary" onClick={() => setBusyOpen((v) => !v)}>Add busy block</button><button className="button secondary" onClick={() => setAdaptationOpen((v) => !v)}>{adaptationOpen ? 'Close adaptation' : 'Adapt today'}</button><button className="button primary" onClick={generate} disabled={building}>{building ? 'Building…' : 'Generate today'}</button></div></header>
+    {notice && <div className="notice-bar" role="status">{notice}</div>}
+    {adaptationOpen && <UrgentDayAdaptationPanel date={date} onCancel={() => setAdaptationOpen(false)} onApplied={(message) => { setNotice(message); setAdaptationOpen(false); }} />}
 
     {(externalOpen || busyOpen) && <div className="settings-grid planner-input-grid">
       {externalOpen && <article className="card form-card"><div className="card-heading"><div><span className="eyebrow">Reality input</span><h2>External task</h2></div></div><div className="form-row"><label>Title<input value={externalForm.title} onChange={(e) => setExternalForm({ ...externalForm, title: e.target.value })} placeholder="College assignment / payment / shopping" /></label><label>Category<select value={externalForm.category} onChange={(e) => setExternalForm({ ...externalForm, category: e.target.value as ExternalTaskCategory })}><option value="PERSONAL">Personal</option><option value="COLLEGE">College</option><option value="WORK">Work</option><option value="URGENT">Urgent</option></select></label></div><div className="form-row"><label>Priority<select value={externalForm.priority} onChange={(e) => setExternalForm({ ...externalForm, priority: e.target.value as TaskPriority })}><option value="urgent">Urgent</option><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option></select></label><label>Estimated minutes<input type="number" min="5" max="1440" value={externalForm.minutes} onChange={(e) => setExternalForm({ ...externalForm, minutes: Number(e.target.value) })} /></label></div><div className="form-row"><label>Due date<input type="date" value={externalForm.dueDate} onChange={(e) => setExternalForm({ ...externalForm, dueDate: e.target.value })} /></label><label className="setting-row"><span><strong>Fixed time</strong><small>Use for a timed call/event that must fit exactly.</small></span><input type="checkbox" checked={externalForm.fixed} onChange={(e) => setExternalForm({ ...externalForm, fixed: e.target.checked })} /></label></div>{externalForm.fixed && <div className="form-row"><label>Start<input type="time" value={externalForm.start} onChange={(e) => setExternalForm({ ...externalForm, start: e.target.value })} /></label><label>End<input type="time" value={externalForm.end} onChange={(e) => setExternalForm({ ...externalForm, end: e.target.value })} /></label></div>}<div className="toolbar"><button className="button primary" onClick={addExternalTask}>Save external task</button></div></article>}

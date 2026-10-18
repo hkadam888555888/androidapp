@@ -122,4 +122,30 @@ test.describe('My Adaptive Routine critical flow', () => {
     await expect(page.getByRole('button', { name: 'Complete' }).first()).toBeVisible();
   });
 
+
+  test('urgent-day adaptation previews first and persists only after explicit apply', async ({ page }) => {
+    await finishFirstRunSetup(page);
+    await page.goto('/planner');
+    await page.getByRole('button', { name: 'Adapt today' }).click();
+    const panel = page.getByRole('article', { name: /Adapt today/ });
+    await page.getByLabel('What changed today?').fill('Unexpected lab session');
+    await page.getByLabel('Start time').fill('15:00');
+    await page.getByLabel('End time').fill('16:00');
+    await panel.getByRole('button', { name: 'Preview changes' }).click();
+    await expect(panel.getByText(/Preview only — nothing has been saved yet/)).toBeVisible();
+    await expect(panel.getByRole('heading', { name: 'Proposed schedule' })).toBeVisible();
+    await panel.getByRole('button', { name: 'Cancel adaptation' }).click();
+    await expect(page.getByText('Unexpected lab session', { exact: true })).toHaveCount(0);
+
+    await page.getByRole('button', { name: 'Adapt today' }).click();
+    const secondPanel = page.getByRole('article', { name: /Adapt today/ });
+    await page.getByLabel('What changed today?').fill('Unexpected lab session');
+    await page.getByLabel('Start time').fill('15:00');
+    await page.getByLabel('End time').fill('16:00');
+    await secondPanel.getByRole('button', { name: 'Preview changes' }).click();
+    await secondPanel.getByRole('button', { name: 'Apply adaptation' }).click();
+    await expect(page.getByRole('status')).toContainText('Applied');
+    await expect(page.getByText('Unexpected lab session', { exact: true })).toBeVisible();
+  });
+
 });

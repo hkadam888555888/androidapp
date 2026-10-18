@@ -416,3 +416,29 @@ label{display:grid;gap:7px;color:var(--muted);font-size:12px;font-weight:600}inp
 :root[data-theme="dark"] .onboarding-shell{background:radial-gradient(ellipse at 50% -10%,rgba(134,208,221,.12),transparent 55%),var(--bg)}
 .onboarding-card textarea{background:var(--surface);color:var(--text);border-color:var(--border)}
 .day-chip.active{border-color:var(--accent);color:var(--text);background:var(--primary-container)}
+
+/* Session 06: urgent-day adaptation is a proposal until the user applies it. */
+.adaptation-panel{margin:14px 0;border-color:color-mix(in srgb,var(--accent) 38%,var(--border));box-shadow:0 10px 34px rgba(13,86,98,.06)}
+.adaptation-panel-heading{align-items:flex-start}
+.adaptation-panel-heading p{max-width:640px;margin-top:8px;margin-bottom:0}
+.adaptation-form-row{grid-template-columns:minmax(0,2fr) minmax(120px,1fr) minmax(120px,1fr);align-items:end}
+.adaptation-actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:14px}
+.adaptation-notice{display:flex;flex-direction:column;gap:3px}
+.adaptation-notice strong{font-size:12px}
+.adaptation-notice span{font-size:12px;line-height:1.5}
+.adaptation-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:14px 0}
+.adaptation-summary>div{display:grid;gap:6px;padding:14px;border:1px solid var(--border);border-radius:13px;background:var(--surface-2)}
+.adaptation-summary span{color:var(--muted);font-size:11px;font-weight:700}
+.adaptation-summary strong{font-size:24px;line-height:1.1;color:var(--text);font-variant-numeric:tabular-nums}
+.adaptation-preview-list,.adaptation-affected{display:grid;gap:8px;margin-top:16px}
+.adaptation-preview-list h3,.adaptation-affected h3{margin:0}
+.adaptation-slot{display:grid;grid-template-columns:100px minmax(0,1fr);gap:12px;align-items:center;padding:12px;border:1px solid var(--border);border-radius:12px;background:var(--surface)}
+.adaptation-slot time{color:var(--accent);font-size:12px;font-weight:750;font-variant-numeric:tabular-nums}
+.adaptation-slot>div{display:grid;gap:4px;min-width:0}
+.adaptation-slot strong,.adaptation-affected-task strong{font-size:13px;color:var(--text)}
+.adaptation-slot span,.adaptation-affected-task span{font-size:11px;color:var(--muted)}
+.adaptation-affected-task{display:flex;justify-content:space-between;gap:12px;padding:11px 12px;border:1px solid var(--border);border-radius:10px;background:var(--warning-soft)}
+.adaptation-affected-task span{flex-shrink:0}
+.adaptation-warnings{margin-top:12px}
+.adaptation-error{padding:12px;border-radius:12px}
+@media(max-width:760px){.adaptation-form-row{grid-template-columns:minmax(0,1fr)}.adaptation-summary{gap:7px}.adaptation-summary>div{padding:11px}.adaptation-summary strong{font-size:21px}.adaptation-slot{grid-template-columns:76px minmax(0,1fr)}.adaptation-affected-task{flex-direction:column;gap:4px}}
