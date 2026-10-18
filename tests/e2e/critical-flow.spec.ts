@@ -2,15 +2,15 @@ import { test, expect } from '@playwright/test';
 
 async function finishFirstRunSetup(page: import('@playwright/test').Page) {
   await page.goto('/');
-  // Each test gets a fresh browser context; complete the first-run wizard before testing feature routes.
+  // App bootstrap is asynchronous. Wait for the first-run route instead of silently skipping setup
+  // during the brief loading window in a fresh browser context.
   const roadmapBox = page.getByRole('textbox', { name: 'Paste your roadmap' });
-  if (await roadmapBox.isVisible().catch(() => false)) {
-    await roadmapBox.fill('# Test roadmap\n## Foundations\n### Variables\n### Functions\n## Practice\n### Small exercise');
-    await page.getByRole('button', { name: 'Next: routine' }).click();
-    await page.getByRole('button', { name: 'Next: review' }).click();
-    await page.getByRole('button', { name: 'Save setup & open Today' }).click();
-    await expect(page.getByRole('heading', { name: 'Today', exact: true })).toBeVisible();
-  }
+  await expect(roadmapBox).toBeVisible();
+  await roadmapBox.fill('# Test roadmap\n## Foundations\n### Variables\n### Functions\n## Practice\n### Small exercise');
+  await page.getByRole('button', { name: 'Next: routine' }).click();
+  await page.getByRole('button', { name: 'Next: review' }).click();
+  await page.getByRole('button', { name: 'Save setup & open Today' }).click();
+  await expect(page.getByRole('heading', { name: 'Today', exact: true })).toBeVisible();
 }
 
 test.describe('My Adaptive Routine critical flow', () => {
