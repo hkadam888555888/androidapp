@@ -150,6 +150,18 @@ test.describe('My Adaptive Routine critical flow', () => {
   });
 
 
+  test('roadmap node expansion requires an explicit selection', async ({ page }) => {
+    await finishFirstRunSetup(page);
+    await page.goto('/roadmap');
+    await page.getByRole('button', { name: 'Load example' }).click();
+    await page.getByRole('button', { name: 'Analyze roadmap' }).last().click();
+
+    await expect(page.getByRole('heading', { name: 'Analysis result' })).toBeVisible();
+    await page.getByRole('button', { name: 'Expand node' }).click();
+    await expect(page.getByText('Choose a roadmap node to expand.', { exact: true })).toBeVisible();
+    await expect(page.getByText(/Proposal ready:/)).toHaveCount(0);
+  });
+
   test('mobile Menu opens every feature and local search uses the styled dialog', async ({ page }, testInfo) => {
     await finishFirstRunSetup(page);
     await page.setViewportSize({ width: 393, height: 852 });

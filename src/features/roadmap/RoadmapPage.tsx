@@ -87,6 +87,10 @@ export function RoadmapPage() {
     setShare(roadmap.capacitySharePercentage === undefined ? '' : String(roadmap.capacitySharePercentage));
     setTargetDate(roadmap.targetDate?.slice(0, 10) ?? '');
     setAnalyzed(false);
+    setSelectedNodeId('');
+    setAiExpansion(null);
+    setAiPractice([]);
+    setAiMessage('');
     setSavedMessage('');
   }
 
@@ -121,8 +125,10 @@ export function RoadmapPage() {
   }
 
   async function runNodeExpansion() {
-    const node = result?.parsed.nodes.find((candidate) => candidate.id === selectedNodeId) ?? result?.parsed.nodes[0];
-    if (!node || !result) { setAiMessage('Analyze the roadmap first, then choose a node to expand.'); return; }
+    if (!result) { setAiMessage('Analyze the roadmap first, then choose a node to expand.'); return; }
+    if (!selectedNodeId) { setAiMessage('Choose a roadmap node to expand.'); return; }
+    const node = result.parsed.nodes.find((candidate) => candidate.id === selectedNodeId);
+    if (!node) { setAiMessage('Re-analyze the roadmap, then choose a node to expand.'); return; }
     setSelectedNodeId(node.id);
     setAiBusy(true); setAiMessage(`Building a bounded proposal for “${node.cleanedTitle}”…`);
     try {
@@ -263,7 +269,7 @@ export function RoadmapPage() {
     <article className="card roadmap-import-card"><div className="form-row"><label>Roadmap name<input value={title} onChange={(e) => setTitle(e.target.value)} /></label><label>Roadmap priority<select value={priority} onChange={(e) => setPriority(e.target.value as TaskPriority)}><option value="urgent">Urgent</option><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option></select></label></div>
       <div className="form-row"><label>Optional capacity share %<input type="number" min="0" max="100" value={share} onChange={(e) => setShare(e.target.value)} placeholder="Leave blank for flexible allocation" /></label><label>Roadmap target date (optional)<input type="date" value={targetDate} onChange={(e) => setTargetDate(e.target.value)} /></label></div>
       <div className="info-box"><strong>Soft share, not a wall</strong><span>An urgent or deadline-protected task may borrow global capacity when its roadmap share is already full.</span></div>
-      <textarea className="roadmap-input" value={source} onChange={(event) => { setSource(event.target.value); setAnalyzed(false); }} placeholder="Paste your roadmap here…" aria-label="Roadmap source text" />
+      <textarea className="roadmap-input" value={source} onChange={(event) => { setSource(event.target.value); setAnalyzed(false); setSelectedNodeId(''); setAiExpansion(null); setAiPractice([]); setAiMessage(''); }} placeholder="Paste your roadmap here…" aria-label="Roadmap source text" />
       <div className="toolbar"><button className="button primary" onClick={() => setAnalyzed(true)} disabled={!source.trim()}>Analyze roadmap</button><button className="button secondary" onClick={saveRoadmap} disabled={!result?.structure.valid || !result.taskValidation.valid || saving}>{saving ? 'Approving…' : previousApproved ? 'Approve & use version' : 'Approve & use roadmap'}</button>{savedMessage && <span className="muted">{savedMessage}</span>}</div>
     </article>
 
