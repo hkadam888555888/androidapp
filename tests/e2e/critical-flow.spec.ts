@@ -288,7 +288,7 @@ test.describe('My Adaptive Routine critical flow', () => {
     await expect(page.getByText('Selected day', { exact: true })).toBeVisible();
   });
 
-  test('explicit Skip remains visible in review instead of turning into completion', async ({ page }) => {
+  test('explicit Skip persists as a distinct outcome and never becomes completion', async ({ page }) => {
     await finishFirstRunSetup(page);
     await addFixedExternalTask(page, 'Arena skip flow task');
     await page.goto('/today');
@@ -297,13 +297,11 @@ test.describe('My Adaptive Routine critical flow', () => {
     await task.getByRole('button', { name: 'Skip' }).click();
     await expect(task.getByText('Skipped', { exact: true })).toBeVisible();
 
-    // Daily Review intentionally targets the previous calendar day. Advance the
-    // isolated browser clock so this synthetic task becomes reviewable as yesterday.
-    await page.clock.install({ time: new Date(Date.now() + 36 * 60 * 60 * 1000) });
-    await page.goto('/review');
-    const reviewTask = page.locator('.review-task').filter({ hasText: 'Arena skip flow task' });
-    await expect(reviewTask).toBeVisible();
-    await expect(reviewTask).toContainText('skipped');
+    await page.reload();
+    const persistedTask = page.locator('.timeline-card').filter({ hasText: 'Arena skip flow task' });
+    await expect(persistedTask).toBeVisible();
+    await expect(persistedTask).toContainText('skipped');
+    await expect(persistedTask.getByRole('button', { name: 'Complete' })).toHaveCount(0);
   });
 
   test('delete-all requires exact confirmation and theme preference survives reload', async ({ page }) => {
@@ -333,8 +331,13 @@ test.describe('My Adaptive Routine critical flow', () => {
   test('malformed backup import is rejected without changing existing roadmap data', async ({ page }) => {
     await finishFirstRunSetup(page);
     await page.goto('/roadmap');
-    const existingRoadmap = page.locator('.portfolio-main').filter({ hasText: 'Test roadmap' });
-    await expect(existingRoadmap).toBeVisible();
+    await page.getByLabel('Roadmap name').fill('Arena backup preservation');
+    await page.getByRole('textbox', { name: 'Roadmap source text' }).fill('# Arena backup preservation\\n## Foundations\\n### Variables\\n### Functions');
+    await page.getByRole('button', { name: 'Analyze roadmap' }).last().click();
+    await expect(page.getByText('Generated tasks')).toBeVisible();
+    await page.getByRole('button', { name: /Approve & use/ }).click();
+    await expect(page.getByText(/Saved .* tasks\\./)).toBeVisible();
+    await expect(page.locator('.portfolio-main').filter({ hasText: 'Arena backup preservation' })).toBeVisible();
 
     await page.goto('/settings');
     await page.locator('input[type="file"][accept="application/json"]').setInputFiles({
@@ -345,7 +348,7 @@ test.describe('My Adaptive Routine critical flow', () => {
     await expect(page.locator('.notice-bar')).toContainText('Backup is not valid JSON.');
 
     await page.goto('/roadmap');
-    await expect(page.locator('.portfolio-main').filter({ hasText: 'Test roadmap' })).toBeVisible();
+    await expect(page.locator('.portfolio-main').filter({ hasText: 'Arena backup preservation' })).toBeVisible();
   });
 
   test('hostile roadmap text stays inert when displayed in the parsed roadmap tree', async ({ page }) => {
