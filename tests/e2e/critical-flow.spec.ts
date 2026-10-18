@@ -300,7 +300,7 @@ test.describe('My Adaptive Routine critical flow', () => {
     await page.reload();
     const persistedTask = page.locator('.timeline-card').filter({ hasText: 'Arena skip flow task' });
     await expect(persistedTask).toBeVisible();
-    await expect(persistedTask).toContainText('skipped');
+    await expect(persistedTask).toContainText('Skipped');
     await expect(persistedTask.getByRole('button', { name: 'Complete' })).toHaveCount(0);
   });
 
@@ -336,7 +336,7 @@ test.describe('My Adaptive Routine critical flow', () => {
     await page.getByRole('button', { name: 'Analyze roadmap' }).last().click();
     await expect(page.getByText('Generated tasks')).toBeVisible();
     await page.getByRole('button', { name: /Approve & use/ }).click();
-    await expect(page.getByText(/Saved .* tasks\\./)).toBeVisible();
+    await expect(page.getByText(/Saved .* tasks\./)).toBeVisible();
     await expect(page.locator('.portfolio-main').filter({ hasText: 'Arena backup preservation' })).toBeVisible();
 
     await page.goto('/settings');
