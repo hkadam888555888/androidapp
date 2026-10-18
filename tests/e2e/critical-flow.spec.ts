@@ -166,7 +166,7 @@ test.describe('My Adaptive Routine critical flow', () => {
       await expect(menu.getByRole('link', { name: feature, exact: true })).toBeVisible();
     }
     await menu.getByRole('link', { name: 'Diagnostics', exact: true }).click();
-    await expect(page.getByRole('heading', { name: 'Diagnostics', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'System health', exact: true })).toBeVisible();
 
     await page.getByRole('button', { name: 'Menu' }).click();
     const reopenedMenu = page.getByRole('dialog', { name: 'All features' });
