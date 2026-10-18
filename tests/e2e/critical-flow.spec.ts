@@ -548,7 +548,9 @@ test.describe('My Adaptive Routine critical flow', () => {
     await page.getByRole('button', { name: 'Next: routine' }).click();
     await page.getByRole('button', { name: 'Next: review' }).click();
     await page.getByRole('button', { name: 'Save setup & open Today' }).click();
+    await expect(page.getByRole('heading', { name: 'Today', exact: true })).toBeVisible();
     await page.goto('/planner');
+    await expect(page.getByRole('heading', { name: 'Planner', exact: true })).toBeVisible();
     await page.getByRole('button', { name: 'Generate today' }).click();
     await page.locator('details.planner-details > summary').click();
 
