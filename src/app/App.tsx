@@ -80,7 +80,7 @@ export default function App() {
     }
     window.addEventListener('keydown', onShortcut);
     return () => window.removeEventListener('keydown', onShortcut);
-  }, []);
+  }, [quickActionsOpen]);
   useEffect(() => {
     if (!mobileMenuOpen) return;
     const dialog = mobileMenuDialogRef.current;
