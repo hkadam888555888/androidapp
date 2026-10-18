@@ -269,8 +269,13 @@ test.describe('My Adaptive Routine critical flow', () => {
     await task.getByRole('button', { name: 'Skip' }).click();
     await expect(task.getByText('Skipped', { exact: true })).toBeVisible();
 
+    // Daily Review intentionally targets the previous calendar day. Advance the
+    // isolated browser clock so this synthetic task becomes reviewable as yesterday.
+    await page.clock.install({ time: new Date(Date.now() + 36 * 60 * 60 * 1000) });
     await page.goto('/review');
-    await expect(page.getByText('Arena skip flow task', { exact: true })).toBeVisible();
+    const reviewTask = page.locator('.review-task').filter({ hasText: 'Arena skip flow task' });
+    await expect(reviewTask).toBeVisible();
+    await expect(reviewTask).toContainText('skipped');
   });
 
   test('delete-all requires exact confirmation and theme preference survives reload', async ({ page }) => {
