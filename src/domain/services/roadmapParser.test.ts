@@ -44,7 +44,7 @@ describe('roadmap parser', () => {
   });
   it('nests Markdown lists under their heading when pasted indentation is missing', () => {
     const parsed = parseRoadmap(
-      '# AI/ML ROADMAP\\n## Python\\n- Fundamentals\\n  - Variables and data types\\n  - Functions\\n## Mathematics\\n- Fundamentals',
+      '# AI/ML ROADMAP\n## Python\n- Fundamentals\n  - Variables and data types\n  - Functions\n## Mathematics\n- Fundamentals',
       'r6',
     );
 
