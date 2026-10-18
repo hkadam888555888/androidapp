@@ -22,7 +22,7 @@ test('Arena cycle 033: capacity settings reject invalid values and persist valid
 
   await study.fill('-1');
   await page.getByRole('button', { name: 'Save planner settings' }).click();
-  await expect(page.getByRole('status')).toContainText('Use valid capacity values.');
+  await expect(page.locator('.notice-bar')).toContainText('Use valid capacity values.');
   await page.reload();
   await expect(page.getByLabel('Normal max study minutes/day')).toHaveValue(initialStudy);
 
@@ -32,7 +32,7 @@ test('Arena cycle 033: capacity settings reject invalid values and persist valid
   await busy.fill('90');
   await exam.fill('135');
   await page.getByRole('button', { name: 'Save planner settings' }).click();
-  await expect(page.getByRole('status')).toContainText('Settings saved locally');
+  await expect(page.locator('.notice-bar')).toContainText('Settings saved locally');
   await page.reload();
 
   await expect(study).toHaveValue('275');
