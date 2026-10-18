@@ -145,7 +145,7 @@ test.describe('My Adaptive Routine critical flow', () => {
     await secondPanel.getByRole('button', { name: 'Preview changes' }).click();
     await secondPanel.getByRole('button', { name: 'Apply adaptation' }).click();
     await expect(page.getByRole('status')).toContainText('Applied');
-    await page.locator('details.planner-details').nth(1).locator('summary').click();
+    await page.locator('details.planner-details').first().locator('summary').click();
     await expect(page.getByText('Unexpected lab session', { exact: true })).toBeVisible();
   });
 
@@ -157,6 +157,8 @@ test.describe('My Adaptive Routine critical flow', () => {
 
     await expect(page.getByRole('button', { name: 'Menu' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Schedule preview' })).toBeVisible();
+    await expect(page.locator('.planner-summary-grid')).toBeVisible();
+    await expect(page.locator('.planner-summary-card')).toHaveCount(3);
     await expect(page.getByText('One global capacity pool across active roadmaps', { exact: false })).toHaveCount(0);
     await expect(page.locator('details.planner-details').first()).not.toHaveAttribute('open', '');
 
