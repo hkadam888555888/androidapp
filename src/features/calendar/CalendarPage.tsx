@@ -11,9 +11,16 @@ export function CalendarPage() {
   const [cursor, setCursor] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState(iso(new Date()));
   const key = monthKey(cursor);
-  const first = new Date(cursor.getFullYear(), cursor.getMonth(), 1, 12);
-  const startOffset = (first.getDay() + 6) % 7;
-  const days = useMemo(() => Array.from({length: 42}, (_, i) => { const d = new Date(first); d.setDate(1 - startOffset + i); return d; }), [key]);
+  const days = useMemo(() => {
+    const [year, month] = key.split('-').map(Number);
+    const first = new Date(year, month - 1, 1, 12);
+    const startOffset = (first.getDay() + 6) % 7;
+    return Array.from({ length: 42 }, (_, i) => {
+      const day = new Date(first);
+      day.setDate(1 - startOffset + i);
+      return day;
+    });
+  }, [key]);
   const selectedTasks = state.dailyTasks.filter((t) => t.date === selectedDay && t.status !== 'cancelled' && t.status !== 'rescheduled');
   const selectedDateLabel = new Date(selectedDay + 'T12:00:00').toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   return <section className="page">

@@ -5,7 +5,6 @@ import type {
   PlannerOverride,
   Roadmap,
   RoadmapTask,
-  TaskDefinition,
   TimePatternProfile,
 } from '../entities/models';
 import { calculatePace, detectRepeatedSkips, summarizeOverrides } from './adaptationService';
@@ -174,9 +173,6 @@ function createSummary(dailyTasks: DailyTask[], window: AnalyticsWindow): Analyt
   };
 }
 
-function getTaskDefinitionMap(taskDefinitions: TaskDefinition[]): Map<string, TaskDefinition> {
-  return new Map(taskDefinitions.map((task) => [task.id, task]));
-}
 
 function createRoadmapAnalytics(
   roadmaps: Roadmap[], roadmapTasks: RoadmapTask[], dailyTasks: DailyTask[], today: string, fallbackCapacity: number,
