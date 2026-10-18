@@ -185,6 +185,31 @@ test.describe('My Adaptive Routine critical flow', () => {
   });
 
 
+  test('mobile navigation has accessible names and the All features menu traps and restores focus', async ({ page }) => {
+    await finishFirstRunSetup(page);
+    await page.setViewportSize({ width: 393, height: 852 });
+    await page.goto('/today');
+
+    await expect(page.getByRole('link', { name: 'Today', exact: true })).toBeVisible();
+    const menuButton = page.getByRole('button', { name: 'Menu' });
+    await menuButton.focus();
+    await page.keyboard.press('Enter');
+
+    const menu = page.getByRole('dialog', { name: 'All features' });
+    const closeButton = menu.getByRole('button', { name: 'Close menu' });
+    const themeToggle = menu.getByRole('button', { name: /Use .* theme/ });
+    await expect(closeButton).toBeFocused();
+
+    await page.keyboard.press('Shift+Tab');
+    await expect(themeToggle).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(closeButton).toBeFocused();
+
+    await page.keyboard.press('Escape');
+    await expect(menu).toHaveCount(0);
+    await expect(menuButton).toBeFocused();
+  });
+
   test('all primary and secondary routes render their intended page', async ({ page }) => {
     await finishFirstRunSetup(page);
     const routes = [
