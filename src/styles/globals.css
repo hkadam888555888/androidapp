@@ -742,3 +742,17 @@ label{display:grid;gap:7px;color:var(--muted);font-size:12px;font-weight:600}inp
     padding-inline: 12px;
   }
 }
+
+/* Arena mobile repair: roadmap portfolio actions must shrink with the card, not widen the page. */
+@media (max-width: 760px) {
+  .roadmap-portfolio,
+  .portfolio-item,
+  .portfolio-main,
+  .portfolio-actions { min-width: 0; max-width: 100%; }
+  .portfolio-item { flex-wrap: wrap; }
+  .portfolio-main { overflow-wrap: anywhere; }
+  .portfolio-main strong,
+  .portfolio-main span { overflow-wrap: anywhere; }
+  .portfolio-actions { flex-wrap: wrap; }
+  .portfolio-actions .button { min-width: 0; max-width: 100%; }
+}
