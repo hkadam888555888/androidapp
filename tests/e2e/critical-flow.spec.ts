@@ -22,7 +22,7 @@ async function addFixedExternalTask(page: import('@playwright/test').Page, title
   await page.getByLabel('Estimated minutes').fill('5');
   await page.getByRole('checkbox').check();
   await page.getByLabel('Start').fill('15:00');
-  await page.getByLabel('End').fill('16:00');
+  await page.getByLabel('End', { exact: true }).fill('16:00');
   await page.getByRole('button', { name: 'Save external task' }).click();
   await page.getByRole('button', { name: 'Generate today' }).click();
   const schedulePreview = page.locator('article.card').filter({
