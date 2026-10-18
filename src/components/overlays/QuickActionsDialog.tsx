@@ -61,6 +61,7 @@ export function QuickActionsDialog({ onClose, onOpenTask, returnFocusRef }: Quic
     const dialog = dialogRef.current;
     if (!dialog) return;
     const activeDialog: HTMLElement = dialog;
+    const previousFocus = previousFocusRef.current;
     const getFocusable = () => Array.from(activeDialog.querySelectorAll<HTMLElement>(
       'input:not([disabled]), button:not([disabled]), a[href], select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
     )).filter((element) => !element.hasAttribute('hidden') && element.getAttribute('aria-hidden') !== 'true');
@@ -96,7 +97,7 @@ export function QuickActionsDialog({ onClose, onOpenTask, returnFocusRef }: Quic
     return () => {
       document.removeEventListener('keydown', onKeyDown);
       const requestedTarget = returnFocusRefRef.current?.current;
-      const target = requestedTarget?.isConnected ? requestedTarget : previousFocusRef.current;
+      const target = requestedTarget?.isConnected ? requestedTarget : previousFocus;
       if (target?.isConnected) target.focus();
     };
   }, []);
