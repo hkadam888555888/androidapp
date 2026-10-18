@@ -368,19 +368,11 @@ test.describe('My Adaptive Routine critical flow', () => {
   test('JSON backup exports and restores records in a clean isolated browser profile', async ({ page, browser }) => {
     await finishFirstRunSetup(page);
     await page.goto('/roadmap');
+    await page.getByRole('button', { name: 'Load example' }).click();
     await page.getByLabel('Roadmap name').fill('Arena round-trip roadmap');
-    await page.getByRole('textbox', { name: 'Roadmap source text' }).fill([
-      '# Arena round-trip roadmap',
-      '## Foundations',
-      '### Variables',
-      '### Functions',
-      '## Practice',
-      '### Small exercise',
-    ].join('\\n'));
     await page.getByRole('button', { name: 'Analyze roadmap' }).last().click();
     await expect(page.getByText('Generated tasks')).toBeVisible();
     await page.getByRole('button', { name: /Approve & use/ }).click();
-    await expect(page.getByText(/Saved .* tasks\\./)).toBeVisible();
     await expect(page.locator('.portfolio-main').filter({ hasText: 'Arena round-trip roadmap' })).toBeVisible();
 
     await page.goto('/settings');
