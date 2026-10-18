@@ -34,6 +34,7 @@ function bucketWorkload(points: ReturnType<typeof buildAnalyticsReport>['workloa
 export function StatisticsPage() {
   const state = useAppStore();
   const [period, setPeriod] = useState<AnalyticsPeriod>('week');
+  const [section, setSection] = useState<'overview' | 'roadmaps' | 'adaptation' | 'review'>('overview');
   const report = useMemo(() => buildAnalyticsReport({
     today: getCurrentDate(),
     period,
@@ -74,6 +75,16 @@ export function StatisticsPage() {
       <article className="card stat-card"><span>Productive days</span><strong>{report.summary.productiveDays}</strong><small>{report.summary.activeDays} active days in the period</small></article>
     </div>
 
+    <nav className="statistics-section-nav" aria-label="Statistics sections">
+      {([
+        { id: 'overview', label: 'Overview' },
+        { id: 'roadmaps', label: 'Roadmaps' },
+        { id: 'adaptation', label: 'Planner learning' },
+        { id: 'review', label: 'Review discipline' },
+      ] as const).map((item) => <button key={item.id} type="button" className={section === item.id ? 'statistics-section-tab active' : 'statistics-section-tab'} aria-pressed={section === item.id} onClick={() => setSection(item.id)}>{item.label}</button>)}
+    </nav>
+
+    {section === 'overview' && <div className="statistics-view">
     <div className="content-grid">
       <article className="card large-card">
         <div className="card-heading"><div><span className="eyebrow">Workload trend</span><h2>Planned vs executed</h2></div><span className="pill">{period}</span></div>
@@ -99,6 +110,9 @@ export function StatisticsPage() {
       </article>
     </div>
 
+    </div>}
+
+    {section === 'roadmaps' && <div className="statistics-view">
     <div className="analytics-section">
       <div className="section-heading"><div><span className="eyebrow">Portfolio</span><h2>Roadmap progress</h2></div><span className="muted">Current state across active roadmaps</span></div>
       <div className="analytics-card-grid">
@@ -125,6 +139,9 @@ export function StatisticsPage() {
       </article>
     </div>
 
+    </div>}
+
+    {section === 'adaptation' && <div className="statistics-view">
     <div className="content-grid">
       <article className="card">
         <div className="card-heading"><div><span className="eyebrow">Adaptation</span><h2>What the planner has learned</h2></div><span className="pill">v0.8</span></div>
@@ -137,12 +154,16 @@ export function StatisticsPage() {
         {report.adaptation.strongestTimePatterns.length > 0 && <div className="adaptation-pattern-list">{report.adaptation.strongestTimePatterns.map((item) => <div className="analytics-list-item" key={`${item.scopeKey}:${item.daypart}`}><div><strong>{item.scopeKey}</strong><span>{item.daypart} is strongest in recent history</span></div><strong>{item.successRatePercent}% · {item.samples} samples</strong></div>)}</div>}
       </article>
 
+    </div>}
+
+    {section === 'review' && <div className="statistics-view">
+    <div className="content-grid">
       <article className="card">
         <div className="card-heading"><div><span className="eyebrow">Review discipline</span><h2>Consistency</h2></div><span className="pill">{report.summary.reported} reported</span></div>
         <div className="consistency-grid"><div><strong>{report.summary.completed}</strong><span>completed</span></div><div><strong>{report.summary.partial}</strong><span>partial</span></div><div><strong>{report.summary.skipped}</strong><span>skipped</span></div><div><strong>{report.summary.unreported}</strong><span>unreported</span></div></div>
         <div className="review-progress"><div className="review-progress-head"><span>Reported vs planned records</span><strong>{report.summary.reported + report.summary.unreported ? Math.round((report.summary.reported / (report.summary.reported + report.summary.unreported)) * 100) : 0}%</strong></div><div className="progress-track"><span style={{ width:`${report.summary.reported + report.summary.unreported ? (report.summary.reported / (report.summary.reported + report.summary.unreported))*100 : 0}%` }} /></div></div>
         <p className="muted analytics-footnote">The dashboard never treats missing reports as success. Unreported work stays visible until you explicitly resolve it.</p>
       </article>
-    </div>
+    </div>}
   </section>;
 }

@@ -566,4 +566,33 @@ test.describe('My Adaptive Routine critical flow', () => {
     await expect(page.getByRole('button', { name: 'Show fewer decisions' })).toBeVisible();
   });
 
+  test('Statistics keeps long sections separate behind compact views', async ({ page }) => {
+    await finishFirstRunSetup(page);
+    await page.goto('/statistics');
+
+    const overview = page.getByRole('button', { name: 'Overview', exact: true });
+    const roadmaps = page.getByRole('button', { name: 'Roadmaps', exact: true });
+    const learning = page.getByRole('button', { name: 'Planner learning', exact: true });
+    const review = page.getByRole('button', { name: 'Review discipline', exact: true });
+
+    await expect(overview).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.getByRole('heading', { name: 'Planned vs executed', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Roadmap progress', exact: true })).toHaveCount(0);
+
+    await roadmaps.click();
+    await expect(roadmaps).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.getByRole('heading', { name: 'Roadmap progress', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Planned vs executed', exact: true })).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: 'Roadmap checkpoints', exact: true })).toBeVisible();
+
+    await learning.click();
+    await expect(page.getByRole('heading', { name: 'What the planner has learned', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Roadmap progress', exact: true })).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: 'Consistency', exact: true })).toHaveCount(0);
+
+    await review.click();
+    await expect(page.getByRole('heading', { name: 'Consistency', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'What the planner has learned', exact: true })).toHaveCount(0);
+  });
+
 });
