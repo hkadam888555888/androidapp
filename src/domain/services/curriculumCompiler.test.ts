@@ -5,7 +5,7 @@ import { parseRoadmap } from './roadmapParser';
 describe('curriculum compiler', () => {
   it('compiles only terminal learning nodes, not roadmap headings or parent groups', () => {
     const parsed = parseRoadmap(
-      '# AI/ML ROADMAP\\n## Python\\n- Fundamentals\\n  - Variables and data types\\n  - Functions\\n## NumPy\\n- Arrays',
+      '# AI/ML ROADMAP\n## Python\n- Fundamentals\n  - Variables and data types\n  - Functions\n## NumPy\n- Arrays',
       'compiler',
     );
     const curriculum = compileCurriculum(parsed.nodes);
@@ -21,7 +21,7 @@ describe('curriculum compiler', () => {
 
   it('makes each roadmap topic depend on the previous topic completing', () => {
     const parsed = parseRoadmap(
-      '# Roadmap\\n## Python\\n- Variables\\n- Functions\\n## NumPy\\n- Arrays',
+      '# Roadmap\n## Python\n- Variables\n- Functions\n## NumPy\n- Arrays',
       'ordered',
     );
     const curriculum = compileCurriculum(parsed.nodes);
