@@ -9,7 +9,7 @@ async function finishFirstRunSetup(page: import('@playwright/test').Page) {
     await page.getByRole('button', { name: 'Next: routine' }).click();
     await page.getByRole('button', { name: 'Next: review' }).click();
     await page.getByRole('button', { name: 'Save setup & open Today' }).click();
-    await expect(page.getByRole('heading', { name: 'Today' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Today', exact: true })).toBeVisible();
   }
 }
 
