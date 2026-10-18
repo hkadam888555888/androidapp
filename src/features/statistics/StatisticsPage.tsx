@@ -153,7 +153,7 @@ export function StatisticsPage() {
         </div>
         {report.adaptation.strongestTimePatterns.length > 0 && <div className="adaptation-pattern-list">{report.adaptation.strongestTimePatterns.map((item) => <div className="analytics-list-item" key={`${item.scopeKey}:${item.daypart}`}><div><strong>{item.scopeKey}</strong><span>{item.daypart} is strongest in recent history</span></div><strong>{item.successRatePercent}% · {item.samples} samples</strong></div>)}</div>}
       </article>
-
+    </div>
     </div>}
 
     {section === 'review' && <div className="statistics-view">
@@ -164,6 +164,7 @@ export function StatisticsPage() {
         <div className="review-progress"><div className="review-progress-head"><span>Reported vs planned records</span><strong>{report.summary.reported + report.summary.unreported ? Math.round((report.summary.reported / (report.summary.reported + report.summary.unreported)) * 100) : 0}%</strong></div><div className="progress-track"><span style={{ width:`${report.summary.reported + report.summary.unreported ? (report.summary.reported / (report.summary.reported + report.summary.unreported))*100 : 0}%` }} /></div></div>
         <p className="muted analytics-footnote">The dashboard never treats missing reports as success. Unreported work stays visible until you explicitly resolve it.</p>
       </article>
+    </div>
     </div>}
   </section>;
 }
