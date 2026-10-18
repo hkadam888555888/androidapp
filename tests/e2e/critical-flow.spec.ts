@@ -148,4 +148,36 @@ test.describe('My Adaptive Routine critical flow', () => {
     await expect(page.getByText('Unexpected lab session', { exact: true })).toBeVisible();
   });
 
+
+  test('mobile Menu opens every feature and local search uses the styled dialog', async ({ page }) => {
+    await finishFirstRunSetup(page);
+    await page.setViewportSize({ width: 393, height: 852 });
+    await page.goto('/planner');
+
+    await expect(page.getByRole('button', { name: 'Menu' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Schedule preview' })).toBeVisible();
+    await expect(page.getByText('One global capacity pool across active roadmaps', { exact: false })).toHaveCount(0);
+    await expect(page.locator('details.planner-details').first()).not.toHaveAttribute('open', '');
+
+    await page.getByRole('button', { name: 'Menu' }).click();
+    const menu = page.getByRole('dialog', { name: 'All features' });
+    await expect(menu).toBeVisible();
+    for (const feature of ['Today', 'Plan', 'Learn', 'Habits', 'Progress', 'Review', 'Calendar', 'Alerts', 'Diagnostics', 'Settings', 'Privacy']) {
+      await expect(menu.getByRole('link', { name: feature, exact: true })).toBeVisible();
+    }
+    await menu.getByRole('link', { name: 'Diagnostics', exact: true }).click();
+    await expect(page.getByRole('heading', { name: 'Diagnostics', exact: true })).toBeVisible();
+
+    await page.getByRole('button', { name: 'Menu' }).click();
+    const reopenedMenu = page.getByRole('dialog', { name: 'All features' });
+    await reopenedMenu.getByRole('button', { name: 'Search tasks and pages' }).click();
+    const searchDialog = page.getByRole('dialog', { name: 'Search and quick actions' });
+    await expect(searchDialog).toBeVisible();
+    await expect(searchDialog.locator('.command-result').first()).toHaveCSS('display', 'grid');
+    const search = page.getByRole('textbox', { name: 'Search tasks, roadmaps, habits and pages' });
+    await search.fill('Calendar');
+    await searchDialog.getByRole('button', { name: /Calendar/ }).click();
+    await expect(page.getByRole('heading', { name: 'Calendar', exact: true })).toBeVisible();
+  });
+
 });
