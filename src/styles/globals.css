@@ -756,3 +756,16 @@ label{display:grid;gap:7px;color:var(--muted);font-size:12px;font-weight:600}inp
   .portfolio-actions { flex-wrap: wrap; }
   .portfolio-actions .button { min-width: 0; max-width: 100%; }
 }
+
+/* Arena mobile repair: form-grid min-content must not force settings cards wider than the viewport. */
+@media (max-width: 760px) {
+  .setting-form { min-width: 0; grid-template-columns: minmax(0, 1fr); }
+  .setting-form > *,
+  .setting-row,
+  .setting-row > span { min-width: 0; max-width: 100%; }
+  .setting-form input,
+  .setting-form select,
+  .setting-form textarea { box-sizing: border-box; width: 100%; min-width: 0; max-width: 100%; }
+  .setting-row > span { overflow-wrap: anywhere; }
+  .setting-row input[type="checkbox"] { flex: 0 0 18px; }
+}
