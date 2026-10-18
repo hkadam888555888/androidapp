@@ -38,9 +38,7 @@ test.describe('My Adaptive Routine critical flow', () => {
     await page.getByRole('button', { name: 'Load example' }).click();
     await page.getByRole('button', { name: 'Analyze roadmap' }).last().click();
     await page.getByRole('button', { name: 'Generated work', exact: true }).click();
-    await page.getByRole('button', { name: 'Generated work', exact: true }).click();
     await expect(page.getByText('Generated tasks')).toBeVisible();
-    await page.getByRole('button', { name: 'Generated work', exact: true }).click();
     await page.getByRole('button', { name: /Approve & use/ }).click();
     await expect(page.getByText(/Saved .* tasks\./)).toBeVisible();
 
@@ -107,9 +105,7 @@ test.describe('My Adaptive Routine critical flow', () => {
     await page.getByRole('button', { name: 'Load example' }).click();
     await page.getByRole('button', { name: 'Analyze roadmap' }).last().click();
     await page.getByRole('button', { name: 'Generated work', exact: true }).click();
-    await page.getByRole('button', { name: 'Generated work', exact: true }).click();
     await expect(page.getByText('Generated tasks')).toBeVisible();
-    await page.getByRole('button', { name: 'Generated work', exact: true }).click();
     await page.getByRole('button', { name: /Approve & use/ }).click();
     await expect(page.getByText(/Saved .* tasks\./)).toBeVisible();
 
@@ -424,9 +420,7 @@ test.describe('My Adaptive Routine critical flow', () => {
     await page.getByRole('textbox', { name: 'Roadmap source text' }).fill('# Arena backup preservation\\n## Foundations\\n### Variables\\n### Functions');
     await page.getByRole('button', { name: 'Analyze roadmap' }).last().click();
     await page.getByRole('button', { name: 'Generated work', exact: true }).click();
-    await page.getByRole('button', { name: 'Generated work', exact: true }).click();
     await expect(page.getByText('Generated tasks')).toBeVisible();
-    await page.getByRole('button', { name: 'Generated work', exact: true }).click();
     await page.getByRole('button', { name: /Approve & use/ }).click();
     await expect(page.getByText(/Saved .* tasks\./)).toBeVisible();
     await page.getByRole('button', { name: 'Roadmap library', exact: true }).click();
@@ -466,9 +460,7 @@ test.describe('My Adaptive Routine critical flow', () => {
     await page.getByLabel('Roadmap name').fill('Arena round-trip roadmap');
     await page.getByRole('button', { name: 'Analyze roadmap' }).last().click();
     await page.getByRole('button', { name: 'Generated work', exact: true }).click();
-    await page.getByRole('button', { name: 'Generated work', exact: true }).click();
     await expect(page.getByText('Generated tasks')).toBeVisible();
-    await page.getByRole('button', { name: 'Generated work', exact: true }).click();
     await page.getByRole('button', { name: /Approve & use/ }).click();
     await page.getByRole('button', { name: 'Roadmap library', exact: true }).click();
     await expect(page.locator('.portfolio-main').filter({ hasText: 'Arena round-trip roadmap' })).toBeVisible();
