@@ -525,4 +525,43 @@ test.describe('My Adaptive Routine critical flow', () => {
     await secondPage.close();
   });
 
+  test('planner explainability stays compact until the user expands it', async ({ page }) => {
+    await page.goto('/');
+    const roadmapBox = page.getByRole('textbox', { name: 'Paste your roadmap' });
+    await expect(roadmapBox).toBeVisible();
+    await roadmapBox.fill([
+      '# Study roadmap',
+      '## Python',
+      '### Variables',
+      '### Functions',
+      '### Data types',
+      '### Loops',
+      '### Lists',
+      '### Dictionaries',
+      '### Classes',
+      '## Mathematics',
+      '### Probability',
+      '### Statistics',
+      '### Linear algebra',
+      '### Calculus',
+    ].join('\\n'));
+    await page.getByRole('button', { name: 'Next: routine' }).click();
+    await page.getByRole('button', { name: 'Next: review' }).click();
+    await page.getByRole('button', { name: 'Save setup & open Today' }).click();
+    await page.goto('/planner');
+    await page.getByRole('button', { name: 'Generate today' }).click();
+    await page.locator('details.planner-details > summary').click();
+
+    const decisionRows = page.locator('.planner-decisions .decision-row');
+    await expect(page.locator('.planner-decisions')).toBeVisible();
+    await expect(decisionRows).toHaveCount(5);
+    const expand = page.getByRole('button', { name: /Show all \\d+ decisions/ });
+    await expect(expand).toBeVisible();
+    const total = Number((await expand.innerText()).match(/\\d+/)?.[0] ?? 0);
+    expect(total).toBeGreaterThan(5);
+    await expand.click();
+    await expect(decisionRows).toHaveCount(total);
+    await expect(page.getByRole('button', { name: 'Show fewer decisions' })).toBeVisible();
+  });
+
 });
