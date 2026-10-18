@@ -183,4 +183,113 @@ test.describe('My Adaptive Routine critical flow', () => {
     await expect(page.getByRole('heading', { name: 'Calendar', exact: true })).toBeVisible();
   });
 
+
+  test('all primary and secondary routes render their intended page', async ({ page }) => {
+    await finishFirstRunSetup(page);
+    const routes = [
+      ['/today', 'Today'],
+      ['/planner', 'Planner'],
+      ['/roadmap', 'Roadmap'],
+      ['/habits', 'Habits'],
+      ['/statistics', 'Statistics'],
+      ['/review', 'Daily Review'],
+      ['/calendar', 'Calendar'],
+      ['/notifications', 'Notifications'],
+      ['/diagnostics', 'System health'],
+      ['/settings', 'Settings'],
+      ['/privacy', 'Privacy & data handling'],
+    ] as const;
+    for (const [pathName, heading] of routes) {
+      await page.goto(pathName);
+      await expect(page.getByRole('heading', { level: 1, name: heading, exact: true })).toBeVisible();
+    }
+  });
+
+  test('key pages stay within the viewport across the supported responsive width sweep', async ({ page }) => {
+    await finishFirstRunSetup(page);
+    const routes = ['/today', '/planner', '/roadmap', '/habits', '/statistics'];
+    const widths = [320, 360, 393, 768, 1024, 1440];
+    for (const width of widths) {
+      await page.setViewportSize({ width, height: 900 });
+      for (const route of routes) {
+        await page.goto(route);
+        await expect(page.locator('main#main-content h1')).toBeVisible();
+        const dimensions = await page.evaluate(() => ({
+          viewport: window.innerWidth,
+          document: document.documentElement.scrollWidth,
+          body: document.body.scrollWidth,
+        }));
+        expect(
+          dimensions.document <= dimensions.viewport && dimensions.body <= dimensions.viewport,
+          `Horizontal overflow on ${route} at ${width}px: document=${dimensions.document}, body=${dimensions.body}, viewport=${dimensions.viewport}`,
+        ).toBeTruthy();
+      }
+    }
+  });
+
+  test('exercise and water logs persist and update their visible totals', async ({ page }) => {
+    await finishFirstRunSetup(page);
+    await page.goto('/habits');
+    await page.getByRole('button', { name: 'Log exercise' }).click();
+    await expect(page.getByText('Logged 30 minutes of exercise.')).toBeVisible();
+    await page.getByRole('button', { name: 'Log custom' }).click();
+    await expect(page.getByText('Logged +250 ml.')).toBeVisible();
+
+    await page.reload();
+    const cards = page.locator('.stats-grid .stat-card');
+    await expect(cards.nth(0)).toContainText('30 min');
+    await expect(cards.nth(1)).toContainText('250 ml');
+  });
+
+  test('calendar month controls and selected-day semantics stay functional', async ({ page }) => {
+    await finishFirstRunSetup(page);
+    await page.goto('/calendar');
+    const monthHeading = page.locator('.calendar-toolbar h2');
+    const initialMonth = await monthHeading.innerText();
+    await page.getByRole('button', { name: '›' }).click();
+    await expect(monthHeading).not.toHaveText(initialMonth);
+
+    const day = page.getByRole('button', { name: /^Select \d{4}-\d{2}-\d{2}/ }).first();
+    await day.click();
+    await expect(page.locator('.calendar-day.selected')).toHaveCount(1);
+    await expect(page.locator('.calendar-day.selected')).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.getByRole('heading', { name: 'Selected day' })).toBeVisible();
+  });
+
+  test('explicit Skip remains visible in review instead of turning into completion', async ({ page }) => {
+    await finishFirstRunSetup(page);
+    await addFixedExternalTask(page, 'Arena skip flow task');
+    await page.goto('/today');
+    const task = page.locator('.timeline-card').filter({ hasText: 'Arena skip flow task' });
+    await expect(task.getByRole('button', { name: 'Skip' })).toBeVisible();
+    await task.getByRole('button', { name: 'Skip' }).click();
+    await expect(task.getByText('Skipped', { exact: true })).toBeVisible();
+
+    await page.goto('/review');
+    await expect(page.getByText('Arena skip flow task', { exact: true })).toBeVisible();
+  });
+
+  test('delete-all requires exact confirmation and theme preference survives reload', async ({ page }) => {
+    await finishFirstRunSetup(page);
+    await page.setViewportSize({ width: 393, height: 852 });
+    await page.goto('/settings');
+    const deleteField = page.getByRole('textbox', { name: 'Type DELETE to confirm' });
+    const deleteButton = page.getByRole('button', { name: 'Delete all local data' });
+    await expect(deleteButton).toBeDisabled();
+    await deleteField.fill('delete');
+    await expect(deleteButton).toBeDisabled();
+    await deleteField.fill('DELETE');
+    await expect(deleteButton).toBeEnabled();
+    // Do not perform the destructive action; this test verifies the guard only.
+
+    const currentTheme = await page.locator('html').getAttribute('data-theme');
+    await page.getByRole('button', { name: 'Menu' }).click();
+    const desiredTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    await page.getByRole('button', { name: `Use ${desiredTheme} theme` }).click();
+    await expect(page.locator('html')).toHaveAttribute('data-theme', desiredTheme);
+    await page.reload();
+    await expect(page.locator('html')).toHaveAttribute('data-theme', desiredTheme);
+    await expect(page.locator('html')).toHaveJSProperty('dataset.theme', desiredTheme);
+  });
+
 });
