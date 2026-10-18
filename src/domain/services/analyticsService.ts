@@ -5,6 +5,7 @@ import type {
   PlannerOverride,
   Roadmap,
   RoadmapTask,
+  TaskDefinition,
   TimePatternProfile,
 } from '../entities/models';
 import { calculatePace, detectRepeatedSkips, summarizeOverrides } from './adaptationService';
