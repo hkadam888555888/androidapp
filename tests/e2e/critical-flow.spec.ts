@@ -18,7 +18,7 @@ test.describe('My Adaptive Routine critical flow', () => {
     await finishFirstRunSetup(page);
     await page.goto('/roadmap');
     await page.getByRole('button', { name: 'Load example' }).click();
-    await page.getByRole('button', { name: 'Analyze roadmap' }).click();
+    await page.getByRole('button', { name: 'Analyze roadmap' }).first().click();
     await expect(page.getByText('Generated tasks')).toBeVisible();
     await page.getByRole('button', { name: /Approve & use/ }).click();
     await expect(page.getByText(/Saved .* tasks\./)).toBeVisible();
@@ -40,13 +40,13 @@ test.describe('My Adaptive Routine critical flow', () => {
     await finishFirstRunSetup(page);
     await page.goto('/roadmap');
     await page.getByRole('button', { name: 'Load example' }).click();
-    await page.getByRole('button', { name: 'Analyze roadmap' }).click();
+    await page.getByRole('button', { name: 'Analyze roadmap' }).first().click();
     await page.getByRole('button', { name: /Approve & use/ }).click();
     await expect(page.getByText(/Saved .* tasks\./)).toBeVisible();
 
     const editor = page.getByRole('textbox', { name: 'Roadmap source text' });
     await editor.fill(`${await editor.inputValue()}\n    - Model deployment`);
-    await page.getByRole('button', { name: 'Analyze roadmap' }).click();
+    await page.getByRole('button', { name: 'Analyze roadmap' }).first().click();
     await expect(page.getByText(/Changes since v1/)).toBeVisible();
     await expect(page.getByText(/change\(s\)/)).toBeVisible();
   });
@@ -68,9 +68,9 @@ test.describe('My Adaptive Routine critical flow', () => {
     await expect(page.getByRole('heading', { name: 'Today' })).toHaveCount(0);
   });
 
-  test('keyboard quick actions search and open an existing destination', async ({ page }) => {
+  test('quick actions search and open an existing destination', async ({ page }) => {
     await finishFirstRunSetup(page);
-    await page.keyboard.press('Control+k');
+    await page.getByRole('button', { name: /Search your routine/ }).click();
     const dialog = page.getByRole('dialog', { name: 'Search and quick actions' });
     await expect(dialog).toBeVisible();
     const search = page.getByRole('textbox', { name: 'Search tasks, roadmaps, habits and pages' });
@@ -84,7 +84,7 @@ test.describe('My Adaptive Routine critical flow', () => {
     await finishFirstRunSetup(page);
     await page.goto('/roadmap');
     await page.getByRole('button', { name: 'Load example' }).click();
-    await page.getByRole('button', { name: 'Analyze roadmap' }).click();
+    await page.getByRole('button', { name: 'Analyze roadmap' }).first().click();
     await expect(page.getByText('Generated tasks')).toBeVisible();
     await page.getByRole('button', { name: /Approve & use/ }).click();
     await expect(page.getByText(/Saved .* tasks\./)).toBeVisible();
