@@ -398,4 +398,37 @@ test.describe('My Adaptive Routine critical flow', () => {
     }
   });
 
+
+  test('simultaneous conflicting reports across tabs preserve one immutable task outcome', async ({ page }) => {
+    await finishFirstRunSetup(page);
+    await addFixedExternalTask(page, 'Arena two-tab race task');
+    await page.goto('/today');
+    const secondPage = await page.context().newPage();
+    await secondPage.goto('/today');
+
+    const firstTask = page.locator('.timeline-card').filter({ hasText: 'Arena two-tab race task' });
+    const secondTask = secondPage.locator('.timeline-card').filter({ hasText: 'Arena two-tab race task' });
+    await expect(firstTask.getByRole('button', { name: 'Complete' })).toBeVisible();
+    await expect(secondTask.getByRole('button', { name: 'Skip' })).toBeVisible();
+
+    await Promise.all([
+      firstTask.getByRole('button', { name: 'Complete' }).click(),
+      secondTask.getByRole('button', { name: 'Skip' }).click(),
+    ]);
+    await Promise.all([page.reload(), secondPage.reload()]);
+
+    const persistedFirst = page.locator('.timeline-card').filter({ hasText: 'Arena two-tab race task' });
+    const persistedSecond = secondPage.locator('.timeline-card').filter({ hasText: 'Arena two-tab race task' });
+    const firstStatus = persistedFirst.locator('.status-badge');
+    const secondStatus = persistedSecond.locator('.status-badge');
+    await expect(firstStatus).toBeVisible();
+    await expect(secondStatus).toBeVisible();
+    const outcome = (await firstStatus.innerText()).trim();
+    expect(['Completed', 'Skipped']).toContain(outcome);
+    await expect(secondStatus).toHaveText(outcome);
+    await expect(persistedFirst.getByRole('button', { name: 'Complete' })).toHaveCount(0);
+    await expect(persistedFirst.getByRole('button', { name: 'Skip' })).toHaveCount(0);
+    await secondPage.close();
+  });
+
 });
