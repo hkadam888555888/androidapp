@@ -13,8 +13,10 @@ async function createKnownRoadmap(page: import('@playwright/test').Page) {
   await page.getByRole('button', { name: 'Load example' }).click();
   await page.getByLabel('Roadmap name').fill('Arena backup safety record');
   await page.getByRole('button', { name: 'Analyze roadmap' }).last().click();
+  await page.getByRole('button', { name: 'Generated work', exact: true }).click();
   await expect(page.getByText('Generated tasks')).toBeVisible();
   await page.getByRole('button', { name: /Approve & use/ }).click();
+  await page.getByRole('button', { name: 'Roadmap library', exact: true }).click();
   await expect(page.locator('.portfolio-main').filter({ hasText: 'Arena backup safety record' })).toBeVisible();
 }
 
@@ -28,6 +30,7 @@ test('Arena cycle 031: valid JSON with an unsupported schema version is rejected
   });
   await expect(page.locator('.notice-bar')).toContainText('Unsupported backup version');
   await page.goto('/roadmap');
+  await page.getByRole('button', { name: 'Roadmap library', exact: true }).click();
   await expect(page.locator('.portfolio-main').filter({ hasText: 'Arena backup safety record' })).toBeVisible();
 });
 
@@ -41,5 +44,6 @@ test('Arena cycle 031: incomplete current-schema backup is rejected before clear
   });
   await expect(page.locator('.notice-bar')).toContainText('Backup schema 9 is incomplete');
   await page.goto('/roadmap');
+  await page.getByRole('button', { name: 'Roadmap library', exact: true }).click();
   await expect(page.locator('.portfolio-main').filter({ hasText: 'Arena backup safety record' })).toBeVisible();
 });

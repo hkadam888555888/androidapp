@@ -37,6 +37,7 @@ test.describe('My Adaptive Routine critical flow', () => {
     await page.goto('/roadmap');
     await page.getByRole('button', { name: 'Load example' }).click();
     await page.getByRole('button', { name: 'Analyze roadmap' }).last().click();
+    await page.getByRole('button', { name: 'Generated work', exact: true }).click();
     await expect(page.getByText('Generated tasks')).toBeVisible();
     await page.getByRole('button', { name: /Approve & use/ }).click();
     await expect(page.getByText(/Saved .* tasks\./)).toBeVisible();
@@ -57,12 +58,15 @@ test.describe('My Adaptive Routine critical flow', () => {
     await page.goto('/roadmap');
     await page.getByRole('button', { name: 'Load example' }).click();
     await page.getByRole('button', { name: 'Analyze roadmap' }).last().click();
+    await page.getByRole('button', { name: 'Generated work', exact: true }).click();
     await page.getByRole('button', { name: /Approve & use/ }).click();
     await expect(page.getByText(/Saved .* tasks\./)).toBeVisible();
 
+    await page.getByRole('button', { name: 'Edit roadmap', exact: true }).click();
     const editor = page.getByRole('textbox', { name: 'Roadmap source text' });
     await editor.fill(`${await editor.inputValue()}\n    - Model deployment`);
     await page.getByRole('button', { name: 'Analyze roadmap' }).last().click();
+    await page.getByRole('button', { name: 'Generated work', exact: true }).click();
     await expect(page.getByRole('heading', { name: /Changes since v\d+/ })).toBeVisible();
     await expect(page.getByText(/change\(s\)/)).toBeVisible();
   });
@@ -100,6 +104,7 @@ test.describe('My Adaptive Routine critical flow', () => {
     await page.goto('/roadmap');
     await page.getByRole('button', { name: 'Load example' }).click();
     await page.getByRole('button', { name: 'Analyze roadmap' }).last().click();
+    await page.getByRole('button', { name: 'Generated work', exact: true }).click();
     await expect(page.getByText('Generated tasks')).toBeVisible();
     await page.getByRole('button', { name: /Approve & use/ }).click();
     await expect(page.getByText(/Saved .* tasks\./)).toBeVisible();
@@ -149,6 +154,18 @@ test.describe('My Adaptive Routine critical flow', () => {
     await expect(page.getByText('Unexpected lab session', { exact: true })).toBeVisible();
   });
 
+
+  test('roadmap node expansion requires an explicit selection', async ({ page }) => {
+    await finishFirstRunSetup(page);
+    await page.goto('/roadmap');
+    await page.getByRole('button', { name: 'Load example' }).click();
+    await page.getByRole('button', { name: 'Analyze roadmap' }).last().click();
+
+    await expect(page.getByRole('heading', { name: 'Analysis result' })).toBeVisible();
+    await page.getByRole('button', { name: 'Expand node' }).click();
+    await expect(page.getByText('Choose a roadmap node to expand.', { exact: true })).toBeVisible();
+    await expect(page.getByText(/Proposal ready:/)).toHaveCount(0);
+  });
 
   test('mobile Menu opens every feature and local search uses the styled dialog', async ({ page }, testInfo) => {
     await finishFirstRunSetup(page);
@@ -402,9 +419,11 @@ test.describe('My Adaptive Routine critical flow', () => {
     await page.getByLabel('Roadmap name').fill('Arena backup preservation');
     await page.getByRole('textbox', { name: 'Roadmap source text' }).fill('# Arena backup preservation\\n## Foundations\\n### Variables\\n### Functions');
     await page.getByRole('button', { name: 'Analyze roadmap' }).last().click();
+    await page.getByRole('button', { name: 'Generated work', exact: true }).click();
     await expect(page.getByText('Generated tasks')).toBeVisible();
     await page.getByRole('button', { name: /Approve & use/ }).click();
     await expect(page.getByText(/Saved .* tasks\./)).toBeVisible();
+    await page.getByRole('button', { name: 'Roadmap library', exact: true }).click();
     await expect(page.locator('.portfolio-main').filter({ hasText: 'Arena backup preservation' })).toBeVisible();
 
     await page.goto('/settings');
@@ -416,6 +435,7 @@ test.describe('My Adaptive Routine critical flow', () => {
     await expect(page.locator('.notice-bar')).toContainText('Backup is not valid JSON.');
 
     await page.goto('/roadmap');
+    await page.getByRole('button', { name: 'Roadmap library', exact: true }).click();
     await expect(page.locator('.portfolio-main').filter({ hasText: 'Arena backup preservation' })).toBeVisible();
   });
 
@@ -439,8 +459,10 @@ test.describe('My Adaptive Routine critical flow', () => {
     await page.getByRole('button', { name: 'Load example' }).click();
     await page.getByLabel('Roadmap name').fill('Arena round-trip roadmap');
     await page.getByRole('button', { name: 'Analyze roadmap' }).last().click();
+    await page.getByRole('button', { name: 'Generated work', exact: true }).click();
     await expect(page.getByText('Generated tasks')).toBeVisible();
     await page.getByRole('button', { name: /Approve & use/ }).click();
+    await page.getByRole('button', { name: 'Roadmap library', exact: true }).click();
     await expect(page.locator('.portfolio-main').filter({ hasText: 'Arena round-trip roadmap' })).toBeVisible();
 
     await page.goto('/settings');
@@ -460,6 +482,7 @@ test.describe('My Adaptive Routine critical flow', () => {
       await cleanPage.locator('input[type="file"][accept="application/json"]').setInputFiles(downloadPath!);
       await expect(cleanPage.locator('.notice-bar')).toContainText('Backup restored successfully.');
       await cleanPage.goto('/roadmap');
+      await cleanPage.getByRole('button', { name: 'Roadmap library', exact: true }).click();
       await expect(cleanPage.locator('.portfolio-main').filter({ hasText: 'Arena round-trip roadmap' })).toBeVisible();
     } finally {
       await cleanContext.close();
@@ -511,6 +534,136 @@ test.describe('My Adaptive Routine critical flow', () => {
     await expect(persistedFirst.getByRole('button', { name: 'Complete' })).toHaveCount(0);
     await expect(persistedFirst.getByRole('button', { name: 'Skip' })).toHaveCount(0);
     await secondPage.close();
+  });
+
+  test('planner explainability stays compact until the user expands it', async ({ page }) => {
+    await page.goto('/');
+    const roadmapBox = page.getByRole('textbox', { name: 'Paste your roadmap' });
+    await expect(roadmapBox).toBeVisible();
+    await roadmapBox.fill([
+      '# Study roadmap',
+      '## Python',
+      '### Variables',
+      '### Functions',
+      '### Data types',
+      '### Loops',
+      '### Lists',
+      '### Dictionaries',
+      '### Classes',
+      '## Mathematics',
+      '### Probability',
+      '### Statistics',
+      '### Linear algebra',
+      '### Calculus',
+    ].join('\n'));
+    await page.getByRole('button', { name: 'Next: routine' }).click();
+    await page.getByRole('button', { name: 'Next: review' }).click();
+    await page.getByRole('button', { name: 'Save setup & open Today' }).click();
+    await expect(page.getByRole('heading', { name: 'Today', exact: true })).toBeVisible();
+    await page.goto('/planner');
+    await expect(page.getByRole('heading', { name: 'Planner', exact: true })).toBeVisible();
+    await page.getByRole('button', { name: 'Generate today' }).click();
+    await page.locator('details.planner-details > summary').click();
+
+    const decisionRows = page.locator('.planner-decisions .decision-row');
+    await expect(page.locator('.planner-decisions')).toBeVisible();
+    await expect(decisionRows).toHaveCount(5);
+    const expand = page.getByRole('button', { name: /Show all \d+ decisions/ });
+    await expect(expand).toBeVisible();
+    const total = Number((await expand.innerText()).match(/\d+/)?.[0] ?? 0);
+    expect(total).toBeGreaterThan(5);
+    await expand.click();
+    await expect(decisionRows).toHaveCount(total);
+    await expect(page.getByRole('button', { name: 'Show fewer decisions' })).toBeVisible();
+  });
+
+  test('Statistics keeps long sections separate behind compact views', async ({ page }) => {
+    await finishFirstRunSetup(page);
+    await page.goto('/statistics');
+
+    const overview = page.getByRole('button', { name: 'Overview', exact: true });
+    const roadmaps = page.getByRole('button', { name: 'Roadmaps', exact: true });
+    const learning = page.getByRole('button', { name: 'Planner learning', exact: true });
+    const review = page.getByRole('button', { name: 'Review discipline', exact: true });
+
+    await expect(overview).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.getByRole('heading', { name: 'Planned vs executed', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Roadmap progress', exact: true })).toHaveCount(0);
+
+    await roadmaps.click();
+    await expect(roadmaps).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.getByRole('heading', { name: 'Roadmap progress', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Planned vs executed', exact: true })).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: 'Roadmap checkpoints', exact: true })).toBeVisible();
+
+    await learning.click();
+    await expect(page.getByRole('heading', { name: 'What the planner has learned', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Roadmap progress', exact: true })).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: 'Consistency', exact: true })).toHaveCount(0);
+
+    await review.click();
+    await expect(page.getByRole('heading', { name: 'Consistency', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'What the planner has learned', exact: true })).toHaveCount(0);
+  });
+
+  test('mobile quick search is body-ported and constrained to the visible viewport', async ({ page }) => {
+    await finishFirstRunSetup(page);
+    await page.setViewportSize({ width: 360, height: 800 });
+    await page.goto('/today');
+    await page.getByRole('button', { name: 'Menu', exact: true }).click();
+    await page.getByRole('button', { name: 'Search tasks and pages', exact: true }).click();
+
+    const backdrop = page.locator('.command-backdrop');
+    const search = page.getByRole('textbox', { name: 'Search tasks, roadmaps, habits and pages' });
+    await expect(backdrop).toBeVisible();
+    await expect(search).toBeFocused();
+    expect(await backdrop.evaluate((element) => element.parentElement === document.body)).toBe(true);
+
+    const bounds = await backdrop.evaluate((element) => {
+      const rect = element.getBoundingClientRect();
+      const viewport = window.visualViewport;
+      return {
+        top: rect.top,
+        height: rect.height,
+        left: rect.left,
+        right: rect.right,
+        visibleTop: viewport?.offsetTop ?? 0,
+        visibleHeight: viewport?.height ?? window.innerHeight,
+      };
+    });
+    expect(Math.abs(bounds.top - bounds.visibleTop)).toBeLessThanOrEqual(2);
+    expect(Math.abs(bounds.height - bounds.visibleHeight)).toBeLessThanOrEqual(2);
+    expect(bounds.left).toBeGreaterThanOrEqual(0);
+    expect(bounds.right).toBeLessThanOrEqual(360);
+
+    await search.fill('planner');
+    await expect(page.locator('.command-results .command-result').first()).toBeVisible();
+    expect(await page.locator('.command-results').evaluate((element) => getComputedStyle(element).overflowY)).toBe('auto');
+  });
+
+  test('roadmap work is separated into library, editor, analysis and generated views', async ({ page }) => {
+    await finishFirstRunSetup(page);
+    await page.goto('/roadmap');
+    const editor = page.getByRole('textbox', { name: 'Roadmap source text' });
+    await expect(editor).toBeVisible();
+
+    await page.getByRole('button', { name: 'Roadmap library', exact: true }).click();
+    await expect(page.getByRole('heading', { name: 'Roadmap portfolio', exact: true })).toBeVisible();
+    await expect(editor).toHaveCount(0);
+
+    await page.getByRole('button', { name: 'Edit roadmap', exact: true }).click();
+    await page.getByRole('button', { name: 'Load example', exact: true }).click();
+    await page.getByRole('button', { name: 'Analyze roadmap', exact: true }).last().click();
+    await expect(page.getByRole('heading', { name: 'Analysis result', exact: true })).toBeVisible();
+    await expect(editor).toHaveCount(0);
+
+    await page.getByRole('button', { name: 'Generated work', exact: true }).click();
+    await expect(page.getByRole('heading', { name: 'Generated tasks', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Analysis result', exact: true })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: /Approve & use/ })).toBeVisible();
+    const showAll = page.getByRole('button', { name: /Show all \d+ tasks/ });
+    await expect(showAll).toBeVisible();
+    await expect(page.locator('.task-preview')).toHaveCount(6);
   });
 
 });
