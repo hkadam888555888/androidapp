@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { NavLink, Route, Routes, useNavigate } from 'react-router-dom';
 import { Activity, CalendarDays, CheckCircle2, ClipboardList, Droplets, Gauge, HeartPulse, Map, Moon, MoreHorizontal, Search, Settings, ShieldCheck, Sparkles, Sun, X } from 'lucide-react';
 import { DashboardPage } from '../features/dashboard/DashboardPage';
@@ -39,6 +39,8 @@ export default function App() {
   const navigate = useNavigate();
   const [quickActionsOpen, setQuickActionsOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const mobileMenuTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const mobileMenuDialogRef = useRef<HTMLElement | null>(null);
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     try {
       const saved = window.localStorage.getItem('mar-theme');
@@ -75,6 +77,46 @@ export default function App() {
     window.addEventListener('keydown', onShortcut);
     return () => window.removeEventListener('keydown', onShortcut);
   }, []);
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const dialog = mobileMenuDialogRef.current;
+    const trigger = mobileMenuTriggerRef.current;
+    if (!dialog) return;
+
+    const getFocusable = () => Array.from(dialog.querySelectorAll<HTMLElement>(
+      'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    )).filter((element) => !element.hasAttribute('hidden') && element.getAttribute('aria-hidden') !== 'true');
+
+    const focusable = getFocusable();
+    (focusable[0] ?? dialog).focus();
+
+    function trapTab(event: KeyboardEvent) {
+      if (event.key !== 'Tab') return;
+      const items = getFocusable();
+      if (items.length === 0) {
+        event.preventDefault();
+        dialog.focus();
+        return;
+      }
+      const first = items[0];
+      const last = items[items.length - 1];
+      const focusIsOutside = !dialog.contains(document.activeElement);
+      if (event.shiftKey && (document.activeElement === first || focusIsOutside)) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && (document.activeElement === last || focusIsOutside)) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
+
+    document.addEventListener('keydown', trapTab);
+    return () => {
+      document.removeEventListener('keydown', trapTab);
+      trigger?.focus();
+    };
+  }, [mobileMenuOpen]);
+
 
   useEffect(() => { void bootstrapApp(); }, []);
   useEffect(() => {
@@ -111,14 +153,14 @@ export default function App() {
           <Search size={17} aria-hidden="true" /><span>Search your routine</span><kbd>Ctrl K</kbd>
         </button>
         <nav className="nav-list primary-nav" aria-label="Primary navigation">
-          {primaryNav.map(([to, label, Icon]) => <NavLink key={to} to={to} className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}><Icon size={19} aria-hidden="true" /><span>{label}</span></NavLink>)}
-          <button type="button" className="nav-item nav-menu-trigger" onClick={() => setMobileMenuOpen((open) => !open)} aria-haspopup="dialog" aria-expanded={mobileMenuOpen} aria-controls="mobile-feature-menu">
+          {primaryNav.map(([to, label, Icon]) => <NavLink key={to} to={to} aria-label={label} className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}><Icon size={19} aria-hidden="true" /><span>{label}</span></NavLink>)}
+          <button ref={mobileMenuTriggerRef} type="button" className="nav-item nav-menu-trigger" onClick={() => setMobileMenuOpen((open) => !open)} aria-haspopup="dialog" aria-expanded={mobileMenuOpen} aria-controls="mobile-feature-menu">
             <MoreHorizontal size={19} aria-hidden="true" /><span>Menu</span>
           </button>
         </nav>
         <div className="nav-divider" aria-hidden="true" />
         <nav className="nav-list secondary-nav" aria-label="Secondary navigation">
-          {secondaryNav.map(([to, label, Icon]) => <NavLink key={to} to={to} className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}><Icon size={18} aria-hidden="true" /><span>{label}</span></NavLink>)}
+          {secondaryNav.map(([to, label, Icon]) => <NavLink key={to} to={to} aria-label={label} className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}><Icon size={18} aria-hidden="true" /><span>{label}</span></NavLink>)}
         </nav>
         <button type="button" className="theme-toggle desktop-theme" aria-pressed={theme === 'dark'} onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
           {theme === 'dark' ? <Sun size={18} aria-hidden="true" /> : <Moon size={18} aria-hidden="true" />}
@@ -127,7 +169,7 @@ export default function App() {
         <div className="sidebar-note"><span className="status-dot" /><span>{state.error ? 'Storage needs attention' : 'Your data stays on this device'}</span></div>
       </aside>
       {mobileMenuOpen && <div className="mobile-menu-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) setMobileMenuOpen(false); }}>
-        <section id="mobile-feature-menu" className="mobile-menu-sheet" role="dialog" aria-modal="true" aria-labelledby="mobile-menu-title">
+        <section ref={mobileMenuDialogRef} id="mobile-feature-menu" className="mobile-menu-sheet" role="dialog" aria-modal="true" aria-labelledby="mobile-menu-title" tabIndex={-1}>
           <header className="mobile-menu-header">
             <div><p className="eyebrow">Navigate</p><h2 id="mobile-menu-title">All features</h2></div>
             <button type="button" className="button icon-button" onClick={() => setMobileMenuOpen(false)} aria-label="Close menu"><X size={19} aria-hidden="true" /></button>
