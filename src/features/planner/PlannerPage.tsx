@@ -63,7 +63,7 @@ export function PlannerPage() {
   const activeRoadmaps = state.roadmaps.filter((roadmap) => roadmap.active);
 
   return <section className="page">
-    <header className="page-header planner-page-header"><div><p className="eyebrow">YOUR DAY</p><h1>Planner</h1></div><div className="header-actions planner-actions"><button className="button secondary" onClick={() => setExternalOpen((v) => !v)}>+ Add task</button><button className="button secondary" onClick={() => setBusyOpen((v) => !v)}>Busy time</button><button className="button secondary" onClick={() => setAdaptationOpen((v) => !v)}>{adaptationOpen ? 'Close adaptation' : 'Adapt today'}</button><button className="button primary" onClick={generate} disabled={building}>{building ? 'Building…' : 'Generate today'}</button></div></header>
+    <header className="page-header planner-page-header"><div><p className="eyebrow">YOUR DAY</p><h1>Planner</h1></div><div className="header-actions planner-actions"><button className="button secondary" onClick={() => setExternalOpen((v) => !v)}>+ External task</button><button className="button secondary" onClick={() => setBusyOpen((v) => !v)}>Busy time</button><button className="button secondary" onClick={() => setAdaptationOpen((v) => !v)}>{adaptationOpen ? 'Close adaptation' : 'Adapt today'}</button><button className="button primary" onClick={generate} disabled={building}>{building ? 'Building…' : 'Generate today'}</button></div></header>
     {notice && <div className="notice-bar" role="status">{notice}</div>}
     {adaptationOpen && <UrgentDayAdaptationPanel date={date} onCancel={() => setAdaptationOpen(false)} onApplied={(message) => { setNotice(message); setAdaptationOpen(false); }} />}
 
