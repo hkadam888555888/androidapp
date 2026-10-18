@@ -253,7 +253,7 @@ test.describe('My Adaptive Routine critical flow', () => {
     await day.click();
     await expect(page.locator('.calendar-day.selected')).toHaveCount(1);
     await expect(page.locator('.calendar-day.selected')).toHaveAttribute('aria-pressed', 'true');
-    await expect(page.getByRole('heading', { name: 'Selected day' })).toBeVisible();
+    await expect(page.getByText('Selected day', { exact: true })).toBeVisible();
   });
 
   test('explicit Skip remains visible in review instead of turning into completion', async ({ page }) => {
