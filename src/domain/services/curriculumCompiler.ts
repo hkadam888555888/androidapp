@@ -7,16 +7,40 @@ export interface CompiledCurriculum {
 }
 
 export function compileCurriculum(nodes: NormalizedRoadmapNode[]): CompiledCurriculum {
-  const concepts: CurriculumConcept[] = nodes.map((node) => ({
+  const parentIds = new Set(nodes.flatMap((node) => node.parentId ? [node.parentId] : []));
+  // Structural headings and parent/group nodes organize the roadmap; only terminal
+  // learning nodes should create schedulable concepts and work.
+  const learnableNodes = nodes.filter((node) =>
+    !parentIds.has(node.id)
+    && node.marker !== 'heading'
+    && node.nodeType !== 'subject'
+    && node.nodeType !== 'module'
+    && node.nodeType !== 'unknown'
+  );
+
+  const concepts: CurriculumConcept[] = learnableNodes.map((node) => ({
     id: `${node.roadmapId}:concept:${node.id.split(':').at(-1)}`,
     roadmapId: node.roadmapId,
     sourceNodeId: node.id,
     title: node.cleanedTitle,
-    parentConceptId: node.parentId ? `${node.roadmapId}:concept:${node.parentId.split(':').at(-1)}` : undefined,
     nodeType: node.nodeType,
     outcomes: [`Explain ${node.cleanedTitle}`, `Apply ${node.cleanedTitle} in a small practical context`],
   }));
 
-  const tasks = concepts.flatMap((concept, index) => generateTasksForConcept(concept, index));
+  const tasks: TaskDefinition[] = [];
+  let previousTaskId: string | undefined;
+
+  concepts.forEach((concept, index) => {
+    const conceptTasks = generateTasksForConcept(concept, index);
+    if (previousTaskId && conceptTasks.length > 0) {
+      conceptTasks[0] = {
+        ...conceptTasks[0],
+        dependencyIds: [...new Set([...conceptTasks[0].dependencyIds, previousTaskId])],
+      };
+    }
+    tasks.push(...conceptTasks);
+    previousTaskId = conceptTasks.at(-1)?.id ?? previousTaskId;
+  });
+
   return { concepts, tasks };
 }
