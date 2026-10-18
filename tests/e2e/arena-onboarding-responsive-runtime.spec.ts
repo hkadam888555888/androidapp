@@ -5,6 +5,7 @@ async function finishSetup(page: import('@playwright/test').Page) {
   const roadmap = page.getByRole('textbox', { name: 'Paste your roadmap' });
   await expect(roadmap).toBeVisible();
   await roadmap.fill('# Arena onboarding recovery\n## Foundations\n### Variables\n### Functions');
+  await page.getByLabel('Roadmap title').fill('Arena onboarding recovery');
   await page.getByRole('button', { name: 'Next: routine' }).click();
 }
 
@@ -61,13 +62,31 @@ test('Arena cycles 070 and 083: capture all-route responsive evidence and report
     for (const [path, heading] of routes) {
       await page.goto(path);
       await expect(page.getByRole('heading', { level: 1, name: heading, exact: true })).toBeVisible();
-      const bounds = await page.evaluate(() => ({
-        viewport: document.documentElement.clientWidth,
-        scroll: document.documentElement.scrollWidth,
-        bodyScroll: document.body.scrollWidth,
-      }));
-      expect(bounds.scroll, path + ' document horizontal overflow at ' + width + 'px').toBeLessThanOrEqual(bounds.viewport + 2);
-      expect(bounds.bodyScroll, path + ' body horizontal overflow at ' + width + 'px').toBeLessThanOrEqual(bounds.viewport + 2);
+      const bounds = await page.evaluate(() => {
+        const viewport = document.documentElement.clientWidth;
+        const offenders = Array.from(document.querySelectorAll<HTMLElement>('body *')).map((element) => {
+          const box = element.getBoundingClientRect();
+          const style = getComputedStyle(element);
+          return {
+            tag: element.tagName.toLowerCase(),
+            id: element.id,
+            className: typeof element.className === 'string' ? element.className.slice(0, 100) : '',
+            text: (element.innerText || element.getAttribute('aria-label') || '').trim().replace(/\\s+/gu, ' ').slice(0, 70),
+            left: Math.round(box.left),
+            right: Math.round(box.right),
+            width: Math.round(box.width),
+            scrollWidth: element.scrollWidth,
+            clientWidth: element.clientWidth,
+            position: style.position,
+            display: style.display,
+            overflowX: style.overflowX,
+          };
+        }).filter((item) => item.display !== 'none' && (item.right > viewport + 2 || item.left < -2 || item.scrollWidth > item.clientWidth + 2))
+          .sort((a, b) => b.right - a.right).slice(0, 15);
+        return { viewport, scroll: document.documentElement.scrollWidth, bodyScroll: document.body.scrollWidth, offenders };
+      });
+      expect(bounds.scroll, path + ' document horizontal overflow at ' + width + 'px; ' + JSON.stringify(bounds.offenders)).toBeLessThanOrEqual(bounds.viewport + 2);
+      expect(bounds.bodyScroll, path + ' body horizontal overflow at ' + width + 'px; ' + JSON.stringify(bounds.offenders)).toBeLessThanOrEqual(bounds.viewport + 2);
       await page.screenshot({
         path: testInfo.outputPath('route-' + path.slice(1) + '-' + width + 'px.png'),
         fullPage: true,
