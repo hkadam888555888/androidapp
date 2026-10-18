@@ -145,6 +145,7 @@ test.describe('My Adaptive Routine critical flow', () => {
     await secondPanel.getByRole('button', { name: 'Preview changes' }).click();
     await secondPanel.getByRole('button', { name: 'Apply adaptation' }).click();
     await expect(page.getByRole('status')).toContainText('Applied');
+    await page.locator('details.planner-details').nth(1).locator('summary').click();
     await expect(page.getByText('Unexpected lab session', { exact: true })).toBeVisible();
   });
 
