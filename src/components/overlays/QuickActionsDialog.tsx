@@ -6,6 +6,7 @@ import { getCurrentDate, useAppStore } from '../../application/appStore';
 interface QuickActionsDialogProps {
   onClose: () => void;
   onOpenTask: (taskId: string) => void;
+  returnFocusRef?: { current: HTMLElement | null };
 }
 
 const routeActions = [
@@ -21,11 +22,19 @@ const routeActions = [
   { path: '/privacy', title: 'Privacy', detail: 'Local storage and data handling', icon: ShieldCheck, terms: 'privacy local data indexeddb' },
 ] as const;
 
-export function QuickActionsDialog({ onClose, onOpenTask }: QuickActionsDialogProps) {
+export function QuickActionsDialog({ onClose, onOpenTask, returnFocusRef }: QuickActionsDialogProps) {
   const state = useAppStore();
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
+  const dialogRef = useRef<HTMLElement | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(
+    typeof document !== 'undefined' && document.activeElement instanceof HTMLElement ? document.activeElement : null,
+  );
+  const onCloseRef = useRef(onClose);
+  const returnFocusRefRef = useRef(returnFocusRef);
+  useEffect(() => { onCloseRef.current = onClose; }, [onClose]);
+  useEffect(() => { returnFocusRefRef.current = returnFocusRef; }, [returnFocusRef]);
   const normalized = query.trim().toLocaleLowerCase();
   const todayTasks = useMemo(
     () => state.dailyTasks.filter((task) => task.date === getCurrentDate() && task.status === 'planned'),
@@ -48,14 +57,49 @@ export function QuickActionsDialog({ onClose, onOpenTask }: QuickActionsDialogPr
     [state.habits, normalized],
   );
 
-  useEffect(() => { inputRef.current?.focus(); }, []);
   useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    const activeDialog: HTMLElement = dialog;
+    const getFocusable = () => Array.from(activeDialog.querySelectorAll<HTMLElement>(
+      'input:not([disabled]), button:not([disabled]), a[href], select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    )).filter((element) => !element.hasAttribute('hidden') && element.getAttribute('aria-hidden') !== 'true');
+
+    inputRef.current?.focus();
+
     function onKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') onClose();
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        onCloseRef.current();
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      const items = getFocusable();
+      if (items.length === 0) {
+        event.preventDefault();
+        activeDialog.focus();
+        return;
+      }
+      const first = items[0];
+      const last = items[items.length - 1];
+      const focusIsOutside = !activeDialog.contains(document.activeElement);
+      if (event.shiftKey && (document.activeElement === first || focusIsOutside)) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && (document.activeElement === last || focusIsOutside)) {
+        event.preventDefault();
+        first.focus();
+      }
     }
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [onClose]);
+
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      const requestedTarget = returnFocusRefRef.current?.current;
+      const target = requestedTarget?.isConnected ? requestedTarget : previousFocusRef.current;
+      if (target?.isConnected) target.focus();
+    };
+  }, []);
 
   function openRoute(path: string) {
     navigate(path);
@@ -64,7 +108,7 @@ export function QuickActionsDialog({ onClose, onOpenTask }: QuickActionsDialogPr
 
   return (
     <div className="command-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
-      <section className="command-dialog" role="dialog" aria-modal="true" aria-labelledby="command-title">
+      <section ref={dialogRef} className="command-dialog" role="dialog" aria-modal="true" aria-labelledby="command-title" tabIndex={-1}>
         <h2 id="command-title" className="sr-only">Search and quick actions</h2>
         <div className="command-search-row">
           <Search size={19} aria-hidden="true" />
