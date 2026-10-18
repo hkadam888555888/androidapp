@@ -544,7 +544,7 @@ test.describe('My Adaptive Routine critical flow', () => {
       '### Statistics',
       '### Linear algebra',
       '### Calculus',
-    ].join('\\n'));
+    ].join('\n'));
     await page.getByRole('button', { name: 'Next: routine' }).click();
     await page.getByRole('button', { name: 'Next: review' }).click();
     await page.getByRole('button', { name: 'Save setup & open Today' }).click();
@@ -557,9 +557,9 @@ test.describe('My Adaptive Routine critical flow', () => {
     const decisionRows = page.locator('.planner-decisions .decision-row');
     await expect(page.locator('.planner-decisions')).toBeVisible();
     await expect(decisionRows).toHaveCount(5);
-    const expand = page.getByRole('button', { name: /Show all \\d+ decisions/ });
+    const expand = page.getByRole('button', { name: /Show all \d+ decisions/ });
     await expect(expand).toBeVisible();
-    const total = Number((await expand.innerText()).match(/\\d+/)?.[0] ?? 0);
+    const total = Number((await expand.innerText()).match(/\d+/)?.[0] ?? 0);
     expect(total).toBeGreaterThan(5);
     await expand.click();
     await expect(decisionRows).toHaveCount(total);
