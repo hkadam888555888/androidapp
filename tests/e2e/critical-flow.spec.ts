@@ -25,8 +25,10 @@ async function addFixedExternalTask(page: import('@playwright/test').Page, title
   await page.getByLabel('End').fill('16:00');
   await page.getByRole('button', { name: 'Save external task' }).click();
   await page.getByRole('button', { name: 'Generate today' }).click();
-  await expect(page.getByRole('heading', { name: 'Schedule preview' })).toBeVisible();
-  await expect(page.getByText(title, { exact: true })).toBeVisible();
+  const schedulePreview = page.locator('article.card').filter({
+    has: page.getByRole('heading', { name: 'Schedule preview' }),
+  });
+  await expect(schedulePreview.getByText(title, { exact: true })).toBeVisible();
 }
 
 test.describe('My Adaptive Routine critical flow', () => {
