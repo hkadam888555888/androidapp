@@ -558,3 +558,124 @@ label{display:grid;gap:7px;color:var(--muted);font-size:12px;font-weight:600}inp
 }
 
 @media(min-width:761px){.mobile-menu-backdrop{align-items:center;padding:20px}.mobile-menu-sheet{max-height:80dvh}}
+
+
+/* Product polish: compact mobile menu, planner actions, and search surfaces. */
+@media (min-width: 761px) {
+  .nav-menu-trigger { display: none; }
+}
+.mobile-menu-backdrop { z-index: 150; }
+.mobile-menu-sheet { overscroll-behavior: contain; }
+.mobile-menu-link:focus-visible,
+.mobile-menu-tool:focus-visible,
+.nav-menu-trigger:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+.command-result:focus-visible,
+.command-close:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 1px;
+}
+.planner-page-header {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.planner-page-header > div:first-child { display: flex; flex-direction: column; align-items: flex-start; }
+.planner-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  width: 100%;
+}
+.planner-actions .button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 44px;
+  padding: 10px 12px;
+  line-height: 1.25;
+  white-space: normal;
+  text-align: center;
+}
+.planner-actions .planner-generate { grid-column: 1 / -1; }
+.planner-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 9px;
+  margin: 0 0 14px;
+}
+.planner-summary-card {
+  display: grid;
+  align-content: center;
+  gap: 6px;
+  min-width: 0;
+  min-height: 82px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 15px;
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+}
+.planner-summary-card > span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 650;
+  line-height: 1.35;
+}
+.planner-summary-card > strong {
+  color: var(--text);
+  font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  font-size: clamp(20px, 3vw, 26px);
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+.planner-details { margin-top: 14px; }
+.planner-details > summary > span { display: grid; gap: 4px; min-width: 0; }
+.planner-details > summary > span > strong { font-size: 13px; }
+.planner-details > summary > span > small {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 450;
+  line-height: 1.4;
+}
+.planner-details > summary:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: -3px; }
+.planner-details-content { display: grid; gap: 12px; padding-bottom: 12px; }
+.planner-details-content > .settings-grid { margin: 0; padding: 12px; }
+.planner-details-content > .card { margin: 0 12px; }
+.planner-details-content > .planner-decisions { box-shadow: none; }
+.timeline-empty {
+  min-height: 132px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 20px;
+  text-align: center;
+  border-style: dashed;
+}
+.timeline-empty .button { min-height: 42px; }
+@media (max-width: 760px) {
+  .planner-page-header { gap: 12px; }
+  .planner-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .planner-actions .button:nth-child(3),
+  .planner-actions .planner-generate { grid-column: 1 / -1; }
+  .planner-summary-grid { gap: 7px; }
+  .planner-summary-card { min-height: 72px; padding: 10px 9px; border-radius: 12px; }
+  .planner-summary-card > span { font-size: 10px; }
+  .planner-summary-card > strong { font-size: clamp(18px, 5vw, 22px); }
+}
+@media (max-width: 360px) {
+  .planner-summary-grid { gap: 6px; }
+  .planner-summary-card { padding: 9px 7px; }
+  .mobile-menu-sheet { padding: 13px; }
+  .mobile-menu-link { gap: 7px; font-size: 11px; }
+  .command-result { grid-template-columns: 32px minmax(0, 1fr); gap: 8px; }
+  .command-result-hint { display: none; }
+}
