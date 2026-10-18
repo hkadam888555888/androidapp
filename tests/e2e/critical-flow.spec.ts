@@ -30,10 +30,10 @@ test.describe('My Adaptive Routine critical flow', () => {
     const complete = page.getByRole('button', { name: 'Complete' }).first();
     await expect(complete).toBeVisible();
     await complete.click();
-    await expect(page.getByText('completed', { exact: true }).first()).toBeVisible();
+    await expect(page.getByText('Completed', { exact: true }).first()).toBeVisible();
 
     await page.reload();
-    await expect(page.getByText('completed', { exact: true }).first()).toBeVisible();
+    await expect(page.getByText('Completed', { exact: true }).first()).toBeVisible();
   });
 
   test('curriculum changes are visible before the next approval', async ({ page }) => {
@@ -80,7 +80,6 @@ test.describe('My Adaptive Routine critical flow', () => {
   });
 
   test('focus timer expiry never records task completion automatically', async ({ page }) => {
-    await page.clock.install();
     await finishFirstRunSetup(page);
     await page.goto('/roadmap');
     await page.getByRole('button', { name: 'Load example' }).click();
@@ -100,6 +99,7 @@ test.describe('My Adaptive Routine critical flow', () => {
     const dialog = page.getByRole('dialog');
     await expect(dialog.getByText('Ready when you are')).toBeVisible();
     const [minutes, seconds] = (await dialog.locator('.focus-timer strong').innerText()).split(':').map(Number);
+    await page.clock.install();
     await dialog.getByRole('button', { name: 'Start timer' }).click();
     await page.clock.fastForward((minutes * 60 + seconds + 2) * 1000);
     await expect(dialog.getByText('Time block ended')).toBeVisible();
