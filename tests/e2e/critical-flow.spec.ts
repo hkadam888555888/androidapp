@@ -218,6 +218,9 @@ test.describe('My Adaptive Routine critical flow', () => {
         if (route === '/planner') {
           await page.screenshot({ path: testInfo.outputPath(`planner-${width}px.png`), fullPage: true });
         }
+        if (route === '/statistics' && width === 1024) {
+          await page.screenshot({ path: testInfo.outputPath('statistics-1024px-full-page.png'), fullPage: true });
+        }
         const dimensions = await page.evaluate(() => {
           const viewport = window.innerWidth;
           const documentWidth = document.documentElement.scrollWidth;
@@ -235,6 +238,13 @@ test.describe('My Adaptive Routine critical flow', () => {
                   width: Math.round(rect.width),
                   minWidth: style.minWidth,
                   display: style.display,
+                  text: (element.textContent ?? '').trim().replace(/\\s+/g, ' ').slice(0, 100),
+                  ancestors: [element.parentElement, element.parentElement?.parentElement, element.parentElement?.parentElement?.parentElement].filter(Boolean).map((parent) => ({
+                    tag: parent!.tagName.toLowerCase(),
+                    className: typeof parent!.className === 'string' ? parent!.className.slice(0, 90) : '',
+                    text: (parent!.textContent ?? '').trim().replace(/\\s+/g, ' ').slice(0, 80),
+                    right: Math.round(parent!.getBoundingClientRect().right),
+                  })),
                 };
               }).filter((element) => element.right > viewport + 1 && element.width > 0)
                 .sort((a, b) => b.right - a.right).slice(0, 8)
