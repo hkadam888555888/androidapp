@@ -218,14 +218,32 @@ test.describe('My Adaptive Routine critical flow', () => {
         if (route === '/planner') {
           await page.screenshot({ path: testInfo.outputPath(`planner-${width}px.png`), fullPage: true });
         }
-        const dimensions = await page.evaluate(() => ({
-          viewport: window.innerWidth,
-          document: document.documentElement.scrollWidth,
-          body: document.body.scrollWidth,
-        }));
+        const dimensions = await page.evaluate(() => {
+          const viewport = window.innerWidth;
+          const documentWidth = document.documentElement.scrollWidth;
+          const bodyWidth = document.body.scrollWidth;
+          const offenders = documentWidth > viewport || bodyWidth > viewport
+            ? [...document.querySelectorAll('body *')].map((element) => {
+                const rect = element.getBoundingClientRect();
+                const style = getComputedStyle(element);
+                return {
+                  tag: element.tagName.toLowerCase(),
+                  className: typeof element.className === 'string' ? element.className.slice(0, 90) : '',
+                  id: (element as HTMLElement).id,
+                  left: Math.round(rect.left),
+                  right: Math.round(rect.right),
+                  width: Math.round(rect.width),
+                  minWidth: style.minWidth,
+                  display: style.display,
+                };
+              }).filter((element) => element.right > viewport + 1 && element.width > 0)
+                .sort((a, b) => b.right - a.right).slice(0, 8)
+            : [];
+          return { viewport, document: documentWidth, body: bodyWidth, offenders };
+        });
         expect(
           dimensions.document <= dimensions.viewport && dimensions.body <= dimensions.viewport,
-          `Horizontal overflow on ${route} at ${width}px: document=${dimensions.document}, body=${dimensions.body}, viewport=${dimensions.viewport}`,
+          `Horizontal overflow on ${route} at ${width}px: document=${dimensions.document}, body=${dimensions.body}, viewport=${dimensions.viewport}; offenders=${JSON.stringify(dimensions.offenders)}`,
         ).toBeTruthy();
       }
     }
