@@ -679,3 +679,11 @@ label{display:grid;gap:7px;color:var(--muted);font-size:12px;font-weight:600}inp
   .command-result { grid-template-columns: 32px minmax(0, 1fr); gap: 8px; }
   .command-result-hint { display: none; }
 }
+
+
+/* Arena responsive finding: four consistency metrics overflow their labels at 320px. */
+@media (max-width: 760px) {
+  .consistency-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .consistency-grid > div { min-width: 0; }
+  .consistency-grid span { overflow-wrap: anywhere; }
+}
