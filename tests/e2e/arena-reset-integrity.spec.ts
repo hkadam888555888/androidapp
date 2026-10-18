@@ -16,9 +16,8 @@ async function createSyntheticRoadmap(page: import('@playwright/test').Page, nam
   await page.getByLabel('Roadmap name').fill(name);
   await page.getByRole('button', { name: 'Analyze roadmap' }).last().click();
   await page.getByRole('button', { name: 'Generated work', exact: true }).click();
-    await expect(page.getByText('Generated tasks')).toBeVisible();
-  await page.getByRole('button', { name: 'Generated work', exact: true }).click();
-    await page.getByRole('button', { name: /Approve & use/ }).click();
+  await expect(page.getByText('Generated tasks')).toBeVisible();
+  await page.getByRole('button', { name: /Approve & use/ }).click();
   await expect(page.getByText(/Saved .* tasks\./)).toBeVisible();
   await page.getByRole('button', { name: 'Roadmap library', exact: true }).click();
   await expect(page.locator('.portfolio-main').filter({ hasText: name })).toBeVisible();
@@ -46,6 +45,5 @@ test('Arena cycle 095: exact DELETE clears synthetic records and returns to firs
   await page.goto('/roadmap');
   await page.getByRole('button', { name: 'Roadmap library', exact: true }).click();
   await expect(page.locator('.portfolio-main').filter({ hasText: recordName })).toHaveCount(0);
-  await page.getByRole('button', { name: 'Roadmap library', exact: true }).click();
   await expect(page.locator('.portfolio-main').filter({ hasText: 'Arena fresh workspace after reset' })).toBeVisible();
 });
