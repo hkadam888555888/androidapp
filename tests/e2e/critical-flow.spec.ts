@@ -329,4 +329,36 @@ test.describe('My Adaptive Routine critical flow', () => {
     await expect.poll(() => page.evaluate(() => window.localStorage.getItem('mar-theme'))).toBe(desiredTheme);
   });
 
+
+  test('malformed backup import is rejected without changing existing roadmap data', async ({ page }) => {
+    await finishFirstRunSetup(page);
+    await page.goto('/roadmap');
+    const existingRoadmap = page.locator('.portfolio-main').filter({ hasText: 'Test roadmap' });
+    await expect(existingRoadmap).toBeVisible();
+
+    await page.goto('/settings');
+    await page.locator('input[type="file"][accept="application/json"]').setInputFiles({
+      name: 'malformed-backup.json',
+      mimeType: 'application/json',
+      buffer: Buffer.from('{ invalid json'),
+    });
+    await expect(page.locator('.notice-bar')).toContainText('Backup is not valid JSON.');
+
+    await page.goto('/roadmap');
+    await expect(page.locator('.portfolio-main').filter({ hasText: 'Test roadmap' })).toBeVisible();
+  });
+
+  test('hostile roadmap text stays inert when displayed in the parsed roadmap tree', async ({ page }) => {
+    await finishFirstRunSetup(page);
+    await page.goto('/roadmap');
+    const editor = page.getByRole('textbox', { name: 'Roadmap source text' });
+    await editor.fill('# Safe roadmap\n## Foundations\n### <img src=x onerror=window.__arenaXss=true>');
+    await page.getByRole('button', { name: 'Analyze roadmap' }).last().click();
+
+    await expect(page.locator('.roadmap-tree')).toBeVisible();
+    await expect(page.locator('.roadmap-tree img')).toHaveCount(0);
+    await expect(page.locator('.roadmap-tree')).toContainText('img src=x onerror=window.__arenaXss=true');
+    expect(await page.evaluate(() => (window as Window & { __arenaXss?: boolean }).__arenaXss)).not.toBe(true);
+  });
+
 });
