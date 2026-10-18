@@ -656,7 +656,7 @@ test.describe('My Adaptive Routine critical flow', () => {
     await expect(page.getByRole('heading', { name: 'Generated tasks', exact: true })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Analysis result', exact: true })).toHaveCount(0);
     await expect(page.getByRole('button', { name: /Approve & use/ })).toBeVisible();
-    const showAll = page.getByRole('button', { name: /Show all \\d+ tasks/ });
+    const showAll = page.getByRole('button', { name: /Show all \d+ tasks/ });
     await expect(showAll).toBeVisible();
     await expect(page.locator('.task-preview')).toHaveCount(6);
   });
