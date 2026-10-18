@@ -34,13 +34,34 @@ export function parseRoadmap(sourceText: string, roadmapId: ID = 'roadmap-import
   const nodes: NormalizedRoadmapNode[] = [];
   let previousDepth = 0;
   let hasPrevious = false;
+  let activeHeadingDepth: number | null = null;
+  let sectionBaseIndent: number | null = null;
   const stack: Array<{ depth: number; id: ID }> = [];
   const siblingTitlesByParent = new Map<string, Set<string>>();
 
   for (const info of infos) {
     if (!info.cleaned) continue;
 
-    const depth = Math.max(0, info.depth);
+    const indent = info.raw.replace(/\t/g, '    ').match(/^ */u)?.[0].length ?? 0;
+    let depth = Math.max(0, info.depth);
+
+    // Markdown headings define section levels. Place following list/plain items
+    // beneath the most recent heading even if a mobile clipboard stripped the
+    // list's leading spaces. Preserve relative indentation within that section.
+    if (info.marker === 'heading') {
+      activeHeadingDepth = depth;
+      sectionBaseIndent = null;
+    } else if (info.marker === 'tree') {
+      activeHeadingDepth = null;
+      sectionBaseIndent = null;
+    } else if (activeHeadingDepth !== null) {
+      if (sectionBaseIndent === null) sectionBaseIndent = indent;
+      const relativeIndent = Math.floor(Math.max(0, indent - sectionBaseIndent) / 2);
+      const numberingDepth = info.marker === 'numbered' && indent === 0
+        ? Math.max(0, (info.numbering?.split('.').length ?? 1) - 1)
+        : 0;
+      depth = activeHeadingDepth + 1 + relativeIndent + numberingDepth;
+    }
     if (hasPrevious && depth > previousDepth + 1) {
       issues.push({ lineNumber: info.lineNumber, code: 'impossible_indent', message: `Indentation jumped from depth ${previousDepth} to ${depth}.` });
     }
@@ -146,11 +167,13 @@ function parseLine(raw: string, lineNumber: number, issues: RoadmapParseIssue[])
 
 function classifyNode(depth: number, marker: ParseMarker, title: string): RoadmapNodeType {
   const normalized = title.toLocaleLowerCase();
+
+  // Markdown headings are organizational structure, not schedulable learning work.
+  if (marker === 'heading') return depth === 0 ? 'subject' : 'module';
   if (/project|capstone|build/i.test(normalized)) return 'project';
   if (/milestone|checkpoint|goal/i.test(normalized)) return 'milestone';
   if (/review|revision/i.test(normalized)) return 'review_area';
-  if (depth === 0) return marker === 'heading' ? 'subject' : 'module';
-  if (depth === 1) return 'module';
+  if (depth === 0) return 'module';
   if (/practice|exercise|skill/i.test(normalized)) return 'skill';
   return 'concept';
 }
