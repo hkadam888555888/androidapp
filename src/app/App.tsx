@@ -39,6 +39,7 @@ export default function App() {
   const navigate = useNavigate();
   const [quickActionsOpen, setQuickActionsOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const quickActionsReturnFocusRef = useRef<HTMLElement | null>(null);
   const mobileMenuTriggerRef = useRef<HTMLButtonElement | null>(null);
   const mobileMenuDialogRef = useRef<HTMLElement | null>(null);
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
@@ -67,6 +68,7 @@ export default function App() {
     function onShortcut(event: KeyboardEvent) {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
         event.preventDefault();
+        quickActionsReturnFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
         setQuickActionsOpen((open) => !open);
       }
       if (event.key === 'Escape') {
@@ -150,7 +152,7 @@ export default function App() {
           <div className="brand-mark" aria-hidden="true">AR</div>
           <div><strong>Adaptive Routine</strong><span>Make room for what matters</span></div>
         </div>
-        <button type="button" className="quick-search-launcher" onClick={() => setQuickActionsOpen(true)} aria-keyshortcuts="Control+K Meta+K">
+        <button type="button" className="quick-search-launcher" onClick={(event) => { quickActionsReturnFocusRef.current = event.currentTarget; setQuickActionsOpen(true); }} aria-keyshortcuts="Control+K Meta+K">
           <Search size={17} aria-hidden="true" /><span>Search your routine</span><kbd>Ctrl K</kbd>
         </button>
         <nav className="nav-list primary-nav" aria-label="Primary navigation">
@@ -181,7 +183,7 @@ export default function App() {
             </NavLink>)}
           </nav>
           <div className="mobile-menu-tools">
-            <button type="button" className="mobile-menu-tool" onClick={() => { setMobileMenuOpen(false); setQuickActionsOpen(true); }}><Search size={18} aria-hidden="true" /><span>Search tasks and pages</span></button>
+            <button type="button" className="mobile-menu-tool" onClick={() => { quickActionsReturnFocusRef.current = mobileMenuTriggerRef.current; setMobileMenuOpen(false); setQuickActionsOpen(true); }}><Search size={18} aria-hidden="true" /><span>Search tasks and pages</span></button>
             <button type="button" className="mobile-menu-tool" aria-pressed={theme === 'dark'} onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
               {theme === 'dark' ? <Sun size={18} aria-hidden="true" /> : <Moon size={18} aria-hidden="true" />}
               <span>Use {theme === 'dark' ? 'light' : 'dark'} theme</span>
@@ -203,6 +205,7 @@ export default function App() {
           setQuickActionsOpen(false);
           navigate('/today', { state: { focusTaskId: taskId } });
         }}
+        returnFocusRef={quickActionsReturnFocusRef}
       />}
     </div>
   );
