@@ -687,3 +687,15 @@ label{display:grid;gap:7px;color:var(--muted);font-size:12px;font-weight:600}inp
   .consistency-grid > div { min-width: 0; }
   .consistency-grid span { overflow-wrap: anywhere; }
 }
+
+
+/* Tablet constraint: the persistent desktop sidebar reduces available page width. */
+@media (min-width: 761px) and (max-width: 1080px) {
+  .habit-v06-grid { grid-template-columns: minmax(0, 1fr); }
+  .habit-v06-grid > .card,
+  .habit-config > * { min-width: 0; }
+  .habit-meta { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .habit-config { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .habit-config input,
+  .habit-config select { width: 100%; min-width: 0; }
+}
