@@ -719,3 +719,26 @@ label{display:grid;gap:7px;color:var(--muted);font-size:12px;font-weight:600}inp
   .consistency-grid > div { min-width: 0; }
   .consistency-grid span { overflow-wrap: anywhere; }
 }
+
+
+/* Arena responsive repair: restore readable navigation in the narrow desktop/tablet rail. */
+@media (min-width: 761px) and (max-width: 900px) {
+  .sidebar {
+    width: 224px;
+    flex-basis: 224px;
+    padding-inline: 14px;
+  }
+  .brand div:last-child {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+  .sidebar .nav-item span,
+  .sidebar .sidebar-note span:last-child {
+    display: inline;
+  }
+  .sidebar .nav-item {
+    justify-content: flex-start;
+    padding-inline: 12px;
+  }
+}
