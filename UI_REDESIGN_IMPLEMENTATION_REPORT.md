@@ -23,6 +23,7 @@ This report follows the 14-session PPT redesign plan. It describes the changes i
 
 ## Data-safety invariants
 - No IndexedDB schema changes in this UI branch.
+- Verification hygiene: removed unused-symbol lint blockers and fixed the calendar memo dependency warning without changing planner algorithms; the Android workflow uses npm legacy peer resolution for its ephemeral Capacitor install.
 - No task completion on timer expiry.
 - Task states remain domain-defined; progress reflects only completed records.
 - Roadmap import is parsed and reviewed through the existing onboarding validation/preview before confirmation.
@@ -46,6 +47,7 @@ This report follows the 14-session PPT redesign plan. It describes the changes i
 - [ ] `npm run lint`
 - [ ] `npm test`
 - [ ] `npm run build`
+- [ ] `npx playwright test` (critical flows included in Verify workflow)
 - [ ] Android debug APK workflow result
 - [ ] Manual screenshot checks at 320, 360, 393, 600, 768, 1024 and 1280 CSS px
 - [ ] Keyboard navigation, screen-reader dialog focus, and contrast checked on a real browser

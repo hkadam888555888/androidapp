@@ -17,7 +17,7 @@ jobs:
   verify:
     name: Source, lint, tests, and production build
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 35
 
     steps:
       - name: Check out repository
@@ -43,3 +43,9 @@ jobs:
 
       - name: Build production app
         run: npm run build
+
+      - name: Install Chromium for end-to-end tests
+        run: npx playwright install --with-deps chromium
+
+      - name: Run critical-flow end-to-end tests
+        run: npx playwright test
