@@ -182,9 +182,9 @@ export function normalizeLocalEndpoint(value: string): string {
   let url: URL;
   try { url = new URL(value); } catch { throw new Error('Enter a valid local model URL, such as http://127.0.0.1:1234/v1/chat/completions.'); }
   const hostname = url.hostname.toLowerCase().replace(/^\[|\]$/gu, '');
-  const loopback = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1';
+  const loopback = hostname === 'localhost' || hostname === '127.0.0.1';
   if (!loopback || !['http:', 'https:'].includes(url.protocol) || url.username || url.password || url.search) {
-    throw new Error('For privacy, the local model adapter only accepts loopback endpoints (localhost, 127.0.0.1, or ::1) without embedded credentials or query-string tokens.');
+    throw new Error('For privacy, the local model adapter only accepts loopback endpoints (localhost or 127.0.0.1) without embedded credentials or query-string tokens.');
   }
   if (!url.pathname.endsWith('/chat/completions')) url.pathname = `${url.pathname.replace(/\/$/u, '')}/v1/chat/completions`.replace(/\/v1\/v1\//u, '/v1/');
   url.hash = '';
