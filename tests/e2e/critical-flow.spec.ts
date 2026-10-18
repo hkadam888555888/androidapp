@@ -429,6 +429,7 @@ test.describe('My Adaptive Routine critical flow', () => {
     await page.getByRole('button', { name: 'Generated work', exact: true }).click();
     await page.getByRole('button', { name: /Approve & use/ }).click();
     await expect(page.getByText(/Saved .* tasks\./)).toBeVisible();
+    await page.getByRole('button', { name: 'Roadmap library', exact: true }).click();
     await expect(page.locator('.portfolio-main').filter({ hasText: 'Arena backup preservation' })).toBeVisible();
 
     await page.goto('/settings');
@@ -440,6 +441,7 @@ test.describe('My Adaptive Routine critical flow', () => {
     await expect(page.locator('.notice-bar')).toContainText('Backup is not valid JSON.');
 
     await page.goto('/roadmap');
+    await page.getByRole('button', { name: 'Roadmap library', exact: true }).click();
     await expect(page.locator('.portfolio-main').filter({ hasText: 'Arena backup preservation' })).toBeVisible();
   });
 
@@ -468,6 +470,7 @@ test.describe('My Adaptive Routine critical flow', () => {
     await expect(page.getByText('Generated tasks')).toBeVisible();
     await page.getByRole('button', { name: 'Generated work', exact: true }).click();
     await page.getByRole('button', { name: /Approve & use/ }).click();
+    await page.getByRole('button', { name: 'Roadmap library', exact: true }).click();
     await expect(page.locator('.portfolio-main').filter({ hasText: 'Arena round-trip roadmap' })).toBeVisible();
 
     await page.goto('/settings');
@@ -487,6 +490,7 @@ test.describe('My Adaptive Routine critical flow', () => {
       await cleanPage.locator('input[type="file"][accept="application/json"]').setInputFiles(downloadPath!);
       await expect(cleanPage.locator('.notice-bar')).toContainText('Backup restored successfully.');
       await cleanPage.goto('/roadmap');
+      await cleanPage.getByRole('button', { name: 'Roadmap library', exact: true }).click();
       await expect(cleanPage.locator('.portfolio-main').filter({ hasText: 'Arena round-trip roadmap' })).toBeVisible();
     } finally {
       await cleanContext.close();
