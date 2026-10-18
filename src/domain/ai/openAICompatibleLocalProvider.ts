@@ -87,14 +87,39 @@ Rules: 1-5 concepts; 1-8 tasks; each task is specific, has measurable completion
 Return {"edges":[{"fromTaskId":"existing-id","toTaskId":"existing-id","type":"soft|suggested","confidence":"high|medium|low"}]}. Only use IDs supplied. Maximum ${Math.min(8, tasks.length * 2)} edges. Avoid cycles and self-links.`,
     );
     const known = new Set(tasks.map((task) => task.id));
-    return asArray(output.edges).slice(0, Math.min(8, tasks.length * 2)).flatMap((value) => {
+    const adjacency = new Map(tasks.map((task) => [task.id, [] as string[]]));
+    const accepted: DependencyEdge[] = [];
+    const candidates = asArray(output.edges).slice(0, Math.min(8, tasks.length * 2));
+
+    function reaches(start: string, target: string): boolean {
+      const pending = [start];
+      const visited = new Set<string>();
+      while (pending.length > 0) {
+        const current = pending.pop()!;
+        if (current === target) return true;
+        if (visited.has(current)) continue;
+        visited.add(current);
+        pending.push(...(adjacency.get(current) ?? []));
+      }
+      return false;
+    }
+
+    for (const value of candidates) {
       const edge = asObject(value);
-      const fromTaskId = safeText(edge.fromTaskId, 240); const toTaskId = safeText(edge.toTaskId, 240);
-      if (!known.has(fromTaskId) || !known.has(toTaskId) || fromTaskId === toTaskId) return [];
+      const fromTaskId = safeText(edge.fromTaskId, 240);
+      const toTaskId = safeText(edge.toTaskId, 240);
+      if (!known.has(fromTaskId) || !known.has(toTaskId) || fromTaskId === toTaskId) continue;
+      // Model prompts are guidance, not an integrity boundary. Reject any candidate
+      // that would close a cycle in the suggestions accepted earlier in this response.
+      if (reaches(toTaskId, fromTaskId)) continue;
+      const outgoing = adjacency.get(fromTaskId)!;
+      if (outgoing.includes(toTaskId)) continue;
+      outgoing.push(toTaskId);
       const type = edge.type === 'suggested' ? 'suggested' : 'soft';
       const confidence = edge.confidence === 'high' || edge.confidence === 'low' ? edge.confidence : 'medium';
-      return [{ fromTaskId, toTaskId, type, confidence }];
-    });
+      accepted.push({ fromTaskId, toTaskId, type, confidence });
+    }
+    return accepted;
   }
 
   async generatePractice(input: { conceptTitle: string }): Promise<string[]> {
