@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { NavLink, Route, Routes, useNavigate } from 'react-router-dom';
-import { Activity, CalendarDays, CheckCircle2, ClipboardList, Droplets, Gauge, HeartPulse, Map, Moon, MoreHorizontal, Search, Settings, ShieldCheck, Sparkles, Sun } from 'lucide-react';
+import { Activity, CalendarDays, CheckCircle2, ClipboardList, Droplets, Gauge, HeartPulse, Map, Moon, MoreHorizontal, Search, Settings, ShieldCheck, Sparkles, Sun, X } from 'lucide-react';
 import { DashboardPage } from '../features/dashboard/DashboardPage';
 import { OnboardingPage } from '../features/dashboard/OnboardingPage';
 import { ReviewPage } from '../features/review/ReviewPage';
@@ -38,6 +38,7 @@ export default function App() {
   const state = useAppStore();
   const navigate = useNavigate();
   const [quickActionsOpen, setQuickActionsOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     try {
       const saved = window.localStorage.getItem('mar-theme');
@@ -66,7 +67,10 @@ export default function App() {
         event.preventDefault();
         setQuickActionsOpen((open) => !open);
       }
-      if (event.key === 'Escape') setQuickActionsOpen(false);
+      if (event.key === 'Escape') {
+        setQuickActionsOpen(false);
+        setMobileMenuOpen(false);
+      }
     }
     window.addEventListener('keydown', onShortcut);
     return () => window.removeEventListener('keydown', onShortcut);
@@ -108,17 +112,9 @@ export default function App() {
         </button>
         <nav className="nav-list primary-nav" aria-label="Primary navigation">
           {primaryNav.map(([to, label, Icon]) => <NavLink key={to} to={to} className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}><Icon size={19} aria-hidden="true" /><span>{label}</span></NavLink>)}
-          <details className="nav-more-mobile">
-            <summary className="nav-item"><MoreHorizontal size={19} aria-hidden="true" /><span>More</span></summary>
-            <div className="mobile-more-menu">
-              <button type="button" className="nav-item mobile-search-launcher" onClick={() => setQuickActionsOpen(true)}><Search size={18} aria-hidden="true" /><span>Search & quick actions</span></button>
-              {secondaryNav.map(([to, label, Icon]) => <NavLink key={to} to={to} className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}><Icon size={18} aria-hidden="true" /><span>{label}</span></NavLink>)}
-              <button type="button" className="theme-toggle mobile-theme" aria-pressed={theme === 'dark'} onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
-                {theme === 'dark' ? <Sun size={18} aria-hidden="true" /> : <Moon size={18} aria-hidden="true" />}
-                <span>Use {theme === 'dark' ? 'light' : 'dark'} theme</span>
-              </button>
-            </div>
-          </details>
+          <button type="button" className="nav-item nav-menu-trigger" onClick={() => setMobileMenuOpen((open) => !open)} aria-haspopup="dialog" aria-expanded={mobileMenuOpen} aria-controls="mobile-feature-menu">
+            <MoreHorizontal size={19} aria-hidden="true" /><span>Menu</span>
+          </button>
         </nav>
         <div className="nav-divider" aria-hidden="true" />
         <nav className="nav-list secondary-nav" aria-label="Secondary navigation">
@@ -130,6 +126,26 @@ export default function App() {
         </button>
         <div className="sidebar-note"><span className="status-dot" /><span>{state.error ? 'Storage needs attention' : 'Your data stays on this device'}</span></div>
       </aside>
+      {mobileMenuOpen && <div className="mobile-menu-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) setMobileMenuOpen(false); }}>
+        <section id="mobile-feature-menu" className="mobile-menu-sheet" role="dialog" aria-modal="true" aria-labelledby="mobile-menu-title">
+          <header className="mobile-menu-header">
+            <div><p className="eyebrow">Navigate</p><h2 id="mobile-menu-title">All features</h2></div>
+            <button type="button" className="button icon-button" onClick={() => setMobileMenuOpen(false)} aria-label="Close menu"><X size={19} aria-hidden="true" /></button>
+          </header>
+          <nav className="mobile-menu-grid" aria-label="All app features">
+            {([...primaryNav, ...secondaryNav] as const).map(([to, label, Icon]) => <NavLink key={to} to={to} onClick={() => setMobileMenuOpen(false)} className={({ isActive }) => isActive ? 'mobile-menu-link active' : 'mobile-menu-link'}>
+              <span className="mobile-menu-icon"><Icon size={19} aria-hidden="true" /></span><span>{label}</span>
+            </NavLink>)}
+          </nav>
+          <div className="mobile-menu-tools">
+            <button type="button" className="mobile-menu-tool" onClick={() => { setMobileMenuOpen(false); setQuickActionsOpen(true); }}><Search size={18} aria-hidden="true" /><span>Search tasks and pages</span></button>
+            <button type="button" className="mobile-menu-tool" aria-pressed={theme === 'dark'} onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
+              {theme === 'dark' ? <Sun size={18} aria-hidden="true" /> : <Moon size={18} aria-hidden="true" />}
+              <span>Use {theme === 'dark' ? 'light' : 'dark'} theme</span>
+            </button>
+          </div>
+        </section>
+      </div>}
       <a className="skip-link" href="#main-content">Skip to content</a>
       <main id="main-content" className="main-content"><Routes>
         <Route path="/" element={<DashboardPage />} /><Route path="/today" element={<DashboardPage />} />
