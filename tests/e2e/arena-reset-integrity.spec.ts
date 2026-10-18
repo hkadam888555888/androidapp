@@ -15,8 +15,10 @@ async function createSyntheticRoadmap(page: import('@playwright/test').Page, nam
   await page.getByRole('button', { name: 'Load example' }).click();
   await page.getByLabel('Roadmap name').fill(name);
   await page.getByRole('button', { name: 'Analyze roadmap' }).last().click();
-  await expect(page.getByText('Generated tasks')).toBeVisible();
-  await page.getByRole('button', { name: /Approve & use/ }).click();
+  await page.getByRole('button', { name: 'Generated work', exact: true }).click();
+    await expect(page.getByText('Generated tasks')).toBeVisible();
+  await page.getByRole('button', { name: 'Generated work', exact: true }).click();
+    await page.getByRole('button', { name: /Approve & use/ }).click();
   await expect(page.getByText(/Saved .* tasks\./)).toBeVisible();
   await expect(page.locator('.portfolio-main').filter({ hasText: name })).toBeVisible();
 }
