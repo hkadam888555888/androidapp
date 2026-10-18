@@ -29,7 +29,7 @@ export function TaskFocusDialog({ task, onClose, onComplete, onSkip }: TaskFocus
       const next = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
       setRemainingSeconds(next);
       if (next === 0) { deadlineRef.current = null; setRunning(false); setExpired(true); }
-    }, 250);
+    }, 1000);
     return () => window.clearInterval(timer);
   }, [running]);
 
