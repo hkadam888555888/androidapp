@@ -26,18 +26,18 @@ test('Arena cycle 033: capacity settings reject invalid values and persist valid
   await page.reload();
   await expect(page.getByLabel('Normal max study minutes/day')).toHaveValue(initialStudy);
 
-  await page.getByLabel('Normal max study minutes/day').fill('275');
-  await page.getByLabel('Max continuous focus').fill('75');
-  await page.getByLabel('Protected buffer %').fill('20');
-  await page.getByLabel('Busy capacity').fill('90');
-  await page.getByLabel('Exam capacity').fill('135');
+  await study.fill('275');
+  await focus.fill('75');
+  await buffer.fill('20');
+  await busy.fill('90');
+  await exam.fill('135');
   await page.getByRole('button', { name: 'Save planner settings' }).click();
   await expect(page.getByRole('status')).toContainText('Settings saved locally');
   await page.reload();
 
-  await expect(page.getByLabel('Normal max study minutes/day')).toHaveValue('275');
-  await expect(page.getByLabel('Max continuous focus')).toHaveValue('75');
-  await expect(page.getByLabel('Protected buffer %')).toHaveValue('20');
-  await expect(page.getByLabel('Busy capacity')).toHaveValue('90');
-  await expect(page.getByLabel('Exam capacity')).toHaveValue('135');
+  await expect(study).toHaveValue('275');
+  await expect(focus).toHaveValue('75');
+  await expect(buffer).toHaveValue('20');
+  await expect(busy).toHaveValue('90');
+  await expect(exam).toHaveValue('135');
 });
