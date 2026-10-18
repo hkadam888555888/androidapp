@@ -82,25 +82,26 @@ export default function App() {
     const dialog = mobileMenuDialogRef.current;
     const trigger = mobileMenuTriggerRef.current;
     if (!dialog) return;
+    const activeDialog: HTMLElement = dialog;
 
-    const getFocusable = () => Array.from(dialog.querySelectorAll<HTMLElement>(
+    const getFocusable = () => Array.from(activeDialog.querySelectorAll<HTMLElement>(
       'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
     )).filter((element) => !element.hasAttribute('hidden') && element.getAttribute('aria-hidden') !== 'true');
 
     const focusable = getFocusable();
-    (focusable[0] ?? dialog).focus();
+    (focusable[0] ?? activeDialog).focus();
 
     function trapTab(event: KeyboardEvent) {
       if (event.key !== 'Tab') return;
       const items = getFocusable();
       if (items.length === 0) {
         event.preventDefault();
-        dialog.focus();
+        activeDialog.focus();
         return;
       }
       const first = items[0];
       const last = items[items.length - 1];
-      const focusIsOutside = !dialog.contains(document.activeElement);
+      const focusIsOutside = !activeDialog.contains(document.activeElement);
       if (event.shiftKey && (document.activeElement === first || focusIsOutside)) {
         event.preventDefault();
         last.focus();
