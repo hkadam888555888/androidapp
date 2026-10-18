@@ -289,7 +289,7 @@ test.describe('My Adaptive Routine critical flow', () => {
     await expect(page.locator('html')).toHaveAttribute('data-theme', desiredTheme);
     await page.reload();
     await expect(page.locator('html')).toHaveAttribute('data-theme', desiredTheme);
-    await expect(page.locator('html')).toHaveJSProperty('dataset.theme', desiredTheme);
+    await expect.poll(() => page.evaluate(() => window.localStorage.getItem('mar-theme'))).toBe(desiredTheme);
   });
 
 });
