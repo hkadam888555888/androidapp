@@ -79,7 +79,7 @@ check('41 Local endpoint uses the URL parser', localAI.includes('url = new URL(v
 check('42 Local hostname is normalized before checks', localAI.includes('url.hostname.toLowerCase()'));
 check('43 Localhost is an allowed endpoint host', localAI.includes("hostname === 'localhost'"));
 check('44 IPv4 loopback is an allowed endpoint host', localAI.includes("hostname === '127.0.0.1'"));
-check('45 unsupported IPv6 loopback is rejected consistently with CSP', !localAI.includes("hostname === '::1'") && localAITests.includes("http://[::1]:1234/v1/chat/completions"));
+check('45 unsupported IPv6 loopback is rejected consistently with CSP', !localAI.includes("hostname === '::1'") && sourceText.includes("http://[::1]:1234/v1/chat/completions"));
 check('46 Only HTTP and HTTPS protocols are accepted', localAI.includes("!['http:', 'https:'].includes(url.protocol)"));
 check('47 Embedded credentials and query parameters are rejected', localAI.includes('url.username || url.password || url.search'));
 check('48 Endpoint is normalized to the chat-completions path', localAI.includes("url.pathname.endsWith('/chat/completions')"));
