@@ -415,6 +415,20 @@ test.describe('My Adaptive Routine critical flow', () => {
       firstTask.getByRole('button', { name: 'Complete' }).click(),
       secondTask.getByRole('button', { name: 'Skip' }).click(),
     ]);
+    await expect(async () => {
+      const visibleOutcomes = await Promise.all([
+        firstTask.getByText('Completed', { exact: true }).count(),
+        firstTask.getByText('Skipped', { exact: true }).count(),
+        secondTask.getByText('Completed', { exact: true }).count(),
+        secondTask.getByText('Skipped', { exact: true }).count(),
+      ]);
+      const rejectionNotices = await Promise.all([
+        page.locator('.notice-bar').allTextContents(),
+        secondPage.locator('.notice-bar').allTextContents(),
+      ]);
+      expect(visibleOutcomes.some((count) => count > 0) || rejectionNotices.flat().some((text) => /already has a result|no longer active/i.test(text))).toBeTruthy();
+      expect(rejectionNotices.flat().some((text) => /already has a result|no longer active/i.test(text))).toBeTruthy();
+    }).toPass({ timeout: 10000 });
     await Promise.all([page.reload(), secondPage.reload()]);
 
     const persistedFirst = page.locator('.timeline-card').filter({ hasText: 'Arena two-tab race task' });
