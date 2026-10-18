@@ -222,6 +222,7 @@ test.describe('My Adaptive Routine critical flow', () => {
           await page.screenshot({ path: testInfo.outputPath('statistics-1024px-full-page.png'), fullPage: true });
         }
         if (route === '/planner' && width <= 760) {
+          await expect(page.getByRole('button', { name: 'Generate plan' })).toHaveCount(0);
           const [generateButton, actionGrid] = await Promise.all([
             page.getByRole('button', { name: 'Generate today' }).boundingBox(),
             page.locator('.planner-actions').boundingBox(),
