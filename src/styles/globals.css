@@ -698,4 +698,7 @@ label{display:grid;gap:7px;color:var(--muted);font-size:12px;font-weight:600}inp
   .habit-config { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .habit-config input,
   .habit-config select { width: 100%; min-width: 0; }
+  .content-grid .form-row { grid-template-columns: minmax(0, 1fr); }
+  .content-grid .form-row > * { min-width: 0; }
+  .content-grid .toolbar .button { max-width: 100%; }
 }
