@@ -210,6 +210,33 @@ test.describe('My Adaptive Routine critical flow', () => {
     await expect(menuButton).toBeFocused();
   });
 
+  test('local search traps focus and restores focus to the Menu trigger', async ({ page }) => {
+    await finishFirstRunSetup(page);
+    await page.setViewportSize({ width: 393, height: 852 });
+    await page.goto('/today');
+
+    const menuButton = page.getByRole('button', { name: 'Menu' });
+    await menuButton.click();
+    const menu = page.getByRole('dialog', { name: 'All features' });
+    await menu.getByRole('button', { name: 'Search tasks and pages' }).click();
+
+    const dialog = page.getByRole('dialog', { name: 'Search and quick actions' });
+    const search = dialog.getByRole('textbox', { name: 'Search tasks, roadmaps, habits and pages' });
+    await expect(search).toBeFocused();
+    await search.fill('Calendar');
+    const calendarResult = dialog.getByRole('button', { name: /Calendar/ });
+    await expect(calendarResult).toBeVisible();
+
+    await page.keyboard.press('Shift+Tab');
+    await expect(calendarResult).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(search).toBeFocused();
+
+    await page.keyboard.press('Escape');
+    await expect(dialog).toHaveCount(0);
+    await expect(menuButton).toBeFocused();
+  });
+
   test('all primary and secondary routes render their intended page', async ({ page }) => {
     await finishFirstRunSetup(page);
     const routes = [
