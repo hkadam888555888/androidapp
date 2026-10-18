@@ -1,0 +1,126 @@
+/* Shared accessible primitives. Loaded by globals.css after the document theme tokens. */
+.mar-ui-button {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);
+  min-width: 48px; min-height: 48px; padding: 12px 18px;
+  border: 1px solid transparent; border-radius: var(--radius-button);
+  background: var(--color-surface-variant); color: var(--color-text);
+  font: 700 14px/1.2 var(--font-ui); text-decoration: none; cursor: pointer;
+  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease, transform 160ms ease;
+}
+.mar-ui-button:hover:not(:disabled) { transform: translateY(-1px); }
+.mar-ui-button:focus-visible, .mar-ui-dialog__close:focus-visible, .mar-ui-field__input:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-primary); outline-offset: 3px;
+}
+.mar-ui-button:disabled { opacity: .52; cursor: not-allowed; transform: none; }
+.mar-ui-button--primary { background: var(--color-primary); color: var(--color-on-primary); border-color: var(--color-primary); }
+.mar-ui-button--primary:hover:not(:disabled) { filter: brightness(1.04); }
+.mar-ui-button--secondary { background: var(--color-surface); border-color: var(--color-outline); }
+.mar-ui-button--tonal { background: var(--color-primary-container); color: var(--color-on-primary-container); }
+.mar-ui-button--outline { background: transparent; border-color: var(--color-outline); }
+.mar-ui-button--text { background: transparent; border-color: transparent; }
+.mar-ui-button--destructive { background: transparent; color: var(--color-error); border-color: rgba(var(--color-error-rgb), .55); }
+.mar-ui-button--sm { padding: 8px 12px; font-size: 13px; }
+.mar-ui-button--lg { padding: 14px 22px; font-size: 15px; }
+.mar-ui-button--full-width { width: 100%; }
+.mar-ui-button__icon { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; }
+.mar-ui-spinner { flex: 0 0 auto; animation: mar-ui-spin 1s linear infinite; }
+@keyframes mar-ui-spin { to { transform: rotate(360deg); } }
+
+.mar-ui-card {
+  min-width: 0; padding: var(--space-6); border: 1px solid var(--color-outline);
+  border-radius: var(--radius-card); background: var(--color-surface); color: var(--color-text);
+}
+.mar-ui-card--variant { background: var(--color-surface-variant); }
+.mar-ui-card--pad-none { padding: 0; }
+.mar-ui-card--pad-sm { padding: var(--space-3); }
+.mar-ui-card--pad-lg { padding: var(--space-8); }
+
+.mar-ui-status {
+  display: inline-flex; align-items: center; gap: 6px; max-width: 100%; min-height: 28px;
+  padding: 4px 10px; border: 1px solid var(--color-outline); border-radius: 999px;
+  background: var(--color-surface-variant); color: var(--color-text-secondary);
+  font: 700 12px/1.25 var(--font-ui); white-space: normal;
+}
+.mar-ui-status__icon { display: inline-flex; align-items: center; flex: 0 0 auto; }
+.mar-ui-status--confirmed { color: var(--color-confirmed); background: var(--color-confirmed-background); border-color: rgba(var(--color-confirmed-rgb), .42); }
+.mar-ui-status--attention, .mar-ui-status--needs-status { color: var(--color-attention); background: var(--color-attention-background); border-color: rgba(var(--color-attention-rgb), .5); }
+.mar-ui-status--error { color: var(--color-error); background: var(--color-error-background); border-color: rgba(var(--color-error-rgb), .5); }
+.mar-ui-status--planned, .mar-ui-status--in-progress, .mar-ui-status--skipped, .mar-ui-status--moved { color: var(--color-text-secondary); }
+
+.mar-ui-field { display: grid; gap: var(--space-2); min-width: 0; }
+.mar-ui-field__label { color: var(--color-text); font: 700 13px/1.4 var(--font-ui); }
+.mar-ui-field__required { color: var(--color-error); }
+.mar-ui-field__input {
+  width: 100%; min-width: 0; min-height: 48px; padding: 12px;
+  border: 1px solid var(--color-outline); border-radius: var(--radius-field);
+  background: var(--color-surface); color: var(--color-text); font: 400 15px/1.4 var(--font-ui);
+}
+.mar-ui-field__input::placeholder { color: var(--color-text-secondary); opacity: 1; }
+.mar-ui-field__input:focus { border-color: var(--color-primary); }
+.mar-ui-field__input[aria-invalid="true"] { border-color: var(--color-error); }
+.mar-ui-field__input[aria-invalid="true"]:focus-visible { outline-color: var(--color-error); }
+.mar-ui-field__hint, .mar-ui-field__error { margin: 0; font-size: 12px; line-height: 1.5; }
+.mar-ui-field__hint { color: var(--color-text-secondary); }
+.mar-ui-field__error { color: var(--color-error); }
+
+.mar-ui-progress { display: grid; gap: 7px; min-width: 0; }
+.mar-ui-progress__heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; color: var(--color-text-secondary); font-size: 12px; line-height: 1.4; }
+.mar-ui-progress__value { color: var(--color-text); font-weight: 700; font-variant-numeric: tabular-nums; }
+.mar-ui-progress__track { position: relative; height: 8px; overflow: hidden; border: 1px solid var(--color-outline); border-radius: 999px; background: var(--color-surface-variant); }
+.mar-ui-progress__fill { height: 100%; border-radius: inherit; background: var(--color-primary); transition: width 180ms ease; }
+.mar-ui-progress--confirmed .mar-ui-progress__fill { background: var(--color-confirmed); }
+.mar-ui-progress--attention .mar-ui-progress__fill { background: var(--color-attention); }
+.mar-ui-progress--error .mar-ui-progress__fill { background: var(--color-error); }
+.mar-ui-progress__track[data-indeterminate="true"] .mar-ui-progress__fill { width: 35%; animation: mar-ui-progress-indeterminate 1.4s ease-in-out infinite alternate; }
+@keyframes mar-ui-progress-indeterminate { from { transform: translateX(-20%); } to { transform: translateX(190%); } }
+
+.mar-ui-empty-state { display: grid; justify-items: center; align-content: center; gap: var(--space-3); min-height: 180px; padding: var(--space-6); text-align: center; color: var(--color-text-secondary); }
+.mar-ui-empty-state__icon { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 15px; background: var(--color-primary-container); color: var(--color-on-primary-container); }
+.mar-ui-empty-state__title { margin: 0; color: var(--color-text); font: 22px/1.2 var(--font-display); }
+.mar-ui-empty-state__description { max-width: 42rem; margin: 0; font-size: 14px; line-height: 1.6; }
+.mar-ui-empty-state__action { margin-top: var(--space-2); }
+
+.mar-ui-alert { display: flex; align-items: flex-start; gap: var(--space-3); padding: var(--space-4); border: 1px solid var(--color-outline); border-radius: 14px; background: var(--color-surface); color: var(--color-text); }
+.mar-ui-alert__icon { display: inline-flex; margin-top: 1px; flex: 0 0 auto; }
+.mar-ui-alert__content { display: grid; gap: 4px; min-width: 0; flex: 1; }
+.mar-ui-alert__title { margin: 0; font-size: 14px; font-weight: 700; line-height: 1.4; }
+.mar-ui-alert__message { margin: 0; font-size: 13px; line-height: 1.55; }
+.mar-ui-alert__action { flex: 0 0 auto; }
+.mar-ui-alert--info { background: var(--color-primary-container); color: var(--color-on-primary-container); border-color: var(--color-primary); }
+.mar-ui-alert--success { background: var(--color-confirmed-background); color: var(--color-confirmed); border-color: rgba(var(--color-confirmed-rgb), .5); }
+.mar-ui-alert--attention { background: var(--color-attention-background); color: var(--color-attention); border-color: rgba(var(--color-attention-rgb), .55); }
+.mar-ui-alert--error { background: var(--color-error-background); color: var(--color-error); border-color: rgba(var(--color-error-rgb), .55); }
+
+.mar-ui-dialog {
+  width: min(560px, calc(100vw - 32px)); max-width: 560px; max-height: min(88dvh, 760px);
+  overflow: auto; padding: 0; border: 1px solid var(--color-outline); border-radius: 20px;
+  background: var(--color-surface); color: var(--color-text);
+}
+.mar-ui-dialog::backdrop { background: rgba(0, 0, 0, .52); }
+.mar-ui-dialog__header { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-4); padding: var(--space-6) var(--space-6) var(--space-3); }
+.mar-ui-dialog__heading { display: grid; gap: var(--space-2); min-width: 0; }
+.mar-ui-dialog__title { margin: 0; font: 22px/1.25 var(--font-display); }
+.mar-ui-dialog__description { margin: 0; color: var(--color-text-secondary); font-size: 13px; line-height: 1.55; }
+.mar-ui-dialog__close { display: grid; place-items: center; flex: 0 0 48px; width: 48px; height: 48px; border: 1px solid var(--color-outline); border-radius: 50%; background: transparent; color: var(--color-text); cursor: pointer; }
+.mar-ui-dialog__close:hover { background: var(--color-surface-variant); }
+.mar-ui-dialog__body { padding: var(--space-3) var(--space-6) var(--space-6); overflow-wrap: anywhere; }
+.mar-ui-dialog__footer { display: flex; justify-content: flex-end; gap: var(--space-2); flex-wrap: wrap; padding: var(--space-4) var(--space-6) var(--space-6); border-top: 1px solid var(--color-outline); }
+.mar-ui-dialog--sheet { width: min(480px, 100vw); max-width: 480px; height: 100dvh; max-height: 100dvh; margin: 0 0 0 auto; align-self: stretch; border-radius: var(--radius-sheet) 0 0 var(--radius-sheet); }
+.mar-ui-dialog--sheet .mar-ui-dialog__header { padding-top: max(var(--space-6), env(safe-area-inset-top)); }
+.mar-ui-dialog--sheet .mar-ui-dialog__footer { padding-bottom: max(var(--space-6), env(safe-area-inset-bottom)); }
+
+@media (max-width: 600px) {
+  .mar-ui-card { padding: var(--space-4); }
+  .mar-ui-card--pad-none { padding: 0; }
+  .mar-ui-card--pad-sm { padding: var(--space-3); }
+  .mar-ui-card--pad-lg { padding: var(--space-6); }
+  .mar-ui-alert { flex-wrap: wrap; }
+  .mar-ui-alert__action { width: 100%; }
+  .mar-ui-dialog--sheet { width: 100vw; max-width: 100vw; max-height: 90dvh; height: auto; margin: auto 0 0; border-radius: var(--radius-sheet) var(--radius-sheet) 0 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mar-ui-button, .mar-ui-progress__fill { transition: none; }
+  .mar-ui-button:hover:not(:disabled) { transform: none; }
+  .mar-ui-spinner, .mar-ui-progress__track[data-indeterminate="true"] .mar-ui-progress__fill { animation: none; }
+}
