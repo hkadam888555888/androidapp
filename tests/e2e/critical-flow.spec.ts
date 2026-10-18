@@ -273,6 +273,11 @@ test.describe('My Adaptive Routine critical flow', () => {
         if (route === '/statistics' && width === 1024) {
           await page.screenshot({ path: testInfo.outputPath('statistics-1024px-full-page.png'), fullPage: true });
         }
+        if (width > 760 && width <= 900) {
+          await expect(page.locator('.sidebar .brand strong')).toBeVisible();
+          await expect(page.locator('.sidebar .primary-nav .nav-item span').first()).toBeVisible();
+          await expect(page.locator('.sidebar .sidebar-note span:last-child')).toBeVisible();
+        }
         if (route === '/planner' && width <= 760) {
           await expect(page.getByRole('button', { name: 'Generate plan' })).toHaveCount(0);
           const [generateButton, actionGrid] = await Promise.all([
