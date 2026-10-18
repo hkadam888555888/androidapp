@@ -35,6 +35,9 @@ jobs:
       - name: Run source audit
         run: npm run audit:source
 
+      - name: Run Arena Security 100 source checks
+        run: npm run security:arena100
+
       - name: Check lint
         run: npm run lint
 
@@ -49,3 +52,6 @@ jobs:
 
       - name: Run critical-flow end-to-end tests
         run: npx playwright test
+
+      - name: Audit locked dependencies for high and critical vulnerabilities
+        run: npm audit --audit-level=high
