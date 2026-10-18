@@ -150,7 +150,7 @@ test.describe('My Adaptive Routine critical flow', () => {
   });
 
 
-  test('mobile Menu opens every feature and local search uses the styled dialog', async ({ page }) => {
+  test('mobile Menu opens every feature and local search uses the styled dialog', async ({ page }, testInfo) => {
     await finishFirstRunSetup(page);
     await page.setViewportSize({ width: 393, height: 852 });
     await page.goto('/planner');
@@ -165,6 +165,7 @@ test.describe('My Adaptive Routine critical flow', () => {
     await page.getByRole('button', { name: 'Menu' }).click();
     const menu = page.getByRole('dialog', { name: 'All features' });
     await expect(menu).toBeVisible();
+    await page.screenshot({ path: testInfo.outputPath('mobile-all-features-menu.png'), fullPage: false });
     for (const feature of ['Today', 'Plan', 'Learn', 'Habits', 'Progress', 'Review', 'Calendar', 'Alerts', 'Diagnostics', 'Settings', 'Privacy']) {
       await expect(menu.getByRole('link', { name: feature, exact: true })).toBeVisible();
     }
@@ -205,7 +206,7 @@ test.describe('My Adaptive Routine critical flow', () => {
     }
   });
 
-  test('key pages stay within the viewport across the supported responsive width sweep', async ({ page }) => {
+  test('key pages stay within the viewport across the supported responsive width sweep', async ({ page }, testInfo) => {
     await finishFirstRunSetup(page);
     const routes = ['/today', '/planner', '/roadmap', '/habits', '/statistics'];
     const widths = [320, 360, 393, 768, 1024, 1440];
@@ -214,6 +215,9 @@ test.describe('My Adaptive Routine critical flow', () => {
       for (const route of routes) {
         await page.goto(route);
         await expect(page.locator('main#main-content h1')).toBeVisible();
+        if (route === '/planner') {
+          await page.screenshot({ path: testInfo.outputPath(`planner-${width}px.png`), fullPage: true });
+        }
         const dimensions = await page.evaluate(() => ({
           viewport: window.innerWidth,
           document: document.documentElement.scrollWidth,
