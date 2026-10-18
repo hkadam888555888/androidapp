@@ -711,3 +711,11 @@ label{display:grid;gap:7px;color:var(--muted);font-size:12px;font-weight:600}inp
 @media (min-width: 761px) and (max-width: 900px) {
   .analytics-card-grid { grid-template-columns: minmax(0, 1fr); }
 }
+
+
+/* The Review discipline stats sit in a narrow content-grid column beside adaptation. */
+@media (min-width: 761px) and (max-width: 1080px) {
+  .consistency-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .consistency-grid > div { min-width: 0; }
+  .consistency-grid span { overflow-wrap: anywhere; }
+}
