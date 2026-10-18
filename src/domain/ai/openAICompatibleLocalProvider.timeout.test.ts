@@ -25,8 +25,9 @@ describe('local model timeout and response boundary', () => {
       timeoutMs: 1,
     });
     const pending = provider.generatePractice({ conceptTitle: 'arrays' });
+    const rejected = expect(pending).rejects.toThrow(/timed out after 2 seconds/i);
     await vi.advanceTimersByTimeAsync(2_000);
-    await expect(pending).rejects.toThrow(/timed out after 2 seconds/i);
+    await rejected;
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
