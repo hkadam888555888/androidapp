@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { appStore, useAppStore } from '../../application/appStore';
 import { getCurrentDate } from '../../application/appStore';
 import { generateAndPersistPlan } from '../../application/planService';
@@ -11,10 +11,20 @@ import { TaskFocusDialog } from '../tasks/TaskFocusDialog';
 
 export function DashboardPage() {
   const state = useAppStore();
+  const location = useLocation();
+  const navigate = useNavigate();
   const date = getCurrentDate();
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState('');
   const [focusedTask, setFocusedTask] = useState<DailyTask | null>(null);
+  useEffect(() => {
+    const focusTaskId = (location.state as { focusTaskId?: unknown } | null)?.focusTaskId;
+    if (typeof focusTaskId !== 'string') return;
+    const task = state.dailyTasks.find((item) => item.id === focusTaskId && item.date === date && item.status === 'planned');
+    if (task) setFocusedTask(task);
+    navigate(location.pathname, { replace: true, state: null });
+  }, [location.key, location.pathname, location.state, navigate, state.dailyTasks, date]);
+
   const todayTasks = state.dailyTasks.filter((task) => task.date === date && task.status !== 'cancelled' && task.status !== 'rescheduled').sort((a, b) => (a.plannedWindow?.start ?? '').localeCompare(b.plannedWindow?.start ?? ''));
   const waterToday = state.waterLogs.filter((x) => x.date === date).reduce((sum, x) => sum + x.amountMl, 0);
   const exerciseToday = state.exerciseLogs.filter((x) => x.date === date).reduce((sum, x) => sum + (x.durationMinutes ?? 0), 0);

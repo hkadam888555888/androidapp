@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { NavLink, Route, Routes } from 'react-router-dom';
+import { NavLink, Route, Routes, useNavigate } from 'react-router-dom';
 import { Activity, CalendarDays, CheckCircle2, ClipboardList, Droplets, Gauge, HeartPulse, Map, Moon, MoreHorizontal, Settings, ShieldCheck, Sparkles, Sun } from 'lucide-react';
 import { DashboardPage } from '../features/dashboard/DashboardPage';
 import { OnboardingPage } from '../features/dashboard/OnboardingPage';
