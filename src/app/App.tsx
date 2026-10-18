@@ -68,7 +68,9 @@ export default function App() {
     function onShortcut(event: KeyboardEvent) {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
         event.preventDefault();
-        quickActionsReturnFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+        if (!quickActionsOpen) {
+          quickActionsReturnFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+        }
         setQuickActionsOpen((open) => !open);
       }
       if (event.key === 'Escape') {
