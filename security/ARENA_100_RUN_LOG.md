@@ -24,7 +24,8 @@ Count a cycle only after an identified issue/check was examined, an action (test
 | 005 | Add explicit mobile navigation names + focus management | Inspected App navigation markup; mobile labels can be visually hidden. Added aria-label to primary/secondary NavLinks; added Menu focus entry, Tab/Shift+Tab trap and focus restoration. | IN PROGRESS — verify after current run |
 | 006 | Keyboard regression for All features menu | Added E2E test: keyboard opens menu, focus begins inside, Shift+Tab/Tab wrap, Escape closes and focus returns to Menu. Test passed individually on run 39129666937, but that run's full E2E suite failed on unrelated ambiguous getByLabel('End') selector. | PARTIAL — retest after exact-selector repair |
 | 007 | Repair E2E selector exposed by accessible labels | Replaced getByLabel('End') with exact matching getByLabel('End', { exact: true }). Commit 1ad247dd2b13b29be3d2cea8d590c88bce76de36. | IN PROGRESS — latest CI run in progress |
-| 008–100 | Remaining matrix-driven sequential work | Do not mark pass until corresponding work/test/artifact evidence is recorded. | NOT RUN |
+| 008 | Correct the Arena matrix-ID mislabel for local-data reset | Reproduced that `tests/e2e/arena-reset-integrity.spec.ts` performs the exact-DELETE/reset behavior belonging to matrix criterion 032, while its title claimed cycle 095 (generated native manifest). Corrected the title in commit `a2827ee24646f92b54dde5d8892968dc066288ef`. Verify run #174 (39542291614) and APK #170 (39542291298) were queued after the change; neither is counted as passed at checkpoint time. | IN PROGRESS — await fresh CI and inspect result |
+| 009–100 | Remaining matrix-driven sequential work | One sequential cycle is counted only after focused action and outcome are verified. Matrix criterion IDs are a separate counter; static Arena Security 100 assertions are not sequential cycles. | NOT RUN |
 
 ## Current candidate CI evidence (historical snapshots, not all-current)
 
