@@ -21,7 +21,7 @@ async function createSyntheticRoadmap(page: import('@playwright/test').Page, nam
   await expect(page.locator('.portfolio-main').filter({ hasText: name })).toBeVisible();
 }
 
-test('Arena cycle 095: exact DELETE clears synthetic records and returns to first-run setup', async ({ page }) => {
+test('Arena cycle 032: exact DELETE clears synthetic records and returns to first-run setup', async ({ page }) => {
   const recordName = 'Arena reset synthetic roadmap';
   await createSyntheticRoadmap(page, recordName);
 
