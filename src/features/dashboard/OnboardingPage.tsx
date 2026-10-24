@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ChangeEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { appStore, useAppStore } from '../../application/appStore';
 import type { Habit, Roadmap, TaskPriority } from '../../domain/entities/models';
@@ -49,6 +49,24 @@ export function OnboardingPage() {
     })));
     return { valid: tasks.valid && dependencies.valid, issues: [...tasks.issues.map((issue) => issue.message), ...dependencies.cycles.map((cycle) => `Dependency cycle: ${cycle.join(' → ')}`), ...dependencies.missing.map((item) => `Missing prerequisite: ${item}`)], taskCount: curriculum.tasks.length, conceptCount: curriculum.concepts.length };
   }, [parsed]);
+
+  async function importRoadmapFile(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    try {
+      if (file.size > 1_000_000) throw new Error('Choose a text or Markdown roadmap under 1 MB.');
+      if (!/\.(md|markdown|txt)$/iu.test(file.name)) throw new Error('Choose a .md, .markdown, or .txt roadmap file.');
+      const contents = await file.text();
+      if (!contents.trim()) throw new Error('That file is empty. Choose another file or paste your roadmap.');
+      setRoadmapText(contents);
+      setError('');
+      setStep(0);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Could not read that roadmap file.');
+    } finally {
+      event.target.value = '';
+    }
+  }
 
   async function skipOnboarding() {
     if (!state.preferences) return;
@@ -112,7 +130,11 @@ export function OnboardingPage() {
       {step === 0 && <>
         <p className="eyebrow">Step 1 of 3 · Your learning map</p><h1>Turn your goals into a routine.</h1><p className="muted">Start with a roadmap you already have. The app converts it into manageable tasks; it does not mark anything complete for you.</p>
         <div className="setting-form"><label>Roadmap title<input value={title} maxLength={100} onChange={(event) => setTitle(event.target.value)} placeholder="AI/ML, DSA, College…" /></label><label>Paste your roadmap<textarea rows={9} value={roadmapText} onChange={(event) => setRoadmapText(event.target.value)} placeholder={'# AI/ML\n## Python\n### Fundamentals\n### Functions\n## Mathematics\n### Probability'} /></label></div>
-        <div className="toolbar"><button className="button secondary" onClick={() => setRoadmapText(STARTER_ROADMAP)}>Load starter outline</button><span className="muted small-copy">Headings, bullets and indented outlines are supported.</span></div>
+        <div className="toolbar onboarding-roadmap-tools">
+          <button className="button secondary" onClick={() => { setRoadmapText(STARTER_ROADMAP); setError(''); }}>Load starter outline</button>
+          <label className="button secondary onboarding-file-button">Choose .md or .txt file<input className="onboarding-file-input" type="file" accept=".md,.markdown,.txt,text/plain,text/markdown" aria-label="Choose a Markdown or text roadmap file" onChange={(event) => void importRoadmapFile(event)} /></label>
+          <span className="muted small-copy">Headings, bullets and indented outlines are supported.</span>
+        </div>
         <div className="onboarding-actions"><span className="muted small-copy">Your roadmap stays in local browser storage.</span><button className="button primary" onClick={() => { setError(''); setStep(1); }}>Next: routine</button></div>
       </>}
       {step === 1 && <>

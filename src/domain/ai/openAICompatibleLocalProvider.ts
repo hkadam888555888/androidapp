@@ -87,14 +87,39 @@ Rules: 1-5 concepts; 1-8 tasks; each task is specific, has measurable completion
 Return {"edges":[{"fromTaskId":"existing-id","toTaskId":"existing-id","type":"soft|suggested","confidence":"high|medium|low"}]}. Only use IDs supplied. Maximum ${Math.min(8, tasks.length * 2)} edges. Avoid cycles and self-links.`,
     );
     const known = new Set(tasks.map((task) => task.id));
-    return asArray(output.edges).slice(0, Math.min(8, tasks.length * 2)).flatMap((value) => {
+    const adjacency = new Map(tasks.map((task) => [task.id, [] as string[]]));
+    const accepted: DependencyEdge[] = [];
+    const candidates = asArray(output.edges).slice(0, Math.min(8, tasks.length * 2));
+
+    function reaches(start: string, target: string): boolean {
+      const pending = [start];
+      const visited = new Set<string>();
+      while (pending.length > 0) {
+        const current = pending.pop()!;
+        if (current === target) return true;
+        if (visited.has(current)) continue;
+        visited.add(current);
+        pending.push(...(adjacency.get(current) ?? []));
+      }
+      return false;
+    }
+
+    for (const value of candidates) {
       const edge = asObject(value);
-      const fromTaskId = safeText(edge.fromTaskId, 240); const toTaskId = safeText(edge.toTaskId, 240);
-      if (!known.has(fromTaskId) || !known.has(toTaskId) || fromTaskId === toTaskId) return [];
+      const fromTaskId = safeText(edge.fromTaskId, 240);
+      const toTaskId = safeText(edge.toTaskId, 240);
+      if (!known.has(fromTaskId) || !known.has(toTaskId) || fromTaskId === toTaskId) continue;
+      // Model prompts are guidance, not an integrity boundary. Reject any candidate
+      // that would close a cycle in the suggestions accepted earlier in this response.
+      if (reaches(toTaskId, fromTaskId)) continue;
+      const outgoing = adjacency.get(fromTaskId)!;
+      if (outgoing.includes(toTaskId)) continue;
+      outgoing.push(toTaskId);
       const type = edge.type === 'suggested' ? 'suggested' : 'soft';
       const confidence = edge.confidence === 'high' || edge.confidence === 'low' ? edge.confidence : 'medium';
-      return [{ fromTaskId, toTaskId, type, confidence }];
-    });
+      accepted.push({ fromTaskId, toTaskId, type, confidence });
+    }
+    return accepted;
   }
 
   async generatePractice(input: { conceptTitle: string }): Promise<string[]> {
@@ -157,9 +182,9 @@ export function normalizeLocalEndpoint(value: string): string {
   let url: URL;
   try { url = new URL(value); } catch { throw new Error('Enter a valid local model URL, such as http://127.0.0.1:1234/v1/chat/completions.'); }
   const hostname = url.hostname.toLowerCase().replace(/^\[|\]$/gu, '');
-  const loopback = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1';
+  const loopback = hostname === 'localhost' || hostname === '127.0.0.1';
   if (!loopback || !['http:', 'https:'].includes(url.protocol) || url.username || url.password || url.search) {
-    throw new Error('For privacy, the local model adapter only accepts loopback endpoints (localhost, 127.0.0.1, or ::1) without embedded credentials or query-string tokens.');
+    throw new Error('For privacy, the local model adapter only accepts loopback endpoints (localhost or 127.0.0.1) without embedded credentials or query-string tokens.');
   }
   if (!url.pathname.endsWith('/chat/completions')) url.pathname = `${url.pathname.replace(/\/$/u, '')}/v1/chat/completions`.replace(/\/v1\/v1\//u, '/v1/');
   url.hash = '';
