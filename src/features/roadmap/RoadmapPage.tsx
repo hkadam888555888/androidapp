@@ -250,7 +250,7 @@ export function RoadmapPage() {
   }
 
   return <section className="page">
-    <header className="page-header"><div><p className="eyebrow">Multi-roadmap source of truth</p><h1>Roadmap</h1><p className="muted">Keep multiple learning tracks active. The planner merges their eligible work into one global capacity pool.</p></div><div className="header-actions"><button className="button secondary" onClick={startNewRoadmap}>+ New roadmap</button><button className="button secondary" onClick={() => { setSource(EXAMPLE_ROADMAP); setAnalyzed(false); }}>Load example</button></div></header>
+    <header className="page-header"><div><p className="eyebrow">Multi-roadmap source of truth</p><h1>Roadmap</h1></div><div className="header-actions"><button className="button secondary" onClick={startNewRoadmap}>+ New roadmap</button><button className="button secondary" onClick={() => { setSource(EXAMPLE_ROADMAP); setAnalyzed(false); }}>Load example</button></div></header>
 
     {(aiMessage || aiAnalysis || aiExpansion) && <div className="notice-bar">{aiMessage}</div>}
 

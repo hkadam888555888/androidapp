@@ -59,7 +59,6 @@ export function StatisticsPage() {
       <div>
         <p className="eyebrow">Evidence-based progress</p>
         <h1>Statistics</h1>
-        <p className="muted">Your routine, measured across execution, workload, roadmaps, milestones, subjects, and the signals the planner is learning.</p>
       </div>
       <div className="period-tabs" role="tablist" aria-label="Analytics period">
         {(['week', 'month', 'year'] as AnalyticsPeriod[]).map((item) => <button key={item} className={period === item ? 'period-tab active' : 'period-tab'} onClick={() => setPeriod(item)}>{item === 'week' ? 'Weekly' : item === 'month' ? 'Monthly' : 'Yearly'}</button>)}

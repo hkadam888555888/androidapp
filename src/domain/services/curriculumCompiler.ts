@@ -17,6 +17,63 @@ export function compileCurriculum(nodes: NormalizedRoadmapNode[]): CompiledCurri
     outcomes: [`Explain ${node.cleanedTitle}`, `Apply ${node.cleanedTitle} in a small practical context`],
   }));
 
-  const tasks = concepts.flatMap((concept, index) => generateTasksForConcept(concept, index));
+  const nodeById = new Map(nodes.map((node) => [node.id, node]));
+  const conceptBySourceNodeId = new Map(concepts.map((concept) => [concept.sourceNodeId, concept]));
+  const conceptIndexBySourceNodeId = new Map(concepts.map((concept, index) => [concept.sourceNodeId, index]));
+  const childrenByParent = new Map<string, NormalizedRoadmapNode[]>();
+  for (const node of nodes) {
+    if (!node.parentId) continue;
+    const children = childrenByParent.get(node.parentId) ?? [];
+    children.push(node);
+    childrenByParent.set(node.parentId, children);
+  }
+
+  // Structural headings describe the roadmap; actionable leaves create work.
+  // Parent projects/milestones are kept as final checkpoints after their children.
+  const actionableNodes: NormalizedRoadmapNode[] = [];
+  const visited = new Set<string>();
+  const visit = (start: NormalizedRoadmapNode) => {
+    const stack: Array<{ node: NormalizedRoadmapNode; expanded: boolean }> = [{ node: start, expanded: false }];
+    while (stack.length) {
+      const current = stack.pop()!;
+      if (current.expanded) {
+        const children = childrenByParent.get(current.node.id) ?? [];
+        if (children.length === 0 || current.node.nodeType === 'project' || current.node.nodeType === 'milestone') {
+          actionableNodes.push(current.node);
+        }
+        continue;
+      }
+      if (visited.has(current.node.id)) continue;
+      visited.add(current.node.id);
+      stack.push({ node: current.node, expanded: true });
+      const children = childrenByParent.get(current.node.id) ?? [];
+      for (let index = children.length - 1; index >= 0; index -= 1) {
+        stack.push({ node: children[index], expanded: false });
+      }
+    }
+  };
+
+  const roots = nodes.filter((node) => !node.parentId || !nodeById.has(node.parentId));
+  for (const root of roots) visit(root);
+  // Keep compilation total even if a caller supplies malformed/disconnected nodes.
+  for (const node of nodes) visit(node);
+
+  const tasks: TaskDefinition[] = [];
+  let previousTaskId: string | undefined;
+  for (const node of actionableNodes) {
+    const concept = conceptBySourceNodeId.get(node.id);
+    if (!concept) continue;
+    const index = conceptIndexBySourceNodeId.get(node.id) ?? 0;
+    const generated = generateTasksForConcept(concept, index);
+    if (previousTaskId && generated.length > 0) {
+      generated[0] = {
+        ...generated[0],
+        dependencyIds: [...new Set([...generated[0].dependencyIds, previousTaskId])],
+      };
+    }
+    tasks.push(...generated);
+    previousTaskId = generated.at(-1)?.id ?? previousTaskId;
+  }
+
   return { concepts, tasks };
 }

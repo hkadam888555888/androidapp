@@ -10,6 +10,7 @@ describe('local model endpoint boundary', () => {
     expect(() => normalizeLocalEndpoint('https://example.com/v1/chat/completions')).toThrow(/loopback/i);
     expect(() => normalizeLocalEndpoint('http://localhost:1234/v1/chat/completions?api_key=secret')).toThrow(/query-string/i);
     expect(() => normalizeLocalEndpoint('http://user:pass@localhost:1234/v1/chat/completions')).toThrow(/loopback/i);
+    expect(() => normalizeLocalEndpoint('http://[::1]:1234/v1/chat/completions')).toThrow(/loopback/i);
   });
 
   it('rejects malformed model JSON before returning provider output', async () => {

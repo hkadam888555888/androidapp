@@ -22,7 +22,7 @@ export function HabitsPage() {
   async function updateHabit(habit: typeof state.habits[number], patch: Partial<typeof habit>) { try { await appStore.saveHabit({ ...habit, ...patch }); setNotice(`${habit.name} settings saved.`); } catch (e) { setNotice(e instanceof Error ? e.message : 'Could not save habit settings.'); } }
 
   return <section className="page">
-    <header className="page-header"><div><p className="eyebrow">v0.6 consistency engine</p><h1>Habits</h1><p className="muted">Recurring habits now have explicit due dates, partial completion rules, logs, adherence, and streaks. Missing data stays unreported.</p></div></header>
+    <header className="page-header"><div><p className="eyebrow">v0.6 consistency engine</p><h1>Habits</h1></div></header>
     {notice && <div className="notice-bar">{notice}</div>}
     <div className="stats-grid"><article className="card stat-card"><span>Exercise today</span><strong>{exerciseToday} min</strong><small>Target {exerciseTarget} min</small></article><article className="card stat-card"><span>Water today</span><strong>{waterToday} ml</strong><small>Target {waterTarget} ml</small></article><article className="card stat-card"><span>Active habits</span><strong>{state.habits.filter((h) => h.active).length}</strong><small>Each habit follows its own recurrence</small></article><article className="card stat-card"><span>Habit logs</span><strong>{state.habitLogs.length}</strong><small>Explicitly recorded locally</small></article></div>
     <div className="habit-v06-grid">{habitCards.map(({ habit, occurrence, summary }) => <article className="card" key={habit.id}>
