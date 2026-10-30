@@ -2,8 +2,22 @@ import type { CurriculumConcept, Difficulty, TaskDefinition, TaskPriority } from
 
 type LearningPattern = 'programming' | 'mathematics' | 'data' | 'project' | 'general';
 
-function classifyTopic(title: string, nodeType: CurriculumConcept['nodeType']): LearningPattern {
+function classifyTopic(
+  title: string,
+  nodeType: CurriculumConcept['nodeType'],
+  contextTitles: string[],
+): LearningPattern {
   if (nodeType === 'project' || nodeType === 'milestone') return 'project';
+
+  // A leaf such as "Arrays" is ambiguous by itself. Its nearest section
+  // (NumPy, Python, Mathematics, etc.) is the stronger signal.
+  for (const context of [...contextTitles].reverse()) {
+    const section = context.toLocaleLowerCase();
+    if (/\b(numpy|pandas|data analysis|data science|dataset|eda|visualization|data cleaning|dataframe|feature engineering)\b/u.test(section)) return 'data';
+    if (/\b(mathematics|math|probability|statistics|calculus|linear algebra|discrete math)\b/u.test(section)) return 'mathematics';
+    if (/\b(python|java|javascript|typescript|programming|software|coding|sql|data structures)\b/u.test(section)) return 'programming';
+  }
+
   const topic = title.toLocaleLowerCase();
   if (/\b(python|java|javascript|typescript|programming|code|coding|variables?|functions?|loops?|arrays?|classes?|objects?|algorithms?|data structures?|recursion|sql)\b/u.test(topic)) return 'programming';
   if (/\b(probability|statistics|calculus|linear algebra|matrix|matrices|derivative|integral|differentiation|optimization|discrete math|permutation|combination|regression)\b/u.test(topic)) return 'mathematics';
@@ -11,9 +25,13 @@ function classifyTopic(title: string, nodeType: CurriculumConcept['nodeType']): 
   return 'general';
 }
 
-export function generateTasksForConcept(concept: CurriculumConcept, orderIndex: number): TaskDefinition[] {
+export function generateTasksForConcept(
+  concept: CurriculumConcept,
+  orderIndex: number,
+  contextTitles: string[] = [],
+): TaskDefinition[] {
   const base = concept.title.trim();
-  const pattern = classifyTopic(base, concept.nodeType);
+  const pattern = classifyTopic(base, concept.nodeType, contextTitles);
   const priority: TaskPriority = pattern === 'project' ? 'high' : 'medium';
   const difficulty: Difficulty = pattern === 'project' ? 'very_hard' : concept.nodeType === 'concept' || concept.nodeType === 'skill' ? 'medium' : 'easy';
 
