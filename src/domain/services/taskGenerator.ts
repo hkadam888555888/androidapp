@@ -13,7 +13,7 @@ function classifyTopic(
   // (NumPy, Python, Mathematics, etc.) is the stronger signal.
   for (const context of [...contextTitles].reverse()) {
     const section = context.toLocaleLowerCase();
-    if (/\b(numpy|pandas|data analysis|data science|dataset|eda|visualization|data cleaning|dataframe|feature engineering)\b/u.test(section)) return 'data';
+    if (/\b(numpy|pandas|data(?!\s+structures?)|data analysis|data science|dataset|eda|visualization|data cleaning|dataframe|feature engineering|machine learning|deep learning|scikit-learn|sklearn|pytorch|tensorflow)\b/u.test(section)) return 'data';
     if (/\b(mathematics|math|probability|statistics|calculus|linear algebra|discrete math)\b/u.test(section)) return 'mathematics';
     if (/\b(python|java|javascript|typescript|programming|software|coding|sql|data structures)\b/u.test(section)) return 'programming';
   }
@@ -21,7 +21,7 @@ function classifyTopic(
   const topic = title.toLocaleLowerCase();
   if (/\b(python|java|javascript|typescript|programming|code|coding|variables?|functions?|loops?|arrays?|classes?|objects?|algorithms?|data structures?|recursion|sql)\b/u.test(topic)) return 'programming';
   if (/\b(probability|statistics|calculus|linear algebra|matrix|matrices|derivative|integral|differentiation|optimization|discrete math|permutation|combination|regression)\b/u.test(topic)) return 'mathematics';
-  if (/\b(pandas|numpy|dataset|data analysis|eda|visualization|data cleaning|dataframe|machine learning|feature engineering)\b/u.test(topic)) return 'data';
+  if (/\b(pandas|numpy|dataset|data analysis|eda|visualization|data cleaning|dataframe|machine learning|deep learning|feature engineering|scikit-learn|sklearn|pytorch|tensorflow)\b/u.test(topic)) return 'data';
   return 'general';
 }
 
