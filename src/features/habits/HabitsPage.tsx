@@ -7,7 +7,7 @@ import { createId } from '../../lib/id';
 export function HabitsPage() {
   const state = useAppStore();
   const date = getCurrentDate();
-  const [waterAmount, setWaterAmount] = useState(state.habits.find((h) => h.kind === 'water' && h.active)?.targetValue ? Math.min(500, state.habits.find((h) => h.kind === 'water' && h.active)!.targetValue) : 250);
+  const [waterAmount, setWaterAmount] = useState(250);
   const [exerciseMinutes, setExerciseMinutes] = useState(state.habits.find((h) => h.kind === 'exercise' && h.active)?.targetValue ?? 30);
   const [notice, setNotice] = useState('');
   const [exerciseGoalDraft, setExerciseGoalDraft] = useState(30);
