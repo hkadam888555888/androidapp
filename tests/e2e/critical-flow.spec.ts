@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 
 async function finishFirstRunSetup(page: import('@playwright/test').Page) {
   await page.goto('/');
@@ -113,7 +113,7 @@ test.describe('My Adaptive Routine critical flow', () => {
     const dialog = page.getByRole('dialog');
     await expect(dialog.getByText('Ready when you are')).toBeVisible();
     const [minutes, seconds] = (await dialog.locator('.focus-timer strong').innerText()).split(':').map(Number);
-    await page.clock.install();
+    await page.clock.install({ time: new Date('2026-10-30T08:00:00.000Z') });
     await dialog.getByRole('button', { name: 'Start timer' }).click();
     await page.clock.fastForward((minutes * 60 + seconds + 2) * 1000);
     await expect(dialog.getByText('Time block ended')).toBeVisible();

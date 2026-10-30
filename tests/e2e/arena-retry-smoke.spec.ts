@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 
 test('Arena retry smoke: invalid external-task interval is rejected', async ({ page }) => {
   await page.goto('/');

@@ -2,6 +2,7 @@ import type { DailyTask, DayPlan, RoadmapTask, TaskPriority, PlannerDecision } f
 import { buildDailyPlanDetailed, type PlannerInput, type PlannedSlot } from '../domain/engine/planner';
 import { buildDailyReview } from '../domain/services/reviewService';
 import { isValidISODate, previousISO } from './date';
+import { includeElapsedTimeBlock } from './planningTimeConstraints';
 import { reconcilePlanTasks } from './planInstances';
 import { appStore } from './appStore';
 import { getDatabase } from '../data/db/database';
@@ -35,7 +36,7 @@ export async function generateAndPersistPlan(date: string): Promise<{ plan: DayP
       habitLogs: state.habitLogs,
       waterLogs: state.waterLogs,
       exerciseLogs: state.exerciseLogs,
-      busyEvents: state.busyEvents,
+      busyEvents: includeElapsedTimeBlock(date, state.busyEvents, state.preferences.wakeTime),
       preferences: state.preferences,
       plannerSettings: state.plannerSettings,
       estimationProfiles: state.estimationProfiles,

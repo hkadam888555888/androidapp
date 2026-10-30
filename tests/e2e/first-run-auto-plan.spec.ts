@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 
 test('first-run setup creates a usable Today schedule without a manual Generate action', async ({ page }) => {
   await page.goto('/');
