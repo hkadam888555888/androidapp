@@ -6,7 +6,7 @@ test('first-run setup creates a usable Today schedule without a manual Generate 
   const roadmap = page.getByRole('textbox', { name: 'Paste your roadmap' });
   await expect(roadmap).toBeVisible();
   await roadmap.fill(
-    '# Test roadmap\\n## Python\\n### Variables\\n### Functions\\n## Mathematics\\n### Probability',
+    '# Test roadmap\n## Python\n### Variables\n### Functions\n## Mathematics\n### Probability',
   );
 
   await page.getByRole('button', { name: 'Next: routine' }).click();
