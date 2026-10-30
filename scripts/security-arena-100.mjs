@@ -137,7 +137,7 @@ const openDbAt = store.indexOf('const db = await getDatabase()', importStart);
 check('91 Complete backup validation precedes database access', importStart >= 0 && validateAt >= 0 && openDbAt > validateAt);
 check('92 Related preferences and AI settings save atomically', store.includes("db.transaction(['preferences', 'plannerSettings', 'aiSettings', 'audits'], 'readwrite')"));
 check('93 AI settings normalization forces local-only mode', store.includes('localOnly: true, cloudEnabled: false'));
-check('94 Loaded AI settings are sanitized and invalid local providers safely fall back', store.includes('safeLoadedAISettings(finalAISettings)') && factory.includes('catch { return new RuleBasedProvider(); }'));
+check('94 Loaded AI settings are sanitized and invalid selected local providers fail visibly instead of silently downgrading', store.includes('safeLoadedAISettings(finalAISettings)') && factory.includes('if (!settings.localEndpoint) throw new Error') && !factory.includes('catch { return new RuleBasedProvider(); }'));
 check('95 Local-data deletion requires exact DELETE confirmation', settings.includes("disabled={deleteConfirmation !== 'DELETE'}") && settings.includes('Type DELETE to confirm'));
 check('96 Notification delivery stops unless explicitly enabled', app.includes('if (stateNow.preferences?.notificationsEnabled !== true) return;'));
 check('97 Privacy page is routed and linked from settings', app.includes('path="/privacy"') && settings.includes('to="/privacy"'));
