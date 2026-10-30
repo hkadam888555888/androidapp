@@ -63,9 +63,18 @@ export function compileCurriculum(nodes: NormalizedRoadmapNode[]): CompiledCurri
     const concept = conceptBySourceNodeId.get(node.id);
     if (!concept) continue;
     const index = conceptIndexBySourceNodeId.get(node.id) ?? 0;
-    // Keep each concept's own learning/practice dependency, but do not block
-    // unrelated sibling concepts behind an implicit global sequence.
-    tasks.push(...generateTasksForConcept(concept, index));
+    // Inherit the nearest section context so ambiguous leaf titles are classified
+    // correctly (for example, Arrays under NumPy vs Arrays under Python).
+    const contextTitles: string[] = [];
+    let parent = node.parentId ? nodeById.get(node.parentId) : undefined;
+    while (parent) {
+      if (parent.nodeType !== 'subject') contextTitles.unshift(parent.cleanedTitle);
+      parent = parent.parentId ? nodeById.get(parent.parentId) : undefined;
+    }
+
+    // Keep each concept's own learning/practice dependency; unrelated siblings
+    // must remain independently schedulable.
+    tasks.push(...generateTasksForConcept(concept, index, contextTitles));
   }
 
   return { concepts, tasks };
