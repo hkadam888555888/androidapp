@@ -30,4 +30,16 @@ describe('curriculum compiler progression', () => {
     expect(compiled.tasks.some((task) => task.title.includes('Roadmap'))).toBe(false);
     expect(compiled.tasks.some((task) => task.title.includes('Python'))).toBe(false);
   });
+  it('uses parent sections to disambiguate identical roadmap leaf titles', () => {
+    const parsed = parseRoadmap(
+      '# AI/ML ROADMAP\\n## NumPy\\n### Arrays\\n## Python\\n### Functions\\n## Mathematics\\n### Functions',
+      'context',
+    );
+    const compiled = compileCurriculum(parsed.nodes);
+    const titles = compiled.tasks.map((task) => task.title);
+
+    expect(titles).toContain('Explore Arrays with a small dataset');
+    expect(titles).toContain('Implement Functions in a small program');
+    expect(titles).toContain('Derive and explain Functions');
+  });
 });
