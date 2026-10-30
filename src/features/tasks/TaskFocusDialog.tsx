@@ -14,7 +14,6 @@ export function TaskFocusDialog({ task, onClose, onComplete, onSkip }: TaskFocus
   const [running, setRunning] = useState(false);
   const [expired, setExpired] = useState(false);
   const deadlineRef = useRef<number | null>(null);
-  const elapsedBeforeStartRef = useRef(0);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
   useEffect(() => {
@@ -30,8 +29,7 @@ export function TaskFocusDialog({ task, onClose, onComplete, onSkip }: TaskFocus
       if (deadline === null) return;
       const next = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
       setRemainingSeconds(next);
-      const elapsed = Math.min(initialSeconds, elapsedBeforeStartRef.current + initialSeconds - next);
-      setElapsedSeconds(elapsed);
+      setElapsedSeconds(initialSeconds - next);
       if (next === 0) { deadlineRef.current = null; setRunning(false); setExpired(true); }
     }, 1000);
     return () => window.clearInterval(timer);
@@ -41,10 +39,8 @@ export function TaskFocusDialog({ task, onClose, onComplete, onSkip }: TaskFocus
     if (running) {
       if (deadlineRef.current !== null) {
         const remaining = Math.max(0, Math.ceil((deadlineRef.current - Date.now()) / 1000));
-        const elapsedThisRun = initialSeconds - remaining - elapsedBeforeStartRef.current;
-        elapsedBeforeStartRef.current += Math.max(0, elapsedThisRun);
         setRemainingSeconds(remaining);
-        setElapsedSeconds(elapsedBeforeStartRef.current);
+        setElapsedSeconds(initialSeconds - remaining);
       }
       deadlineRef.current = null; setRunning(false); return;
     }

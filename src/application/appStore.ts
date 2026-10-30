@@ -92,6 +92,46 @@ class AppStore {
     });
   }
 
+  async saveFirstRunSetup(
+    roadmap: Roadmap,
+    tasks: RoadmapTask[],
+    curriculum: { version: CurriculumVersion; concepts: CurriculumConcept[]; definitions: TaskDefinition[] },
+    preferences: UserPreferences,
+    habits: Habit[],
+  ): Promise<void> {
+    for (const habit of habits) {
+      if (!Number.isFinite(habit.targetValue) || habit.targetValue <= 0) throw new Error('Every enabled habit needs a positive target.');
+      if (habit.minimumValue !== undefined && (!Number.isFinite(habit.minimumValue) || habit.minimumValue < 0 || habit.minimumValue > habit.targetValue)) {
+        throw new Error('A habit minimum must be between zero and its target.');
+      }
+    }
+    const db = await getDatabase();
+    const tx = db.transaction(['roadmaps', 'roadmapTasks', 'curriculumVersions', 'curriculumConcepts', 'taskDefinitions', 'preferences', 'habits', 'audits'], 'readwrite');
+    try {
+      // All first-run records are committed together. A failure cannot leave a
+      // roadmap saved while preferences or habits are still missing.
+      const existingPreferences = await tx.objectStore('preferences').get(preferences.id);
+      if (existingPreferences?.onboardingCompleted) throw new Error('Setup has already been completed in another tab. Reload to continue.');
+      await tx.objectStore('roadmaps').put(roadmap);
+      for (const task of tasks) await tx.objectStore('roadmapTasks').put(task);
+      await tx.objectStore('curriculumVersions').put(curriculum.version);
+      for (const concept of curriculum.concepts) await tx.objectStore('curriculumConcepts').put(concept);
+      for (const definition of curriculum.definitions) await tx.objectStore('taskDefinitions').put(definition);
+      await tx.objectStore('preferences').put(preferences);
+      for (const habit of habits) await tx.objectStore('habits').put(habit);
+      const audit = this.audit('onboarding.setup.completed', 'roadmap', roadmap.id, {
+        taskCount: tasks.length, habitCount: habits.length, curriculumVersion: curriculum.version.version,
+      });
+      await tx.objectStore('audits').put(audit);
+      await tx.done;
+    } catch (error) {
+      try { tx.abort(); } catch { /* The transaction may already have aborted. */ }
+      try { await tx.done; } catch { /* Consume the aborted transaction result. */ }
+      throw error;
+    }
+    await this.load();
+  }
+
   async createRoadmap(roadmap: Roadmap, tasks: RoadmapTask[], curriculum?: { version: CurriculumVersion; concepts: CurriculumConcept[]; definitions: TaskDefinition[] }): Promise<void> {
     const db = await getDatabase();
     const existingById = new Map(this.state.roadmapTasks.filter((task) => task.roadmapId === roadmap.id).map((task) => [task.id, task]));
@@ -306,6 +346,50 @@ class AppStore {
       throw error;
     }
 
+    await this.load();
+  }
+
+  async deleteWaterLog(id: ID): Promise<void> {
+    const db = await getDatabase();
+    const tx = db.transaction(['waterLogs', 'audits'], 'readwrite');
+    const entry = await tx.objectStore('waterLogs').get(id);
+    if (!entry) { await tx.done; return; }
+    const audit = this.audit('water.corrected_removed', 'waterLog', id, { date: entry.date, amountMl: entry.amountMl });
+    await tx.objectStore('waterLogs').delete(id);
+    await tx.objectStore('audits').put(audit);
+    await tx.done;
+    await this.load();
+  }
+
+  async deleteExerciseLog(id: ID): Promise<void> {
+    const db = await getDatabase();
+    const tx = db.transaction(['exerciseLogs', 'habitLogs', 'dailyTasks', 'audits'], 'readwrite');
+    try {
+      const [entry, habitLog, dailyTasks] = await Promise.all([
+        tx.objectStore('exerciseLogs').get(id),
+        tx.objectStore('habitLogs').get(`habitlog:exercise:${id}`),
+        tx.objectStore('dailyTasks').getAll(),
+      ]);
+      if (!entry) { await tx.done; return; }
+      const alreadyReported = habitLog && dailyTasks.some((task) =>
+        task.date === entry.date && task.sourceHabitId === habitLog.habitId &&
+        ['completed', 'partial', 'skipped'].includes(task.status),
+      );
+      if (alreadyReported) {
+        throw new Error('This exercise entry has already produced a reported task result. Keep it as history; use Daily Review to add a correction note.');
+      }
+      await tx.objectStore('exerciseLogs').delete(id);
+      if (habitLog) await tx.objectStore('habitLogs').delete(habitLog.id);
+      const audit = this.audit('exercise.corrected_removed', 'exerciseLog', id, {
+        date: entry.date, durationMinutes: entry.durationMinutes ?? 0, habitLogRemoved: Boolean(habitLog),
+      });
+      await tx.objectStore('audits').put(audit);
+      await tx.done;
+    } catch (error) {
+      try { tx.abort(); } catch { /* The transaction may already have aborted. */ }
+      try { await tx.done; } catch { /* Consume the aborted transaction result. */ }
+      throw error;
+    }
     await this.load();
   }
 

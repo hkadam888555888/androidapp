@@ -37,7 +37,7 @@ export function generateTasksForConcept(concept: CurriculumConcept, orderIndex: 
           ? { title: \`Build and verify \${base}\`, objective: \`Create the smallest useful version of \${base}; validate it against the acceptance checklist.\`, type: 'mini_project' as const, estimatedMinutes: 60, minMinutes: 40, maxMinutes: 90, completionCriteria: \`A working artifact satisfies the agreed acceptance checklist and includes a short test or demonstration.\` }
           : { title: \`Apply \${base} to a new problem\`, objective: \`Use \${base} in a different example, compare your approach with the worked example, and note the trade-offs.\`, type: 'practice' as const, estimatedMinutes: 40, minMinutes: 25, maxMinutes: 60, completionCriteria: \`Complete two new applications of \${base} and explain why the approach works.\` };
 
-  const templates = [learningTask, practiceTask];
+  const templates: Array<{ title: string; objective: string; type: TaskDefinition['type']; estimatedMinutes: number; minMinutes: number; maxMinutes: number; completionCriteria: string }> = [learningTask, practiceTask];
   if (pattern === 'project') {
     templates.push({ title: \`Review the \${base} milestone\`, objective: \`Check the completed artifact against scope, quality, and acceptance criteria; record remaining gaps.\`, type: 'checkpoint', estimatedMinutes: 25, minMinutes: 15, maxMinutes: 40, completionCriteria: \`The artifact is reviewed against every acceptance criterion and remaining gaps are recorded.\` });
   }
