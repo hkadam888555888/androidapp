@@ -394,12 +394,17 @@ class AppStore {
   }
 
   async logWater(date: string, amountMl: number): Promise<void> {
+    if (!isValidISODate(date)) throw new Error('Water log date must be a valid YYYY-MM-DD date.');
     const roundedAmount = Math.round(amountMl);
     if (!Number.isFinite(amountMl) || roundedAmount <= 0) throw new Error('Water amount must round to at least 1 ml.');
     const entry: WaterLog = { id: `water:${date}:${Date.now()}:${Math.random().toString(16).slice(2)}`, date, amountMl: roundedAmount, recordedAt: new Date().toISOString() };
-    const repo = new IndexedDbRepository<WaterLog, 'waterLogs'>(getDatabase, 'waterLogs');
-    await repo.put(entry);
-    this.setState({ ...this.state, waterLogs: [...this.state.waterLogs, entry] });
+    const audit = this.audit('water.logged', 'waterLog', entry.id, { date, amountMl: roundedAmount });
+    const db = await getDatabase();
+    const tx = db.transaction(['waterLogs', 'audits'], 'readwrite');
+    await tx.objectStore('waterLogs').put(entry);
+    await tx.objectStore('audits').put(audit);
+    await tx.done;
+    this.setState({ ...this.state, waterLogs: [...this.state.waterLogs, entry], audits: [...this.state.audits, audit] });
   }
 
   async logExercise(date: string, durationMinutes: number, exerciseType = 'Exercise'): Promise<void> {

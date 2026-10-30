@@ -69,9 +69,13 @@ export function OnboardingPage() {
   }
 
   async function skipOnboarding() {
-    if (!state.preferences) return;
-    await appStore.savePreferences({ ...state.preferences, onboardingCompleted: true });
-    navigate('/today');
+    if (!state.preferences) { setError('Your local preferences are not ready yet.'); return; }
+    try {
+      await appStore.savePreferences({ ...state.preferences, onboardingCompleted: true });
+      navigate('/today');
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Could not save the first-run preference. Please retry.');
+    }
   }
 
   async function finishSetup() {

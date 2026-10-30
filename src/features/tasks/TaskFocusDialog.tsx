@@ -14,12 +14,34 @@ export function TaskFocusDialog({ task, onClose, onComplete, onSkip }: TaskFocus
   const [running, setRunning] = useState(false);
   const [expired, setExpired] = useState(false);
   const deadlineRef = useRef<number | null>(null);
+  const dialogRef = useRef<HTMLElement | null>(null);
+  const returnFocusRef = useRef<HTMLElement | null>(null);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
   useEffect(() => {
-    function onKeyDown(event: KeyboardEvent) { if (event.key === 'Escape') onClose(); }
+    returnFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const dialog = dialogRef.current;
+    const focusableSelector = 'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])';
+    const focusable = () => Array.from(dialog?.querySelectorAll<HTMLElement>(focusableSelector) ?? []).filter((element) => !element.hasAttribute('hidden') && element.getAttribute('aria-hidden') !== 'true');
+    const initial = focusable();
+    (initial[0] ?? dialog)?.focus();
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') { onClose(); return; }
+      if (event.key !== 'Tab' || !dialog) return;
+      const items = focusable();
+      if (!items.length) { event.preventDefault(); dialog.focus(); return; }
+      const first = items[0];
+      const last = items[items.length - 1];
+      const outside = !dialog.contains(document.activeElement);
+      if (event.shiftKey && (document.activeElement === first || outside)) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && (document.activeElement === last || outside)) { event.preventDefault(); first.focus(); }
+    }
     window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+      returnFocusRef.current?.focus();
+    };
   }, [onClose]);
 
   useEffect(() => {
@@ -54,7 +76,7 @@ export function TaskFocusDialog({ task, onClose, onComplete, onSkip }: TaskFocus
 
   return (
     <div className="focus-dialog-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
-      <section className="focus-dialog" role="dialog" aria-modal="true" aria-labelledby="focus-dialog-title" aria-describedby="focus-dialog-note">
+      <section ref={dialogRef} className="focus-dialog" role="dialog" aria-modal="true" aria-labelledby="focus-dialog-title" aria-describedby="focus-dialog-note" tabIndex={-1}>
         <div className="focus-dialog-header">
           <div><p className="eyebrow">Focused work</p><h2 id="focus-dialog-title">{task.title}</h2><StatusBadge status={task.status} /></div>
           <button type="button" className="button secondary focus-dialog-close" onClick={onClose} aria-label="Close focus timer">×</button>
