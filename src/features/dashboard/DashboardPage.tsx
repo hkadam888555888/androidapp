@@ -57,8 +57,8 @@ export function DashboardPage() {
     <div className="stats-grid">
       <article className="card stat-card"><span>Today progress</span><strong>{progress}%</strong><small>{completed}/{todayTasks.length} completed · {reported} reported</small><ProgressBar value={progress} label="Today's completed tasks" /></article>
       <article className="card stat-card"><span>Planned study</span><strong>{todayTasks.reduce((s, t) => s + t.plannedMinutes, 0)} min</strong><small>Explicitly scheduled blocks only</small></article>
-      <article className="card stat-card"><span>Exercise</span><strong>{exerciseToday} min</strong><small>{state.habits.find((h) => h.kind === 'exercise')?.targetValue ?? 0} min target</small></article>
-      <article className="card stat-card"><span>Water</span><strong>{waterToday} ml</strong><small>{state.habits.find((h) => h.kind === 'water')?.targetValue ?? 0} ml target · logged only</small></article>
+      <article className="card stat-card"><span>Exercise</span><strong>{exerciseToday} min</strong><small>{(state.habits.find((h) => h.kind === 'exercise' && h.active)?.targetValue ?? 0) > 0 ? `${state.habits.find((h) => h.kind === 'exercise' && h.active)!.targetValue} min target` : 'No target configured'}</small></article>
+      <article className="card stat-card"><span>Water</span><strong>{waterToday} ml</strong><small>{(state.habits.find((h) => h.kind === 'water' && h.active)?.targetValue ?? 0) > 0 ? `${state.habits.find((h) => h.kind === 'water' && h.active)!.targetValue} ml target` : 'No target configured'} · logged only</small></article>
     </div>
 
     <div className="content-grid">
