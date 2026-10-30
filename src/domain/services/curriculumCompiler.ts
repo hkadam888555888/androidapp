@@ -59,20 +59,13 @@ export function compileCurriculum(nodes: NormalizedRoadmapNode[]): CompiledCurri
   for (const node of nodes) visit(node);
 
   const tasks: TaskDefinition[] = [];
-  let previousTaskId: string | undefined;
   for (const node of actionableNodes) {
     const concept = conceptBySourceNodeId.get(node.id);
     if (!concept) continue;
     const index = conceptIndexBySourceNodeId.get(node.id) ?? 0;
-    const generated = generateTasksForConcept(concept, index);
-    if (previousTaskId && generated.length > 0) {
-      generated[0] = {
-        ...generated[0],
-        dependencyIds: [...new Set([...generated[0].dependencyIds, previousTaskId])],
-      };
-    }
-    tasks.push(...generated);
-    previousTaskId = generated.at(-1)?.id ?? previousTaskId;
+    // Keep each concept's own learning/practice dependency, but do not block
+    // unrelated sibling concepts behind an implicit global sequence.
+    tasks.push(...generateTasksForConcept(concept, index));
   }
 
   return { concepts, tasks };
