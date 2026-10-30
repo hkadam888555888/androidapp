@@ -1,6 +1,6 @@
 import type { BusyEvent, ISODate } from '../domain/entities/models';
 import { fromMinutes, toMinutes } from '../domain/engine/availabilityEngine';
-import { todayISO } from './date';
+import { localISODate } from './date';
 
 /**
  * Prevent same-day plans from placing work in a study window that has already
@@ -12,7 +12,7 @@ export function includeElapsedTimeBlock(
   wakeTime: string,
   now = new Date(),
 ): BusyEvent[] {
-  if (date !== todayISO(now)) return busyEvents;
+  if (date !== localISODate(now)) return busyEvents;
 
   const nowMinutes = now.getHours() * 60
     + now.getMinutes()
