@@ -32,7 +32,7 @@ describe('curriculum compiler progression', () => {
   });
   it('uses parent sections to disambiguate identical roadmap leaf titles', () => {
     const parsed = parseRoadmap(
-      '# AI/ML ROADMAP\\n## NumPy\\n### Arrays\\n## Python\\n### Functions\\n## Mathematics\\n### Functions',
+      '# AI/ML ROADMAP\n## NumPy\n### Arrays\n## Python\n### Functions\n## Mathematics\n### Functions',
       'context',
     );
     const compiled = compileCurriculum(parsed.nodes);
