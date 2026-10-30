@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { appStore, useAppStore } from '../../application/appStore';
 import { getCurrentDate } from '../../application/appStore';
@@ -30,6 +30,28 @@ export function DashboardPage() {
   const exerciseToday = state.exerciseLogs.filter((x) => x.date === date).reduce((sum, x) => sum + (x.durationMinutes ?? 0), 0);
   const pendingReview = useMemo(() => buildDailyReview(state.dailyTasks, date), [state.dailyTasks, date]);
   const activeRoadmap = state.roadmaps.find((r) => r.active);
+  const hasCurrentPlan = state.dayPlans.some((plan) => plan.date === date && plan.state !== 'superseded');
+  const autoPlanAttemptedForDate = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!state.ready || !state.preferences?.onboardingCompleted || !activeRoadmap || hasCurrentPlan) return;
+    if (autoPlanAttemptedForDate.current === date) return;
+
+    autoPlanAttemptedForDate.current = date;
+    setBusy(true);
+    setNotice('Preparing today’s routine from your roadmap and available time…');
+    void generateAndPersistPlan(date)
+      .then(({ tasks }) => {
+        setNotice(tasks.length
+          ? `Today’s schedule is ready: ${tasks.length} block${tasks.length === 1 ? '' : 's'} planned.`
+          : 'Your roadmap is saved, but no work fit today’s available time. Review your study window and capacity in Planner.');
+      })
+      .catch((error: unknown) => {
+        setNotice(error instanceof Error ? error.message : 'Could not prepare today’s routine. Open Planner to retry.');
+      })
+      .finally(() => setBusy(false));
+  }, [state.ready, state.preferences?.onboardingCompleted, activeRoadmap?.id, hasCurrentPlan, date]);
+
   const completed = todayTasks.filter((task) => task.status === 'completed').length;
   const reported = todayTasks.filter((task) => task.status === 'completed' || task.status === 'partial' || task.status === 'skipped').length;
   const progress = todayTasks.length ? Math.round((completed / todayTasks.length) * 100) : 0;
@@ -49,7 +71,7 @@ export function DashboardPage() {
   const currentTask = todayTasks.find((task) => task.status === 'planned');
 
   return <section className="page">
-    <header className="page-header"><div><p className="eyebrow">{new Date(`${date}T12:00:00`).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</p><h1>Today</h1><p className="muted">{currentTask ? `Next: ${currentTask.title}` : todayTasks.length === 0 ? (activeRoadmap ? 'Your roadmap is ready. Build today’s schedule when you are.' : 'Start by adding a roadmap.') : pendingReview.required ? 'Your planned work is done. Review the day before moving on.' : 'Your scheduled work is finished. Check your progress or plan the next day.'}</p></div><div className="header-actions">{todayTasks.length > 0 && <button className="button secondary" onClick={regenerate} disabled={busy}>{busy ? 'Building…' : 'Regenerate plan'}</button>}{currentTask ? <button className="button primary" onClick={() => setFocusedTask(currentTask)}>Start focus</button> : todayTasks.length === 0 ? (activeRoadmap ? <button className="button primary" onClick={regenerate} disabled={busy}>{busy ? 'Building…' : 'Generate today'}</button> : <Link className="button primary" to="/roadmap">Open roadmap</Link>) : pendingReview.required ? <Link className="button primary" to="/review">Review day</Link> : <Link className="button primary" to="/statistics">View progress</Link>}</div></header>
+    <header className="page-header"><div><p className="eyebrow">{new Date(`${date}T12:00:00`).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</p><h1>Today</h1><p className="muted">{currentTask ? `Next: ${currentTask.title}` : todayTasks.length === 0 ? (activeRoadmap ? (busy ? 'Preparing today’s schedule…' : 'Your roadmap is ready. Build today’s schedule when you are.') : 'Start by adding a roadmap.') : pendingReview.required ? 'Your planned work is done. Review the day before moving on.' : 'Your scheduled work is finished. Check your progress or plan the next day.'}</p></div><div className="header-actions">{todayTasks.length > 0 && <button className="button secondary" onClick={regenerate} disabled={busy}>{busy ? 'Building…' : 'Regenerate plan'}</button>}{currentTask ? <button className="button primary" onClick={() => setFocusedTask(currentTask)}>Start focus</button> : todayTasks.length === 0 ? (activeRoadmap ? <button className="button primary" onClick={regenerate} disabled={busy}>{busy ? 'Building…' : 'Generate today'}</button> : <Link className="button primary" to="/roadmap">Open roadmap</Link>) : pendingReview.required ? <Link className="button primary" to="/review">Review day</Link> : <Link className="button primary" to="/statistics">View progress</Link>}</div></header>
 
     {pendingReview.required && <div className="review-banner"><div><strong>Daily Review Required</strong><span>{pendingReview.unresolvedTaskIds?.length ?? 0} task(s) still need an explicit result. Nothing is assumed complete.</span></div><Link className="button primary" to="/review">Review</Link></div>}
     {notice && <div className="notice-bar">{notice}</div>}
@@ -63,7 +85,7 @@ export function DashboardPage() {
 
     <div className="content-grid">
       <article className="card large-card"><div className="card-heading"><div><span className="eyebrow">Execution</span><h2>Today's routine</h2></div><span className={todayTasks.length ? 'pill success-pill' : 'pill'}>{todayTasks.length ? `${todayTasks.length} blocks` : 'No plan'}</span></div>
-        {todayTasks.length === 0 ? <div className="empty-state"><div className="empty-icon">✦</div><h3>{activeRoadmap ? 'Ready to build your day' : 'Start with your roadmap'}</h3><p>{activeRoadmap ? 'Your roadmap and availability are ready. Use Generate today above to create one schedule.' : 'Import and save a roadmap to give the planner meaningful work to schedule.'}</p></div> : <div className="timeline">{todayTasks.map((task) => <div key={task.id} className={`timeline-item ${task.status}`}><div className="timeline-time">{task.plannedWindow?.start}<span>{task.plannedWindow?.end}</span></div><div className="timeline-card"><div><strong>{task.title}</strong><span>{task.plannedMinutes} min · {task.kind}</span></div><div className="row-actions">{task.status === 'planned' ? <><button className="button secondary" onClick={() => setFocusedTask(task)}>Focus</button><button className="button success" onClick={() => report(task.id, 'completed')}>Complete</button><button className="button danger" onClick={() => report(task.id, 'skipped')}>Skip</button></> : <StatusBadge status={task.status} />}</div></div></div>)}</div>}
+        {todayTasks.length === 0 ? <div className="empty-state"><div className="empty-icon">✦</div><h3>{activeRoadmap ? (busy ? 'Preparing your day' : 'Ready to build your day') : 'Start with your roadmap'}</h3><p>{activeRoadmap ? (busy ? 'Using your saved roadmap and study window to build today’s schedule.' : 'Your roadmap and availability are ready. Use Generate today above to create one schedule.') : 'Import and save a roadmap to give the planner meaningful work to schedule.'}</p></div> : <div className="timeline">{todayTasks.map((task) => <div key={task.id} className={`timeline-item ${task.status}`}><div className="timeline-time">{task.plannedWindow?.start}<span>{task.plannedWindow?.end}</span></div><div className="timeline-card"><div><strong>{task.title}</strong><span>{task.plannedMinutes} min · {task.kind}</span></div><div className="row-actions">{task.status === 'planned' ? <><button className="button secondary" onClick={() => setFocusedTask(task)}>Focus</button><button className="button success" onClick={() => report(task.id, 'completed')}>Complete</button><button className="button danger" onClick={() => report(task.id, 'skipped')}>Skip</button></> : <StatusBadge status={task.status} />}</div></div></div>)}</div>}
       </article>
       <article className="card"><div className="card-heading"><div><span className="eyebrow">Quick actions</span><h2>Reality inputs</h2></div></div><div className="quick-grid"><Link to="/planner" className="quick-action"><strong>+ Urgent work</strong><span>Add a conflict and replan.</span></Link><Link to="/habits" className="quick-action"><strong>Log exercise</strong><span>Record today explicitly.</span></Link><Link to="/habits" className="quick-action"><strong>Log water</strong><span>Track intake without guessing.</span></Link><Link to="/review" className="quick-action"><strong>Open review</strong><span>Resolve any unreported work.</span></Link></div></article>
     </div>
