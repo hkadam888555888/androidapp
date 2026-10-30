@@ -24,7 +24,6 @@ export function SettingsPage() {
   const [providerName, setProviderName] = useState(state.aiSettings?.providerName ?? 'RuleBasedProvider');
   const [localEndpoint, setLocalEndpoint] = useState(state.aiSettings?.localEndpoint ?? 'http://127.0.0.1:1234/v1/chat/completions');
   const [localModel, setLocalModel] = useState(state.aiSettings?.localModel ?? 'local-model');
-  const [notificationsEnabled, setNotificationsEnabled] = useState(prefs?.notificationsEnabled ?? false);
   const [deleteConfirmation, setDeleteConfirmation] = useState('');
   const [testingLocalAI, setTestingLocalAI] = useState(false);
 
@@ -37,7 +36,7 @@ export function SettingsPage() {
         setNotice('Enter the model identifier configured in your local model server.');
         return;
       }
-      const nextPreferences = { ...prefs, maxStudyMinutesPerDay: Math.round(studyMinutes), maxCognitiveMinutesPerDay: Math.round(studyMinutes), maxContinuousFocusMinutes: Math.round(focusMinutes), bufferPercentage: buffer, notificationsEnabled };
+      const nextPreferences = { ...prefs, maxStudyMinutesPerDay: Math.round(studyMinutes), maxCognitiveMinutesPerDay: Math.round(studyMinutes), maxContinuousFocusMinutes: Math.round(focusMinutes), bufferPercentage: buffer };
       const nextPlannerSettings = { ...plannerSettings, activeMode: mode, busyCapacityMinutes: Math.round(busyCapacity), examCapacityMinutes: Math.round(examCapacity), modeActiveUntil: modeUntil || undefined, examRoadmapIds };
       const nextAISettings = { id: 'ai-settings' as const, localOnly: true, cloudEnabled: false, explanationMode: explanationMode as 'short' | 'detailed', retainHistory: retainAIHistory, providerName, localEndpoint: endpoint, localModel: providerName === 'OpenAICompatibleLocalProvider' ? localModel.trim().slice(0, 160) : undefined };
       await appStore.saveSettingsBundle(nextPreferences, nextPlannerSettings, nextAISettings);
@@ -90,7 +89,7 @@ export function SettingsPage() {
         <label>Normal max study minutes/day<input type="number" min="0" value={studyMinutes} onChange={(e) => setStudyMinutes(Number(e.target.value))} /></label>
         <label>Max continuous focus<input type="number" min="1" value={focusMinutes} onChange={(e) => setFocusMinutes(Number(e.target.value))} /></label>
         <label>Protected buffer %<input type="number" min="0" max="90" value={buffer} onChange={(e) => setBuffer(Number(e.target.value))} /></label>
-        <label className="setting-row"><span><strong>Browser reminder delivery</strong><small>Only works while this app is open and permission is granted.</small></span><input type="checkbox" checked={notificationsEnabled} onChange={(e) => setNotificationsEnabled(e.target.checked)} /></label>
+        <div className="setting-row"><span><strong>Reminder delivery</strong><small>Manage permission and device/browser scheduling from Notifications.</small></span><Link className="button secondary small-button" to="/notifications">Manage reminders</Link></div>
       </div></article>
 
       <article className="card"><span className="eyebrow">Planner modes</span><h2>Capacity mode</h2><p className="muted small-copy">Modes are explicit and temporary. After the selected end date, planning returns to normal automatically.</p>
