@@ -14,7 +14,7 @@ import { SettingsPage } from '../features/settings/SettingsPage';
 import { PrivacyPage } from '../features/settings/PrivacyPage';
 import { DiagnosticsPage } from '../features/diagnostics/DiagnosticsPage';
 import { appStore, bootstrapApp, useAppStore } from '../application/appStore';
-import { deliverDueNotifications } from '../domain/services/notificationService';
+import { deliverDueNotifications, isNativeLocalNotificationsPlatform } from '../domain/services/notificationService';
 import { QuickActionsDialog } from '../components/overlays/QuickActionsDialog';
 
 const primaryNav = [
@@ -127,7 +127,7 @@ export default function App() {
   useEffect(() => {
     const tick = async () => {
       const stateNow = appStore.getSnapshot();
-      if (stateNow.preferences?.notificationsEnabled !== true) return;
+      if (stateNow.preferences?.notificationsEnabled !== true || isNativeLocalNotificationsPlatform()) return;
       const updated = deliverDueNotifications(stateNow.notifications);
       const changed = updated.filter((n, i) => n.deliveredAt !== stateNow.notifications[i]?.deliveredAt);
       try {

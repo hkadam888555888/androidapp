@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { isValidISODate } from '../../application/date';
 import { generateAndPersistPlan } from '../../application/planService';
 import { appStore, useAppStore, getCurrentDate } from '../../application/appStore';
 import { createId } from '../../lib/id';
@@ -16,6 +17,7 @@ export function PlannerPage() {
   const [externalOpen, setExternalOpen] = useState(false);
   const [busyForm, setBusyForm] = useState({ title: '', start: '14:00', end: '18:00', priority: 'high' as TaskPriority });
   const [aiExplanation, setAiExplanation] = useState<{ id: string; text: string } | null>(null);
+  const [overrideDraft, setOverrideDraft] = useState<{ taskId: string; action: 'change_duration' | 'move'; value: string; taskTitle: string } | null>(null);
   const [externalForm, setExternalForm] = useState({ title: '', category: 'PERSONAL' as ExternalTaskCategory, priority: 'medium' as TaskPriority, minutes: 30, dueDate: date, fixed: false, start: '17:00', end: '17:30' });
   const todayPlan = state.dayPlans.filter((plan) => plan.date === date).sort((a,b) => b.version - a.version)[0];
   const todayTasks = state.dailyTasks.filter((task) => task.date === date).sort((a,b) => (a.plannedWindow?.start ?? '').localeCompare(b.plannedWindow?.start ?? ''));
@@ -36,9 +38,11 @@ export function PlannerPage() {
   async function addBusyEvent() {
     if (!busyForm.title.trim() || busyForm.end <= busyForm.start) { setNotice('Enter a title and a valid time range.'); return; }
     const event: BusyEvent = { id: createId('busy'), date, title: busyForm.title.trim(), window: { start: busyForm.start, end: busyForm.end }, priority: busyForm.priority, blocksPlanning: true, fixed: true };
-    await appStore.saveBusyEvent(event);
-    setBusyOpen(false);
-    setNotice('Busy event added. Regenerate the plan to account for it.');
+    try {
+      await appStore.saveBusyEvent(event);
+      setBusyOpen(false);
+      setNotice('Busy event added. Regenerate the plan to account for it.');
+    } catch (error) { setNotice(error instanceof Error ? error.message : 'Could not save the busy block.'); }
   }
 
   async function addExternalTask() {
@@ -49,14 +53,42 @@ export function PlannerPage() {
       const end = Number(externalForm.end.slice(0, 2)) * 60 + Number(externalForm.end.slice(3));
       if (end - start < externalForm.minutes) { setNotice('The fixed time window is shorter than the estimated duration.'); return; }
     }
+    if (externalForm.dueDate && !isValidISODate(externalForm.dueDate)) { setNotice('Choose a valid due date.'); return; }
     const now = new Date().toISOString();
-    await appStore.saveExternalTask({
-      id: createId('external'), title: externalForm.title.trim(), category: externalForm.category, estimatedMinutes: Math.round(externalForm.minutes), priority: externalForm.priority,
-      dueDate: externalForm.dueDate || undefined, fixedWindow: externalForm.fixed ? { start: externalForm.start, end: externalForm.end } : undefined,
-      status: 'planned', active: true, splittable: false, createdAt: now, updatedAt: now,
-    });
-    setExternalOpen(false);
-    setNotice('External task added to the global planner. Regenerate to schedule it.');
+    try {
+      await appStore.saveExternalTask({
+        id: createId('external'), title: externalForm.title.trim(), category: externalForm.category, estimatedMinutes: Math.round(externalForm.minutes), priority: externalForm.priority,
+        dueDate: externalForm.dueDate || undefined, fixedWindow: externalForm.fixed ? { start: externalForm.start, end: externalForm.end } : undefined,
+        status: 'planned', active: true, splittable: false, createdAt: now, updatedAt: now,
+      });
+      setExternalOpen(false);
+      setNotice('External task added to the global planner. Regenerate to schedule it.');
+    } catch (error) { setNotice(error instanceof Error ? error.message : 'Could not save the external task.'); }
+  }
+
+  async function saveOverride() {
+    if (!overrideDraft) return;
+    try {
+      if (overrideDraft.action === 'change_duration') {
+        const minutes = Number(overrideDraft.value);
+        if (!Number.isFinite(minutes) || minutes < 5 || minutes > 1440) {
+          setNotice('Choose a task duration between 5 and 1440 minutes.');
+          return;
+        }
+        await appStore.recordPlannerOverride(overrideDraft.taskId, date, 'change_duration', { minutes: Math.round(minutes) });
+        setNotice('Duration override saved. Regenerate the plan to apply it.');
+      } else {
+        if (!isValidISODate(overrideDraft.value) || overrideDraft.value < date) {
+          setNotice('Choose a valid date today or later.');
+          return;
+        }
+        await appStore.recordPlannerOverride(overrideDraft.taskId, date, 'move', { targetDate: overrideDraft.value });
+        setNotice(`Move override saved for ${overrideDraft.value}. Regenerate the plan to apply it.`);
+      }
+      setOverrideDraft(null);
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : 'Could not save the planner override.');
+    }
   }
 
   const pendingExternal = state.externalTasks.filter((task) => task.active && (task.status === 'planned' || task.status === 'rescheduled' || task.status === 'unreported')).sort((a,b) => b.priority.localeCompare(a.priority));
@@ -78,7 +110,7 @@ export function PlannerPage() {
       <article className="planner-summary-card"><span>Active roadmaps</span><strong>{activeRoadmaps.length}</strong></article>
     </div>
 
-    <article className="card"><div className="card-heading"><div><span className="eyebrow">{date}</span><h2>Schedule preview</h2></div><span className="pill">{todayTasks.reduce((s,t) => s+t.plannedMinutes,0)} min planned</span></div>{todayTasks.length === 0 ? <div className="timeline-empty"><span>No plan for today yet.</span></div> : <div className="timeline">{todayTasks.map((task) => <div className="timeline-item" key={task.id}><div className="timeline-time">{task.plannedWindow?.start}<span>{task.plannedWindow?.end}</span></div><div className="timeline-card"><div><strong>{task.title}</strong><span>{task.plannedMinutes} min · {task.kind}{task.sourceExternalTaskId ? ' · external' : ''}</span></div><div className="row-actions"><span className="pill">{task.priority}</span>{(task.sourceTaskId || task.sourceExternalTaskId) && task.status === 'planned' && <><button className="button secondary small-button" onClick={async () => { await appStore.recordPlannerOverride(task.sourceTaskId ?? task.sourceExternalTaskId!, date, 'skip_today'); setNotice('Skip-today override recorded. Regenerate to apply it.'); }}>Skip today</button><button className="button secondary small-button" onClick={async () => { await appStore.recordPlannerOverride(task.sourceTaskId ?? task.sourceExternalTaskId!, date, 'lock'); setNotice('Lock override recorded and kept in the audit trail.'); }}>Lock</button><button className="button secondary small-button" onClick={async () => { const value = window.prompt('New duration in minutes', String(task.plannedMinutes)); const minutes = Number(value); if (Number.isFinite(minutes) && minutes > 0) { await appStore.recordPlannerOverride(task.sourceTaskId ?? task.sourceExternalTaskId!, date, 'change_duration', { minutes: Math.round(minutes) }); setNotice('Duration override recorded. Regenerate to apply it.'); } }}>Duration</button><button className="button secondary small-button" onClick={async () => { const value = window.prompt('Move to date (YYYY-MM-DD)', date); if (value && /^\d{4}-\d{2}-\d{2}$/.test(value)) { await appStore.recordPlannerOverride(task.sourceTaskId ?? task.sourceExternalTaskId!, date, 'move', { targetDate: value }); setNotice(`Move override recorded for ${value}.`); } }}>Move</button></>}</div></div></div>)}</div>}</article>
+    <article className="card"><div className="card-heading"><div><span className="eyebrow">{date}</span><h2>Schedule preview</h2></div><span className="pill">{todayTasks.reduce((s,t) => s+t.plannedMinutes,0)} min planned</span></div>{todayTasks.length === 0 ? <div className="timeline-empty"><span>No plan for today yet.</span></div> : <div className="timeline">{todayTasks.map((task) => <div className="timeline-item" key={task.id}><div className="timeline-time">{task.plannedWindow?.start}<span>{task.plannedWindow?.end}</span></div><div className="timeline-card"><div><strong>{task.title}</strong><span>{task.plannedMinutes} min · {task.kind}{task.sourceExternalTaskId ? ' · external' : ''}</span></div><div className="row-actions"><span className="pill">{task.priority}</span>{(task.sourceTaskId || task.sourceExternalTaskId) && task.status === 'planned' && <><button className="button secondary small-button" onClick={async () => { await appStore.recordPlannerOverride(task.sourceTaskId ?? task.sourceExternalTaskId!, date, 'skip_today'); setNotice('Skip-today override recorded. Regenerate to apply it.'); }}>Skip today</button><button className="button secondary small-button" onClick={async () => { await appStore.recordPlannerOverride(task.sourceTaskId ?? task.sourceExternalTaskId!, date, 'lock'); setNotice('Lock override recorded and kept in the audit trail.'); }}>Lock</button><button className="button secondary small-button" onClick={() => setOverrideDraft({ taskId: task.sourceTaskId ?? task.sourceExternalTaskId!, action: 'change_duration', value: String(task.plannedMinutes), taskTitle: task.title })}>Duration</button><button className="button secondary small-button" onClick={() => setOverrideDraft({ taskId: task.sourceTaskId ?? task.sourceExternalTaskId!, action: 'move', value: date, taskTitle: task.title })}>Move</button></>}</div></div></div>)}</div>}</article>
 
 <details className="planner-details"><summary><span><strong>Planning details</strong><small>Optional · capacity, pending work and decisions</small></span></summary>
 
@@ -92,5 +124,14 @@ export function PlannerPage() {
     {state.busyEvents.filter((e) => e.date === date).length > 0 && <article className="card" style={{ marginTop: 14 }}><div className="card-heading"><h2>Today's blocked windows</h2><span className="pill">{state.busyEvents.filter((e) => e.date === date).length}</span></div>{state.busyEvents.filter((e) => e.date === date).map((event) => <div className="setting-row" key={event.id}><div><strong>{event.title}</strong><span>{event.window.start}–{event.window.end}</span></div><span className="pill warning">{event.priority}</span></div>)}</article>}
 
 </details>
+    {overrideDraft && <div className="focus-dialog-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) setOverrideDraft(null); }}>
+      <section className="focus-dialog" role="dialog" aria-modal="true" aria-labelledby="override-title">
+        <div className="focus-dialog-header"><div><p className="eyebrow">Planner override</p><h2 id="override-title">{overrideDraft.action === 'move' ? 'Move task' : 'Change task duration'}</h2><p className="muted small-copy">{overrideDraft.taskTitle}</p></div><button type="button" className="button secondary focus-dialog-close" onClick={() => setOverrideDraft(null)} aria-label="Close override">×</button></div>
+        <div className="setting-form">
+          <label>{overrideDraft.action === 'move' ? 'New date' : 'Duration in minutes'}<input autoFocus type={overrideDraft.action === 'move' ? 'date' : 'number'} min={overrideDraft.action === 'move' ? undefined : 5} max={overrideDraft.action === 'move' ? undefined : 1440} value={overrideDraft.value} onChange={(event) => setOverrideDraft({ ...overrideDraft, value: event.target.value })} /></label>
+        </div>
+        <div className="focus-dialog-actions"><button type="button" className="button secondary" onClick={() => setOverrideDraft(null)}>Cancel</button><button type="button" className="button primary" onClick={() => void saveOverride()}>Save override</button></div>
+      </section>
+    </div>}
   </section>;
 }

@@ -69,9 +69,13 @@ export function OnboardingPage() {
   }
 
   async function skipOnboarding() {
-    if (!state.preferences) return;
-    await appStore.savePreferences({ ...state.preferences, onboardingCompleted: true });
-    navigate('/today');
+    if (!state.preferences) { setError('Your local preferences are not ready yet.'); return; }
+    try {
+      await appStore.savePreferences({ ...state.preferences, onboardingCompleted: true });
+      navigate('/today');
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Could not save the first-run preference. Please retry.');
+    }
   }
 
   async function finishSetup() {
@@ -105,18 +109,16 @@ export function OnboardingPage() {
       let hash = 2166136261;
       for (let i = 0; i < source.length; i += 1) hash = Math.imul(hash ^ source.charCodeAt(i), 16777619);
       const version = { id: `${roadmapId}:curriculum:v1`, roadmapId, version: 1, createdAt: now, sourceTextHash: (hash >>> 0).toString(16), status: 'approved' as const, conceptIds: curriculum.concepts.map((concept) => concept.id), taskDefinitionIds: curriculum.tasks.map((task) => task.id), warnings: [] };
-      await appStore.createRoadmap(roadmap, taskRows, { version, concepts: curriculum.concepts, definitions: curriculum.tasks });
       const preferences = {
         ...state.preferences, onboardingCompleted: true, notificationsEnabled: false, wakeTime, sleepTime,
         defaultStudyWindows: [{ start: studyStart, end: studyEnd }],
         maxStudyMinutesPerDay: Math.round(dailyHours * 60), maxCognitiveMinutesPerDay: Math.round(dailyHours * 60),
         maxContinuousFocusMinutes: Math.min(90, Math.round(dailyHours * 30)), bufferPercentage: 15,
       };
-      await appStore.savePreferences(preferences);
       const habits: Habit[] = [];
       if (enableExercise && exerciseGoal > 0) habits.push({ id: createId('habit'), name: 'Exercise', kind: 'exercise', targetValue: exerciseGoal, unit: 'minutes', minimumValue: Math.min(15, exerciseGoal), active: true, preferredWindows: [{ start: wakeTime, end: studyStart }], reminderTimes: [], frequencyDays: [0, 1, 2, 3, 4, 5, 6], recurrence: 'daily', streakPolicy: 'target_or_partial', allowPartial: true, carryOverAllowed: false, priority: 'high' });
       if (enableWater && waterGoal > 0) habits.push({ id: createId('habit'), name: 'Water', kind: 'water', targetValue: waterGoal, unit: 'ml', minimumValue: waterGoal, active: true, preferredWindows: [{ start: wakeTime, end: sleepTime }], reminderTimes: [], frequencyDays: [0, 1, 2, 3, 4, 5, 6], recurrence: 'daily', streakPolicy: 'strict', allowPartial: false, carryOverAllowed: false, priority: 'medium' });
-      for (const habit of habits) await appStore.saveHabit(habit);
+      await appStore.saveFirstRunSetup(roadmap, taskRows, { version, concepts: curriculum.concepts, definitions: curriculum.tasks }, preferences, habits);
       navigate('/today');
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Could not finish setup. Your existing local data was not intentionally changed.');
@@ -144,7 +146,7 @@ export function OnboardingPage() {
         <div className="onboarding-actions"><button className="button secondary" onClick={() => { setError(''); setStep(0); }}>Back</button><button className="button primary" onClick={() => { setError(''); setStep(2); }}>Next: review</button></div>
       </>}
       {step === 2 && <>
-        <p className="eyebrow">Step 3 of 3 · Review before saving</p><h1>Ready to build your first plan?</h1><p className="muted">Nothing is scheduled until you generate a plan. Your first curriculum stays deterministic and can be reviewed in Roadmap.</p>
+        <p className="eyebrow">Step 3 of 3 · Review before saving</p><h1>Ready to build your first plan?</h1><p className="muted">Nothing is scheduled until you generate a plan. The first curriculum uses topic-specific learning templates; optional local-model proposals are separate and always require your approval.</p>
         <div className="onboarding-summary"><div><span>Roadmap</span><strong>{title.trim() || 'Untitled roadmap'}</strong></div><div><span>Roadmap structure</span><strong>{parsed?.nodes.length ?? 0} nodes</strong></div><div><span>Generated work</span><strong>{validation?.taskCount ?? 0} tasks</strong></div><div><span>Daily capacity</span><strong>{dailyHours} hours</strong></div><div><span>Study window</span><strong>{studyStart}–{studyEnd}</strong></div><div><span>Habits</span><strong>{Number(enableExercise && exerciseGoal > 0) + Number(enableWater && waterGoal > 0)} enabled</strong></div></div>
         {validation && <div className={`onboarding-validation ${validation.valid ? 'valid' : 'invalid'}`}><strong>{validation.valid ? 'Roadmap checks passed' : 'Roadmap needs attention'}</strong><span>{validation.valid ? `${validation.conceptCount} concepts and ${validation.taskCount} task definitions validated.` : validation.issues.slice(0, 3).join(' ')}</span></div>}
         <div className="onboarding-actions"><button className="button secondary" onClick={() => { setError(''); setStep(1); }}>Back</button><button className="button primary" disabled={saving || !validation?.valid} onClick={() => void finishSetup()}>{saving ? 'Saving local setup…' : 'Save setup & open Today'}</button></div>
