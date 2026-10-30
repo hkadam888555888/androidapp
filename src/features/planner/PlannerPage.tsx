@@ -38,9 +38,11 @@ export function PlannerPage() {
   async function addBusyEvent() {
     if (!busyForm.title.trim() || busyForm.end <= busyForm.start) { setNotice('Enter a title and a valid time range.'); return; }
     const event: BusyEvent = { id: createId('busy'), date, title: busyForm.title.trim(), window: { start: busyForm.start, end: busyForm.end }, priority: busyForm.priority, blocksPlanning: true, fixed: true };
-    await appStore.saveBusyEvent(event);
-    setBusyOpen(false);
-    setNotice('Busy event added. Regenerate the plan to account for it.');
+    try {
+      await appStore.saveBusyEvent(event);
+      setBusyOpen(false);
+      setNotice('Busy event added. Regenerate the plan to account for it.');
+    } catch (error) { setNotice(error instanceof Error ? error.message : 'Could not save the busy block.'); }
   }
 
   async function addExternalTask() {
@@ -51,14 +53,17 @@ export function PlannerPage() {
       const end = Number(externalForm.end.slice(0, 2)) * 60 + Number(externalForm.end.slice(3));
       if (end - start < externalForm.minutes) { setNotice('The fixed time window is shorter than the estimated duration.'); return; }
     }
+    if (externalForm.dueDate && !isValidISODate(externalForm.dueDate)) { setNotice('Choose a valid due date.'); return; }
     const now = new Date().toISOString();
-    await appStore.saveExternalTask({
-      id: createId('external'), title: externalForm.title.trim(), category: externalForm.category, estimatedMinutes: Math.round(externalForm.minutes), priority: externalForm.priority,
-      dueDate: externalForm.dueDate || undefined, fixedWindow: externalForm.fixed ? { start: externalForm.start, end: externalForm.end } : undefined,
-      status: 'planned', active: true, splittable: false, createdAt: now, updatedAt: now,
-    });
-    setExternalOpen(false);
-    setNotice('External task added to the global planner. Regenerate to schedule it.');
+    try {
+      await appStore.saveExternalTask({
+        id: createId('external'), title: externalForm.title.trim(), category: externalForm.category, estimatedMinutes: Math.round(externalForm.minutes), priority: externalForm.priority,
+        dueDate: externalForm.dueDate || undefined, fixedWindow: externalForm.fixed ? { start: externalForm.start, end: externalForm.end } : undefined,
+        status: 'planned', active: true, splittable: false, createdAt: now, updatedAt: now,
+      });
+      setExternalOpen(false);
+      setNotice('External task added to the global planner. Regenerate to schedule it.');
+    } catch (error) { setNotice(error instanceof Error ? error.message : 'Could not save the external task.'); }
   }
 
   async function saveOverride() {
