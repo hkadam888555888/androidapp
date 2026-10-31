@@ -33,6 +33,26 @@ describe('curriculum compiler progression', () => {
       .toContain(byTitle.get('Map missing values and their impact')?.id);
   });
 
+
+  it('turns the onboarding starter roadmap into concrete, context-aware work', () => {
+    const parsed = parseRoadmap(
+      '# Practical data skills starter\n## Python foundations\n### Variables and data types\n### Functions and return values\n### Loops and boundary cases\n## Pandas workflows\n### Inspect a DataFrame\n### Select rows with loc and iloc\n### Handle missing values\n### Group data with groupby\n## Data visualization\n### Choose a chart for a data question\n### Explain one finding and its limitations',
+      'onboarding-starter',
+    );
+    const compiled = compileCurriculum(parsed.nodes);
+    const titles = new Set(compiled.tasks.map((task) => task.title));
+
+    expect(titles.has('Trace variable values and data types')).toBe(true);
+    expect(titles.has('Design a function contract for Functions and return values')).toBe(true);
+    expect(titles.has('Trace loop state and termination')).toBe(true);
+    expect(titles.has('Inspect a DataFrame before analysis')).toBe(true);
+    expect(titles.has('Build and debug a boolean DataFrame filter')).toBe(true);
+    expect(titles.has('Map missing values and their impact')).toBe(true);
+    expect(titles.has('Understand split–apply–combine with groupby')).toBe(true);
+    expect(titles.has('Choose a chart that answers a data question')).toBe(true);
+    expect(compiled.tasks.every((task) => task.confidence === 'high' || task.confidence === 'medium')).toBe(true);
+  });
+
   it('keeps learning/practice dependencies within one concept', () => {
     const parsed = parseRoadmap('# Roadmap\n## Python\n### Variables\n### Functions', 'scope');
     const compiled = compileCurriculum(parsed.nodes);
