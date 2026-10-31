@@ -188,7 +188,7 @@ export function DashboardPage() {
           </div>
         </div>
 
-        <div className="today-progress-widget" aria-label={'Today’s progress: ' + progress + '% complete, ' + completed + ' of ' + todayTasks.length + ' tasks completed'}>
+        <div className="today-progress-widget" role="group" aria-label={'Today’s progress: ' + progress + '% complete, ' + completed + ' of ' + todayTasks.length + ' tasks completed'}>
           <div className="today-progress-ring">
             <svg viewBox="0 0 112 112" aria-hidden="true" focusable="false">
               <circle className="today-progress-track" cx="56" cy="56" r="47" pathLength="100" />
