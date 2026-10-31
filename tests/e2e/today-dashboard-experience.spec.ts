@@ -91,3 +91,18 @@ test('Today dashboard renders real daily sections and remains usable on a narrow
   expect(heroAnimations.secondary).toBe('none');
   expect(signalAnimation).toBe('none');
 });
+
+
+test('Today review shortcut opens the date displayed on the dashboard', async ({ page }) => {
+  await completeFirstRun(page);
+
+  const expectedDate = await page.evaluate(() => {
+    const now = new Date();
+    const pad = (value: number) => String(value).padStart(2, '0');
+    return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+  });
+
+  await page.getByRole('link', { name: /Review the day/ }).click();
+  await expect(page.getByRole('heading', { name: 'Daily Review' })).toBeVisible();
+  await expect(page.locator('.settings-grid > .card .eyebrow').first()).toHaveText(expectedDate);
+});
