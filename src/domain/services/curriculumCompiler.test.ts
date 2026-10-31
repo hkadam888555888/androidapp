@@ -50,6 +50,7 @@ describe('curriculum compiler progression', () => {
     expect(titles.has('Map missing values and their impact')).toBe(true);
     expect(titles.has('Understand split–apply–combine with groupby')).toBe(true);
     expect(titles.has('Choose a chart that answers a data question')).toBe(true);
+    expect(titles.has('Explain a finding and its limitations')).toBe(true);
     expect(compiled.tasks.every((task) => task.confidence === 'high' || task.confidence === 'medium')).toBe(true);
   });
 
