@@ -346,7 +346,9 @@ test.describe('My Adaptive Routine critical flow', () => {
     await page.goto('/calendar');
     const monthHeading = page.locator('.calendar-toolbar h2');
     const initialMonth = await monthHeading.innerText();
-    await page.getByRole('button', { name: '›' }).click();
+    await expect(page.getByRole('button', { name: 'Previous month' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Next month' })).toBeVisible();
+    await page.getByRole('button', { name: 'Next month' }).click();
     await expect(monthHeading).not.toHaveText(initialMonth);
 
     const day = page.getByRole('button', { name: /^Select \d{4}-\d{2}-\d{2}/ }).first();
