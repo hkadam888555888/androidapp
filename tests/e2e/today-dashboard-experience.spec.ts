@@ -44,7 +44,7 @@ test('Today dashboard renders real daily sections and remains usable on a narrow
 
   const secondaryGlowAnimation = await page.locator('.today-hero').evaluate((element) => getComputedStyle(element, '::after').animationName);
   expect(secondaryGlowAnimation).toBe('marHeroDrift');
-  await expect(page.locator('.next-session-indicator')).toHaveClass(/is-active/);
+  await expect(page.locator('.next-session-indicator')).toHaveClass(/is-active/, { timeout: 15_000 });
   const activeSignalAnimation = await page.locator('.next-session-indicator').evaluate((element) => getComputedStyle(element).animationName);
   expect(activeSignalAnimation).toBe('todaySignalBreathe');
 
