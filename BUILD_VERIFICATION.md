@@ -34,11 +34,11 @@
 
 Current dependency-free checks are valuable for source regression screening but cannot replace a dependency-backed build, official Vitest/coverage/lint/audit checks, or browser/device evidence.
 
-## Reproducibility gate (current PR #6 candidate)
+## Reproducibility gate (consolidated PR #11 candidate)
 
 The current candidate includes a committed `package-lock.json` (lockfile v3), and the direct web dependencies in `package.json` are exact versions. This locks the web dependency graph for `npm ci`; it does not prove that the current candidate's tests or build passed unless the corresponding run is tied to the exact candidate.
 
-The direct Android/Capacit or toolchain packages are now version-pinned in `.github/workflows/android-apk.yml` and verified with `npm ls`. The workflow records the complete resolved npm dependency tree as an artifact for each build. The transitive CLI dependency graph is not committed to `package-lock.json`, so exact replay of that native build requires retaining the corresponding artifact and workflow run. The generated Android project and Gradle wrapper are also not checked into the repository.
+The direct Android/Capacitor toolchain packages are now version-pinned in `.github/workflows/android-apk.yml` and verified with `npm ls`. The workflow records the complete resolved npm dependency tree as an artifact for each build. The transitive CLI dependency graph is not committed to `package-lock.json`, so exact replay of that native build requires retaining the corresponding artifact and workflow run. The generated Android project and Gradle wrapper are also not checked into the repository.
 
 On a network-enabled development machine, run the web checks against the exact candidate:
 
