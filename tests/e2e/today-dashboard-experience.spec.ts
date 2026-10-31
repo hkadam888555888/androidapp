@@ -21,6 +21,41 @@ test('Today dashboard renders real daily sections and remains usable on a narrow
   await expect(page.getByRole('heading', { name: 'Small things count' })).toBeVisible();
   await page.screenshot({ path: testInfo.outputPath('today-dashboard-desktop.png'), fullPage: true });
 
+  // The signature light must be visible and moving in normal use, not merely
+  // present in the stylesheet or disabled correctly for reduced-motion users.
+  const initialGlow = await page.locator('.today-hero').evaluate((element) => {
+    const style = getComputedStyle(element, '::before');
+    const rect = element.getBoundingClientRect();
+    return {
+      animationName: style.animationName,
+      animationDuration: style.animationDuration,
+      opacity: Number(style.opacity),
+      width: style.width,
+      height: style.height,
+      heroWidth: rect.width,
+      heroHeight: rect.height,
+    };
+  });
+  expect(initialGlow.animationName).toBe('marHeroLight');
+  expect(initialGlow.animationDuration).toBe('10.5s');
+  expect(initialGlow.opacity).toBeGreaterThan(0.2);
+  expect(Number.parseFloat(initialGlow.width)).toBeGreaterThan(0);
+  expect(Number.parseFloat(initialGlow.height)).toBeGreaterThan(0);
+
+  const firstFrame = await page.locator('.today-hero').evaluate((element) => {
+    const style = getComputedStyle(element, '::before');
+    return { opacity: style.opacity, transform: style.transform };
+  });
+  await page.waitForTimeout(1400);
+  const nextFrame = await page.locator('.today-hero').evaluate((element) => {
+    const style = getComputedStyle(element, '::before');
+    return { opacity: style.opacity, transform: style.transform };
+  });
+  expect(
+    firstFrame.opacity !== nextFrame.opacity || firstFrame.transform !== nextFrame.transform,
+    'The hero glow should breathe or drift between animation frames',
+  ).toBeTruthy();
+
   await page.setViewportSize({ width: 320, height: 780 });
   await expect(page.locator('.today-hero')).toBeVisible();
   await expect(page.locator('.sidebar .primary-nav')).toBeVisible();
