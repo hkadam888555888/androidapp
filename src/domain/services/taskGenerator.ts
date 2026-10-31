@@ -48,7 +48,14 @@ function topicBlueprint(title: string, pattern: LearningPattern, contextTitles: 
       );
     }
 
-    if (/\b(pandas|dataframe|tabular data)\b/u.test(topic)) {
+    if (topic === 'pandas') {
+      return pair(
+        { title: 'Load and inspect a table with Pandas', objective: 'Load a small CSV or create a DataFrame from a dictionary. Inspect head, shape, columns, dtypes, and info, then explain what each inspection tells you before analysis.', type: 'apply', estimatedMinutes: 30, minMinutes: 20, maxMinutes: 45, completionCriteria: 'A repeatable example loads a table, reports its dimensions and dtypes, and explains one data-quality concern.' },
+        { title: 'Answer a data question with Pandas', objective: 'Choose one question about the table, filter rows or group them by a category, calculate a result, and check that the output matches the question.', type: 'apply', estimatedMinutes: 40, minMinutes: 25, maxMinutes: 60, completionCriteria: 'A reproducible Pandas operation answers a stated question and includes a sanity check.' },
+      );
+    }
+
+    if (/\b(dataframe|tabular data)\b/u.test(topic)) {
       return pair(
         { title: 'Inspect a DataFrame before analysis', objective: 'Load a small table and use shape, columns, dtypes, info, and head to establish its size, field names, data types, non-null counts, and first visible records. Explain what each inspection reveals.', type: 'apply', estimatedMinutes: 30, minMinutes: 20, maxMinutes: 45, completionCriteria: 'A short inspection note reports row and column counts, names, important dtypes, non-null counts, and one data-quality question.' },
         { title: 'Check a DataFrame before using it', objective: 'Inspect duplicates, unexpected categories, numeric ranges, and missingness in the same table. Choose one issue to investigate and show how it could affect a later calculation or model.', type: 'apply', estimatedMinutes: 40, minMinutes: 25, maxMinutes: 55, completionCriteria: 'A repeatable check reports at least two data-quality observations and explains the risk of one issue.' },
