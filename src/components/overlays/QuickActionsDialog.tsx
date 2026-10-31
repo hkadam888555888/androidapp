@@ -12,7 +12,7 @@ interface QuickActionsDialogProps {
 const routeActions = [
   { path: '/today', title: 'Today', detail: 'Your agenda and next task', icon: Gauge, terms: 'home dashboard day' },
   { path: '/planner', title: 'Plan', detail: 'Time windows and plan adaptation', icon: Sparkles, terms: 'planner schedule adapt urgent conflict' },
-  { path: '/roadmap', title: 'Learn', detail: 'Roadmaps, curriculum and practice', icon: Map, terms: 'learn learning curriculum topics' },
+  { path: '/roadmap', title: 'Roadmap', detail: 'Roadmaps, curriculum and practice', icon: Map, terms: 'learn learning curriculum topics' },
   { path: '/habits', title: 'Habits', detail: 'Water, movement and habit logs', icon: HeartPulse, terms: 'habit water exercise health' },
   { path: '/statistics', title: 'Progress', detail: 'Trends and analytics', icon: Activity, terms: 'progress statistics analytics trends' },
   { path: '/review', title: 'Review', detail: 'Resolve unreported tasks', icon: CheckCircle2, terms: 'review history reflection' },
