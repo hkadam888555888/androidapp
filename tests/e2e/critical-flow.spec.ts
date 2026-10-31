@@ -166,7 +166,7 @@ test.describe('My Adaptive Routine critical flow', () => {
     const menu = page.getByRole('dialog', { name: 'All features' });
     await expect(menu).toBeVisible();
     await page.screenshot({ path: testInfo.outputPath('mobile-all-features-menu.png'), fullPage: false });
-    for (const feature of ['Today', 'Plan', 'Learn', 'Habits', 'Progress', 'Review', 'Calendar', 'Alerts', 'Diagnostics', 'Settings', 'Privacy']) {
+    for (const feature of ['Today', 'Plan', 'Roadmap', 'Habits', 'Progress', 'Review', 'Calendar', 'Alerts', 'Diagnostics', 'Settings', 'Privacy']) {
       await expect(menu.getByRole('link', { name: feature, exact: true })).toBeVisible();
     }
     await menu.getByRole('link', { name: 'Diagnostics', exact: true }).click();
