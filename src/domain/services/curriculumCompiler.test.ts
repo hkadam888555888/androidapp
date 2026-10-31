@@ -10,7 +10,7 @@ describe('curriculum compiler progression', () => {
     expect(titles.some((title) => title.includes('Trace variable values and data types'))).toBe(true);
     expect(titles.some((title) => title.includes('Test variable operations with valid and invalid inputs'))).toBe(true);
     expect(titles.some((title) => title.includes('Solve conditional probability problems'))).toBe(true);
-    expect(titles.some((title) => title.includes('Build a mini analysis using Pandas'))).toBe(true);
+    expect(titles.some((title) => title.includes('Load and inspect a table with Pandas'))).toBe(true);
   });
 
 
