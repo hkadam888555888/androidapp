@@ -42,6 +42,12 @@ test('Today dashboard renders real daily sections and remains usable on a narrow
   expect(Number.parseFloat(initialGlow.width)).toBeGreaterThan(0);
   expect(Number.parseFloat(initialGlow.height)).toBeGreaterThan(0);
 
+  const secondaryGlowAnimation = await page.locator('.today-hero').evaluate((element) => getComputedStyle(element, '::after').animationName);
+  expect(secondaryGlowAnimation).toBe('marHeroDrift');
+  await expect(page.locator('.next-session-indicator')).toHaveClass(/is-active/);
+  const activeSignalAnimation = await page.locator('.next-session-indicator').evaluate((element) => getComputedStyle(element).animationName);
+  expect(activeSignalAnimation).toBe('todaySignalBreathe');
+
   const firstFrame = await page.locator('.today-hero').evaluate((element) => {
     const style = getComputedStyle(element, '::before');
     return { opacity: style.opacity, transform: style.transform };
@@ -78,8 +84,10 @@ test('Today dashboard renders real daily sections and remains usable on a narrow
     primary: getComputedStyle(element, '::before').animationName,
     secondary: getComputedStyle(element, '::after').animationName,
   }));
+  const signalAnimation = await page.locator('.next-session-indicator').evaluate((element) => getComputedStyle(element).animationName);
   expect(ambientAnimations.primary).toBe('none');
   expect(ambientAnimations.secondary).toBe('none');
   expect(heroAnimations.primary).toBe('none');
   expect(heroAnimations.secondary).toBe('none');
+  expect(signalAnimation).toBe('none');
 });
