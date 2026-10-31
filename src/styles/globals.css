@@ -859,3 +859,146 @@ label{display:grid;gap:7px;color:var(--muted);font-size:12px;font-weight:600}inp
     transform:none !important;
   }
 }
+
+
+/* Today dashboard — real data, restrained motion, and natural visual hierarchy. */
+.today-page { max-width:1160px; padding-bottom:30px; }
+.today-header { display:flex; align-items:flex-end; justify-content:space-between; gap:24px; margin-bottom:24px; }
+.today-heading-copy { min-width:0; }
+.today-heading-copy h1 { margin:0 0 8px; font-family:"Iowan Old Style","Palatino Linotype","Book Antiqua",Georgia,serif; font-size:clamp(42px,5vw,58px); font-weight:600; letter-spacing:-.055em; line-height:.98; }
+.today-heading-copy .eyebrow { margin-bottom:9px; }
+.today-welcome { margin:0; color:var(--muted); font-size:14px; line-height:1.6; }
+.today-header-actions { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.today-text-action { display:inline-flex; align-items:center; gap:6px; }
+.today-refresh-button { gap:7px; }
+.today-hero.next-session {
+  position:relative; isolation:isolate; display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center;
+  gap:clamp(18px,3vw,38px); overflow:hidden; min-height:232px; margin:0 0 15px; padding:clamp(22px,3.5vw,38px);
+  border:1px solid color-mix(in srgb,var(--accent) 25%,var(--border)); border-radius:26px;
+  background:
+    radial-gradient(ellipse at 88% 12%,color-mix(in srgb,var(--accent) 19%,transparent),transparent 36%),
+    radial-gradient(ellipse at 5% 100%,rgba(191,167,130,.10),transparent 35%),
+    linear-gradient(116deg,color-mix(in srgb,var(--surface) 84%,var(--primary-container)),var(--surface) 70%);
+  box-shadow:0 18px 48px rgba(14,34,37,.09),inset 0 1px 0 rgba(255,255,255,.24);
+}
+.today-hero.next-session::before {
+  content:""; position:absolute; z-index:-1; width:370px; height:370px; top:-242px; right:-65px; border-radius:50%;
+  background:radial-gradient(circle,color-mix(in srgb,var(--accent) 35%,transparent),transparent 68%);
+  animation:marHeroLight 16s ease-in-out infinite; pointer-events:none;
+}
+@keyframes marHeroLight { 0%,100% { opacity:.28; transform:scale(.9); } 50% { opacity:.68; transform:scale(1.12); } }
+.today-hero-copy { min-width:0; }
+.today-hero-kicker { display:flex; flex-wrap:wrap; align-items:center; gap:9px; margin-bottom:13px; }
+.today-hero-kicker>span:nth-child(2) { font-size:10px; font-weight:850; letter-spacing:.14em; }
+.today-hero-kicker .next-session-time { margin-left:5px; font-size:11px; font-weight:650; letter-spacing:.01em; }
+.today-hero h2 { max-width:640px; margin:0 0 9px; color:var(--text); font-family:"Iowan Old Style","Palatino Linotype","Book Antiqua",Georgia,serif; font-size:clamp(25px,3.3vw,38px); font-weight:600; letter-spacing:-.04em; line-height:1.12; overflow-wrap:anywhere; }
+.today-hero p { max-width:590px; margin:0; color:var(--muted); font-size:13px; line-height:1.7; }
+.today-hero-actions { display:flex; flex-wrap:wrap; gap:9px; margin-top:22px; }
+.today-hero-actions .button { min-height:44px; }
+.today-hero .button.primary { box-shadow:0 7px 20px color-mix(in srgb,var(--accent) 18%,transparent); }
+.today-hero .button.primary:hover { box-shadow:0 10px 26px color-mix(in srgb,var(--accent) 25%,transparent); }
+.today-progress-widget { display:grid; justify-items:center; gap:9px; width:154px; flex:0 0 154px; }
+.today-progress-ring { position:relative; width:126px; height:126px; filter:drop-shadow(0 8px 18px color-mix(in srgb,var(--accent) 12%,transparent)); }
+.today-progress-ring svg { display:block; width:100%; height:100%; overflow:visible; transform:rotate(-90deg); }
+.today-progress-ring circle { fill:none; stroke-width:7; }
+.today-progress-track { stroke:color-mix(in srgb,var(--border) 68%,transparent); }
+.today-progress-value { stroke:var(--accent); stroke-linecap:round; transition:stroke-dashoffset .75s cubic-bezier(.2,.8,.2,1); }
+.today-progress-center { position:absolute; inset:0; display:grid; align-content:center; justify-items:center; gap:1px; }
+.today-progress-center strong { color:var(--text); font-family:"Iowan Old Style","Palatino Linotype",Georgia,serif; font-size:29px; font-weight:650; letter-spacing:-.05em; font-variant-numeric:tabular-nums; }
+.today-progress-center span { color:var(--muted); font-size:10px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; }
+.today-progress-caption { display:grid; justify-items:center; gap:2px; }
+.today-progress-caption strong { color:var(--text); font-size:12px; font-variant-numeric:tabular-nums; }
+.today-progress-caption span { color:var(--muted); font-size:10px; }
+.today-review-banner { margin-bottom:14px; }
+.today-metrics { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin:0 0 15px; }
+.today-metric.stat-card { position:relative; display:grid; align-content:start; gap:5px; min-width:0; padding:17px; border-radius:19px; background:color-mix(in srgb,var(--surface) 94%,var(--primary-container)); box-shadow:var(--shadow-card); transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease; }
+.today-metric.stat-card:hover { transform:translateY(-2px); border-color:color-mix(in srgb,var(--accent) 32%,var(--border)); box-shadow:var(--shadow-float); }
+.today-metric-icon { display:grid; place-items:center; width:34px; height:34px; margin-bottom:5px; border:1px solid color-mix(in srgb,var(--accent) 18%,var(--border)); border-radius:11px; background:color-mix(in srgb,var(--accent) 9%,var(--surface)); color:var(--accent); }
+.today-metric.stat-card>span { color:var(--muted); font-size:11px; font-weight:700; }
+.today-metric.stat-card>strong { margin:3px 0 0; font-family:"Iowan Old Style","Palatino Linotype",Georgia,serif; font-size:clamp(24px,2.4vw,31px); font-weight:650; line-height:1.12; letter-spacing:-.04em; overflow-wrap:anywhere; }
+.today-metric.stat-card>strong small { display:inline; color:var(--muted); font-family:inherit; font-size:.48em; font-weight:550; letter-spacing:0; }
+.today-metric.stat-card>p { margin:0 0 5px; color:var(--muted); font-size:10px; line-height:1.45; }
+.today-metric .progress-track { height:5px; margin-top:4px; border:0; }
+.today-metric .progress-track span { border-radius:inherit; }
+.today-content-grid.content-grid { display:grid; grid-template-columns:minmax(0,1.65fr) minmax(270px,.85fr); align-items:start; gap:14px; margin-top:0; }
+.today-schedule-card { min-width:0; }
+.today-section-heading { align-items:flex-start; margin-bottom:6px; }
+.today-section-heading h2 { margin:0 0 5px; font-family:"Iowan Old Style","Palatino Linotype",Georgia,serif; font-size:23px; letter-spacing:-.03em; }
+.today-section-heading p { margin:0; color:var(--muted); font-size:11px; line-height:1.5; }
+.today-inline-link { display:inline-flex; align-items:center; gap:4px; flex:0 0 auto; padding:5px 0 5px 8px; color:var(--accent); font-size:11px; font-weight:750; }
+.today-inline-link:hover { text-decoration:underline; text-underline-offset:3px; }
+.today-timeline { gap:11px; }
+.today-timeline .timeline-item { grid-template-columns:68px minmax(0,1fr); gap:10px; }
+.today-timeline .timeline-time { padding-top:13px; color:var(--accent); font-size:11px; font-weight:800; font-variant-numeric:tabular-nums; }
+.today-timeline .timeline-card { min-width:0; padding:13px 14px; border-radius:15px; background:color-mix(in srgb,var(--surface-2) 68%,var(--surface)); transition:border-color .18s ease,background .18s ease,transform .18s ease; }
+.today-timeline .timeline-card:hover { transform:translateY(-1px); border-color:color-mix(in srgb,var(--accent) 30%,var(--border)); }
+.today-task-copy { min-width:0; }
+.today-task-copy strong { color:var(--text); font-size:12px; line-height:1.45; overflow-wrap:anywhere; }
+.today-task-copy span { margin-top:5px; color:var(--muted); font-size:10px; line-height:1.4; }
+.today-task-actions { justify-content:flex-end; }
+.today-task-actions .button { min-height:34px; padding:7px 10px; border-radius:10px; font-size:10px; }
+.today-side-column { display:grid; gap:13px; min-width:0; }
+.today-side-column>.card { min-width:0; border-radius:19px; }
+.today-rhythm-card .card-heading { align-items:center; margin-bottom:10px; }
+.today-rhythm-card .card-heading h2,.today-quick-card .card-heading h2 { margin:0; font-family:"Iowan Old Style","Palatino Linotype",Georgia,serif; font-size:21px; letter-spacing:-.03em; }
+.today-leaf-mark { display:grid; place-items:center; width:34px; height:34px; border-radius:11px; color:var(--success); background:var(--success-soft); }
+.today-habit-row { display:grid; grid-template-columns:34px minmax(0,1fr) 30px; align-items:center; gap:10px; padding:13px 0; border-bottom:1px solid var(--border); }
+.today-habit-icon { display:grid; place-items:center; width:34px; height:34px; border-radius:11px; color:var(--accent); background:color-mix(in srgb,var(--accent) 9%,var(--surface)); }
+.today-habit-icon.movement { color:var(--success); background:var(--success-soft); }
+.today-habit-copy { display:grid; gap:4px; min-width:0; }
+.today-habit-copy strong { color:var(--text); font-size:11px; }
+.today-habit-copy span { color:var(--muted); font-size:10px; line-height:1.4; overflow-wrap:anywhere; }
+.today-habit-copy .progress-track { height:4px; margin-top:3px; border:0; }
+.today-habit-action { display:grid; place-items:center; width:30px; height:30px; border-radius:9px; color:var(--accent); background:var(--surface-2); }
+.today-habit-action:hover { color:var(--text); background:var(--primary-container); }
+.today-roadmap-note { display:grid; gap:5px; padding-top:14px; }
+.today-roadmap-note .eyebrow { margin:0; font-size:9px; }
+.today-roadmap-note>strong { color:var(--text); font-size:12px; line-height:1.45; overflow-wrap:anywhere; }
+.today-roadmap-note>a { display:inline-flex; align-items:center; gap:4px; width:fit-content; color:var(--accent); font-size:10px; font-weight:750; }
+.today-quick-grid { gap:6px; }
+.today-quick-grid .quick-action { padding:10px 11px; border-radius:12px; }
+.today-quick-grid .quick-action strong { font-size:11px; }
+.today-quick-grid .quick-action span { font-size:10px; line-height:1.4; }
+@media(max-width:980px) {
+  .today-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .today-content-grid.content-grid { grid-template-columns:minmax(0,1fr); }
+  .today-side-column { grid-template-columns:repeat(2,minmax(0,1fr)); align-items:start; }
+}
+@media(max-width:760px) {
+  .today-page { padding-bottom:18px; }
+  .today-header { align-items:flex-start; flex-direction:column; gap:13px; margin-bottom:18px; }
+  .today-header-actions { width:100%; }
+  .today-header-actions .button { flex:1 1 auto; }
+  .today-hero.next-session { grid-template-columns:minmax(0,1fr); gap:20px; min-height:0; padding:23px 19px; border-radius:22px; }
+  .today-progress-widget { grid-template-columns:78px minmax(0,1fr); justify-items:start; align-items:center; width:100%; }
+  .today-progress-ring { width:78px; height:78px; }
+  .today-progress-ring circle { stroke-width:8; }
+  .today-progress-center strong { font-size:19px; }
+  .today-progress-center span { font-size:8px; }
+  .today-progress-caption { justify-items:start; }
+  .today-progress-caption strong { font-size:12px; }
+  .today-progress-caption span { font-size:10px; }
+  .today-metrics { gap:8px; margin-bottom:11px; }
+  .today-metric.stat-card { padding:12px; border-radius:15px; }
+  .today-metric-icon { width:30px; height:30px; border-radius:10px; }
+  .today-metric.stat-card>strong { font-size:25px; }
+  .today-content-grid.content-grid { gap:11px; }
+  .today-schedule-card { padding:15px; }
+  .today-timeline .timeline-item { grid-template-columns:53px minmax(0,1fr); gap:7px; }
+  .today-timeline .timeline-card { align-items:flex-start; flex-direction:column; gap:10px; padding:11px; }
+  .today-task-actions { width:100%; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:5px; }
+  .today-task-actions .button { min-width:0; width:100%; padding-inline:5px; }
+  .today-side-column { grid-template-columns:minmax(0,1fr); }
+}
+@media(max-width:360px) {
+  .today-heading-copy h1 { font-size:40px; }
+  .today-metric.stat-card { padding:10px; }
+  .today-metric.stat-card>span { font-size:10px; }
+  .today-task-actions { grid-template-columns:minmax(0,1fr); }
+  .today-task-actions .button { min-height:38px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .app-shell::before,.app-shell::after,.today-hero.next-session::before { animation:none!important; opacity:.22!important; transform:none!important; }
+  .today-progress-value { transition:none!important; }
+  .today-metric.stat-card,.today-timeline .timeline-card,.today-habit-action { transition:none!important; }
+}
