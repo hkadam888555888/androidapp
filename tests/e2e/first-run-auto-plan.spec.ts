@@ -19,4 +19,9 @@ test('first-run setup creates a usable Today schedule without a manual Generate 
     timeout: 15_000,
   }).toBeGreaterThan(0);
   await expect(page.getByText(/Today’s schedule is ready:/)).toBeVisible();
+  const nextSession = page.getByRole('region', { name: 'Next planned session' });
+  await expect(nextSession).toBeVisible();
+  await expect(nextSession.getByRole('heading')).toBeVisible();
+  await nextSession.getByRole('button', { name: 'Start focus' }).click();
+  await expect(page.getByRole('dialog').getByText('Ready when you are')).toBeVisible();
 });
