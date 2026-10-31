@@ -26,7 +26,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          node-version: 22
+          node-version: 22.16.0
           cache: 'npm'
 
       - name: Set up Java
@@ -41,8 +41,14 @@ jobs:
       - name: Build the web app
         run: npm run build
 
-      - name: Install Capacitor 8 for this build
-        run: npm install --no-save --package-lock=false --legacy-peer-deps @capacitor/core@8 @capacitor/cli@8 @capacitor/android@8
+      - name: Install pinned Capacitor toolchain
+        run: npm install --no-save --package-lock=false --legacy-peer-deps @capacitor/core@8.5.2 @capacitor/cli@8.5.2 @capacitor/android@8.5.2
+
+      - name: Verify exact Capacitor toolchain versions
+        run: npm ls @capacitor/core@8.5.2 @capacitor/cli@8.5.2 @capacitor/android@8.5.2 @capacitor/local-notifications@8.3.1 --depth=0
+
+      - name: Capture resolved Android dependency tree
+        run: npm ls --all --json > android-toolchain-dependency-tree.json
 
       - name: Generate Capacitor configuration
         run: npx cap init "My Adaptive Routine" "com.hkadam888555888.adaptiveroutine" --web-dir=dist
@@ -61,6 +67,8 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: my-adaptive-routine-debug-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          path: |
+            android/app/build/outputs/apk/debug/app-debug.apk
+            android-toolchain-dependency-tree.json
           if-no-files-found: error
           retention-days: 14
