@@ -70,8 +70,16 @@ test('Today dashboard renders real daily sections and remains usable on a narrow
   await page.screenshot({ path: testInfo.outputPath('today-dashboard-320px.png'), fullPage: true });
 
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  const ambientAnimation = await page.locator('.app-shell').evaluate((element) => getComputedStyle(element, '::before').animationName);
-  const heroAnimation = await page.locator('.today-hero').evaluate((element) => getComputedStyle(element, '::before').animationName);
-  expect(ambientAnimation).toBe('none');
-  expect(heroAnimation).toBe('none');
+  const ambientAnimations = await page.locator('.app-shell').evaluate((element) => ({
+    primary: getComputedStyle(element, '::before').animationName,
+    secondary: getComputedStyle(element, '::after').animationName,
+  }));
+  const heroAnimations = await page.locator('.today-hero').evaluate((element) => ({
+    primary: getComputedStyle(element, '::before').animationName,
+    secondary: getComputedStyle(element, '::after').animationName,
+  }));
+  expect(ambientAnimations.primary).toBe('none');
+  expect(ambientAnimations.secondary).toBe('none');
+  expect(heroAnimations.primary).toBe('none');
+  expect(heroAnimations.secondary).toBe('none');
 });
