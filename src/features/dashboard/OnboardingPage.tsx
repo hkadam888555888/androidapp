@@ -13,12 +13,12 @@ const STARTER_ROADMAP = `# Practical data skills starter
 ### Variables and data types
 ### Functions and return values
 ### Loops and boundary cases
-## Work with real data
+## Pandas workflows
 ### Inspect a DataFrame
 ### Select rows with loc and iloc
 ### Handle missing values
 ### Group data with groupby
-## Communicate a finding
+## Data visualization
 ### Choose a chart for a data question
 ### Explain one finding and its limitations`;
 
