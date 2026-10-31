@@ -168,7 +168,13 @@ export function DashboardPage() {
       <section className="today-hero next-session" aria-label="Next planned session">
         <div className="today-hero-copy next-session-copy">
           <div className="today-hero-kicker next-session-kicker">
-            <span className="next-session-indicator" aria-hidden="true" />
+            <span
+              className={[
+                'next-session-indicator',
+                currentTask ? 'is-active' : pendingReview.required ? 'is-review' : todayTasks.length > 0 ? 'is-complete' : 'is-idle',
+              ].join(' ')}
+              aria-hidden="true"
+            />
             <span>{currentTask ? 'UP NEXT' : pendingReview.required ? 'DAILY CHECK-IN' : todayTasks.length > 0 ? 'DAY COMPLETE' : 'YOUR DAY, YOUR PACE'}</span>
             {currentTask && <span className="next-session-time">{currentTask.plannedWindow?.start ?? 'Flexible time'}{currentTask.plannedWindow?.end ? ' – ' + currentTask.plannedWindow.end : ''}</span>}
           </div>
