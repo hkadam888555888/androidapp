@@ -76,6 +76,20 @@ function topicBlueprint(title: string, pattern: LearningPattern, contextTitles: 
       );
     }
 
+    if (/\b(charts?|plotting|visualization|matplotlib|seaborn)\b/u.test(topic)) {
+      return pair(
+        { title: 'Choose a chart that answers a data question', objective: 'Write one question, identify whether the variables are categorical or numeric, choose a chart that fits those types, and label axes and units.', type: 'apply', estimatedMinutes: 30, minMinutes: 20, maxMinutes: 45, completionCriteria: 'A labelled chart answers the stated question and uses a chart type suited to the variable types.' },
+        { title: 'Improve and critique a data visualization', objective: 'Add a useful title, readable scale, units, and appropriate legend. Check for misleading axes and clutter, then write the finding without claiming causation from correlation.', type: 'apply', estimatedMinutes: 40, minMinutes: 25, maxMinutes: 60, completionCriteria: 'The revised chart is readable, not misleading, and includes an evidence-based interpretation.' },
+      );
+    }
+
+    if (/\b(explain|interpret|communicate|finding|limitations?)\b/u.test(topic) && /\b(visualization|matplotlib|seaborn|chart|plot)\b/u.test(context)) {
+      return pair(
+        { title: 'Describe what the chart actually shows', objective: 'Write two observations grounded in visible values or patterns. Separate observation from explanation and avoid inferring causation from a chart alone.', type: 'apply', estimatedMinutes: 25, minMinutes: 15, maxMinutes: 40, completionCriteria: 'Two observations cite visible evidence and do not make unsupported causal claims.' },
+        { title: 'Explain a finding and its limitations', objective: 'Summarize the main pattern, quantify one comparison, and state a limitation such as sample size, missing data, scale choice, or confounding.', type: 'apply', estimatedMinutes: 35, minMinutes: 20, maxMinutes: 50, completionCriteria: 'A concise interpretation includes one quantified finding and one relevant limitation.' },
+      );
+    }
+
     if (/\b(regression|linear regression|classification|model evaluation|machine learning)\b/u.test(topic)) {
       return pair(
         { title: 'Build a baseline model for ' + title, objective: 'Define the target and input features, create a train/test split before fitting, train the simplest suitable baseline, and record the metric that matches the problem type.', type: 'apply', estimatedMinutes: 45, minMinutes: 30, maxMinutes: 65, completionCriteria: 'A reproducible baseline has a clear target, leakage-safe split, fitted model, and correctly selected evaluation metric.' },
