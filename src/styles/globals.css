@@ -781,7 +781,11 @@ label{display:grid;gap:7px;color:var(--muted);font-size:12px;font-weight:600}inp
 }
 .next-session-copy{min-width:0}
 .next-session-kicker{display:flex;align-items:center;gap:9px;margin-bottom:9px;color:var(--accent);font-size:10px;font-weight:800;letter-spacing:.12em}
-.next-session-indicator{width:8px;height:8px;flex:0 0 8px;border-radius:50%;background:var(--success);box-shadow:0 0 0 4px var(--success-soft)}
+.next-session-indicator{width:8px;height:8px;flex:0 0 8px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 13%,transparent)}
+.next-session-indicator.is-active{background:var(--success);box-shadow:0 0 0 4px var(--success-soft);animation:todaySignalBreathe 3.8s ease-in-out infinite}
+.next-session-indicator.is-review{background:var(--warning);box-shadow:0 0 0 4px var(--warning-soft)}
+.next-session-indicator.is-complete{background:var(--success);box-shadow:0 0 0 4px var(--success-soft)}
+@keyframes todaySignalBreathe{0%,100%{transform:scale(.94);box-shadow:0 0 0 4px var(--success-soft),0 0 0 0 color-mix(in srgb,var(--success) 0%,transparent)}50%{transform:scale(1.08);box-shadow:0 0 0 5px var(--success-soft),0 0 15px color-mix(in srgb,var(--success) 35%,transparent)}}
 .next-session-time{margin-left:4px;color:var(--muted);font-variant-numeric:tabular-nums;letter-spacing:.02em}
 .next-session h2{margin:0 0 5px;font-size:clamp(19px,2.3vw,25px);line-height:1.2;overflow-wrap:anywhere}
 .next-session p{margin:0;color:var(--muted);font-size:12px;line-height:1.5}
