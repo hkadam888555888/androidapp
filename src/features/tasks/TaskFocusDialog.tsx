@@ -76,7 +76,7 @@ export function TaskFocusDialog({ task, onClose, onComplete, onSkip }: TaskFocus
 
   return (
     <div className="focus-dialog-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
-      <section ref={dialogRef} className="focus-dialog" role="dialog" aria-modal="true" aria-labelledby="focus-dialog-title" aria-describedby="focus-dialog-note" tabIndex={-1}>
+      <section ref={dialogRef} className={running ? "focus-dialog is-running" : "focus-dialog"} role="dialog" aria-modal="true" aria-labelledby="focus-dialog-title" aria-describedby="focus-dialog-note" tabIndex={-1}>
         <div className="focus-dialog-header">
           <div><p className="eyebrow">Focused work</p><h2 id="focus-dialog-title">{task.title}</h2><StatusBadge status={task.status} /></div>
           <button type="button" className="button secondary focus-dialog-close" onClick={onClose} aria-label="Close focus timer">×</button>
