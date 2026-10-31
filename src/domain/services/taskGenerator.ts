@@ -48,6 +48,13 @@ function topicBlueprint(title: string, pattern: LearningPattern, contextTitles: 
       );
     }
 
+    if (/\b(pandas|dataframe|tabular data)\b/u.test(topic)) {
+      return pair(
+        { title: 'Inspect a DataFrame before analysis', objective: 'Load a small table and use shape, columns, dtypes, info, and head to establish its size, field names, data types, non-null counts, and first visible records. Explain what each inspection reveals.', type: 'apply', estimatedMinutes: 30, minMinutes: 20, maxMinutes: 45, completionCriteria: 'A short inspection note reports row and column counts, names, important dtypes, non-null counts, and one data-quality question.' },
+        { title: 'Check a DataFrame before using it', objective: 'Inspect duplicates, unexpected categories, numeric ranges, and missingness in the same table. Choose one issue to investigate and show how it could affect a later calculation or model.', type: 'apply', estimatedMinutes: 40, minMinutes: 25, maxMinutes: 55, completionCriteria: 'A repeatable check reports at least two data-quality observations and explains the risk of one issue.' },
+      );
+    }
+
     if (/\b(missing values?|null values?|nan|imputation|missing data)\b/u.test(topic)) {
       return pair(
         { title: 'Map missing values and their impact', objective: 'Measure missing counts and percentages by column, inspect whether missingness clusters by row or group, and distinguish an unknown value from zero or not applicable.', type: 'apply', estimatedMinutes: 35, minMinutes: 25, maxMinutes: 50, completionCriteria: 'A missingness summary reports counts and percentages and identifies which fields need investigation before modelling.' },
