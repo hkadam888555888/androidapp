@@ -2,7 +2,7 @@
 
 **Result: NOT RELEASE-READY.** This is an improved source candidate, not a verified production build or Android release.
 
-> **Scope note (2026-10-25):** The environment and check results below are historical evidence from an earlier offline/source-archive snapshot; they are not a live verification of the current PR #6 candidate. The current candidate at `redesign/ppt-foundation-and-14-sessions` contains `package-lock.json` (lockfile v3) for the web application dependency graph. The earlier “lockfile absent” and `ENOLOCK` statements apply only to that historical snapshot. The current Android APK workflow still installs `@capacitor/core@8`, `@capacitor/cli@8`, and `@capacitor/android@8` with `--no-save --package-lock=false`; those native-toolchain packages are not captured by the checked-in web lockfile. Exact Capacitor resolution and generated native manifest/config reproducibility remain unresolved.
+> **Scope note (2026-10-31):** The environment and check results in the historical sections below describe earlier snapshots, not a live verification of every later commit. The consolidated candidate is `product/complete-first-run-2026-10-30` (PR #11). Its web dependencies are locked in `package-lock.json` (lockfile v3). The Android APK workflow now pins Node `22.16.0` and direct Capacitor packages `@capacitor/core`, `@capacitor/cli`, and `@capacitor/android` to `8.5.2`; `@capacitor/local-notifications` remains locked at `8.3.1`. The workflow checks those direct versions and uploads `npm ls --all --json` output with the APK. The Android project is still generated during CI, and the resolved transitive native dependency graph is recorded per run rather than committed as a second lockfile.
 
 ## Historical environment snapshot (earlier offline source archive)
 
@@ -38,7 +38,7 @@ Current dependency-free checks are valuable for source regression screening but 
 
 The current candidate includes a committed `package-lock.json` (lockfile v3), and the direct web dependencies in `package.json` are exact versions. This locks the web dependency graph for `npm ci`; it does not prove that the current candidate's tests or build passed unless the corresponding run is tied to the exact candidate.
 
-The native Android toolchain is **not reproducible yet**: `.github/workflows/android-apk.yml` installs `@capacitor/core@8`, `@capacitor/cli@8`, and `@capacitor/android@8` using `--no-save --package-lock=false`. These major-version ranges bypass the checked-in lockfile for the ephemeral Capacitor installation, so the resolved patch versions and transitive native-toolchain graph are not captured by the repository lockfile.
+The direct Android/Capacit or toolchain packages are now version-pinned in `.github/workflows/android-apk.yml` and verified with `npm ls`. The workflow records the complete resolved npm dependency tree as an artifact for each build. The transitive CLI dependency graph is not committed to `package-lock.json`, so exact replay of that native build requires retaining the corresponding artifact and workflow run. The generated Android project and Gradle wrapper are also not checked into the repository.
 
 On a network-enabled development machine, run the web checks against the exact candidate:
 
