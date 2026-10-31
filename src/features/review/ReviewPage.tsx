@@ -15,7 +15,7 @@ export function ReviewPage() {
   const [blocker, setBlocker] = useState('');
   const [actuals, setActuals] = useState<Record<string, string>>({});
   const requestedReviewDate = (location.state as { reviewDate?: unknown } | null)?.reviewDate;
-  const targetDate = typeof requestedReviewDate === 'string' && /^\\d{4}-\\d{2}-\\d{2}$/.test(requestedReviewDate)
+  const targetDate = typeof requestedReviewDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(requestedReviewDate)
     ? requestedReviewDate
     : previousISO(getCurrentDate());
   const tasks = useMemo(() => state.dailyTasks.filter((task) => task.date === targetDate), [state.dailyTasks, targetDate]);
