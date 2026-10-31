@@ -152,7 +152,7 @@ export function DashboardPage() {
                 : <button className="button primary" type="button" onClick={regenerate} disabled={busy}>{busy ? 'Preparing…' : 'Prepare my day'}</button>)
               : <Link className="button primary" to="/roadmap">Build a roadmap</Link>
           ) : pendingReview.required ? (
-            <Link className="button primary" to="/review">Review today</Link>
+            <Link className="button primary" to="/review" state={{ reviewDate: date }}>Review today</Link>
           ) : <Link className="button primary" to="/statistics">See progress</Link>}
         </div>
       </header>
@@ -160,7 +160,7 @@ export function DashboardPage() {
       {pendingReview.required && (
         <div className="review-banner today-review-banner" role="status">
           <div><strong>A quick check-in is still needed</strong><span>{pendingReview.unresolvedTaskIds?.length ?? 0} task(s) need an explicit result. Nothing is assumed complete.</span></div>
-          <Link className="button primary" to="/review">Finish review</Link>
+          <Link className="button primary" to="/review" state={{ reviewDate: date }}>Finish review</Link>
         </div>
       )}
       {notice && <div className="notice-bar" role="status" aria-live="polite">{notice}</div>}
@@ -189,7 +189,7 @@ export function DashboardPage() {
             ) : todayTasks.length === 0 ? (
               <Link to={activeRoadmap ? '/planner' : '/roadmap'} className="button primary">{activeRoadmap ? 'Open planner' : 'Create your roadmap'}</Link>
             ) : pendingReview.required ? (
-              <Link to="/review" className="button primary">Review day</Link>
+              <Link to="/review" state={{ reviewDate: date }} className="button primary">Review day</Link>
             ) : <Link to="/statistics" className="button primary">View progress</Link>}
           </div>
         </div>
@@ -296,7 +296,7 @@ export function DashboardPage() {
             <div className="quick-grid today-quick-grid">
               <Link to="/planner" className="quick-action"><strong>Add urgent work</strong><span>Fit a new commitment into the day.</span></Link>
               <Link to="/habits" className="quick-action"><strong>Log a habit</strong><span>Record what you actually did.</span></Link>
-              <Link to="/review" className="quick-action"><strong>Review the day</strong><span>Resolve unfinished tasks honestly.</span></Link>
+              <Link to="/review" state={{ reviewDate: date }} className="quick-action"><strong>Review the day</strong><span>Resolve unfinished tasks honestly.</span></Link>
             </div>
           </article>
         </aside>
