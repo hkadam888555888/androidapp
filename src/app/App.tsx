@@ -23,7 +23,7 @@ import { QuickActionsDialog } from '../components/overlays/QuickActionsDialog';
  * Kept in App.tsx by request; all data and feature behavior remain in their
  * existing feature/application modules.
  */
-const appExperienceStyles = String.raw\`
+const appExperienceStyles = String.raw`
 .app-shell {
   position: relative;
   isolation: isolate;
@@ -375,7 +375,7 @@ const appExperienceStyles = String.raw\`
     transition: none !important;
   }
 }
-\`;
+`;
 
 const primaryNav = [
   ['/today', 'Today', Gauge],
