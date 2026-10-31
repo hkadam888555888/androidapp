@@ -39,8 +39,8 @@ npx playwright test
 npm audit --audit-level=high
 ```
 
-The GitHub Actions workflows run the web verification and produce a debug APK artifact. A CI APK build is not a signed release and does not replace physical-device QA.
+The GitHub Actions workflows run the web verification and produce a debug APK artifact. The Android job uses Node 22.16.0 and exact Capacitor 8.5.2 package versions, checks the resolved versions, and uploads the resolved npm dependency tree alongside the APK. A CI APK build is not a signed release and does not replace physical-device QA.
 
 ## Release status
 
-Do not treat a green CI run as proof that the app is release-ready. Before publishing, pin the Android/Capacitor toolchain in the repository, install the APK on supported physical devices, and verify first-run setup, existing-data upgrades, Android 13+ notification permission, reminders with the app closed, Doze/battery behavior, notification navigation, Back behavior, TalkBack, contrast, and responsive layouts. No production signing key, store release, or deployment is included.
+Do not treat a green CI run as proof that the app is release-ready. The Android CI job pins the direct Capacitor packages and captures the resolved dependency tree for each build; the Android project is still generated during CI rather than checked in as a native project. Before publishing, install the APK on supported physical devices and verify first-run setup, existing-data upgrades, Android 13+ notification permission, reminders with the app closed, Doze/battery behavior, notification navigation, Back behavior, TalkBack, contrast, and responsive layouts. No production signing key, store release, or deployment is included.
