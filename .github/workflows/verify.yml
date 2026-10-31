@@ -17,14 +17,14 @@ jobs:
   verify:
     name: Source, lint, tests, and production build
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 35
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
           cache: 'npm'
@@ -35,6 +35,9 @@ jobs:
       - name: Run source audit
         run: npm run audit:source
 
+      - name: Run Arena Security 100 source checks
+        run: npm run security:arena100
+
       - name: Check lint
         run: npm run lint
 
@@ -43,3 +46,21 @@ jobs:
 
       - name: Build production app
         run: npm run build
+
+      - name: Install Chromium for end-to-end tests
+        run: npx playwright install --with-deps chromium
+
+      - name: Run critical-flow end-to-end tests
+        run: npx playwright test
+
+      - name: Upload Arena browser evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: arena-browser-evidence
+          path: test-results/
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Audit locked dependencies for high and critical vulnerabilities
+        run: npm audit --audit-level=high

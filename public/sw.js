@@ -1,4 +1,4 @@
-/* Local-first app-shell cache. User records, backups and model/API responses are never cached. */
+/* Cache only the application shell and immutable build assets. Never cache user/API data. */
 const CACHE_NAME = 'my-adaptive-routine-shell-v1.0.5';
 const CORE_ASSETS = ['/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png', '/icons/icon-512-maskable.png'];
 
@@ -35,7 +35,8 @@ self.addEventListener('fetch', (event) => {
   if (request.mode === 'navigate') {
     event.respondWith(
       fetch(request).then(async (response) => {
-        if (response.ok) {
+        const contentType = response.headers.get('content-type') ?? '';
+        if (response.ok && url.pathname === '/' && contentType.toLowerCase().includes('text/html')) {
           const cache = await caches.open(CACHE_NAME);
           await cache.put('/', response.clone());
         }
@@ -46,6 +47,14 @@ self.addEventListener('fetch', (event) => {
   }
 
   if (url.pathname.startsWith('/src/') || url.pathname.includes('/@vite/')) return;
+
+  // Runtime caching is deliberately allow-listed. Future same-origin APIs, exports,
+  // and personalized responses must remain network-only and out of the app-shell cache.
+  const isStaticAsset = url.pathname === '/manifest.webmanifest'
+    || url.pathname.startsWith('/icons/')
+    || url.pathname.startsWith('/assets/');
+  if (!isStaticAsset) return;
+
   event.respondWith(caches.match(request).then((cached) => cached || fetch(request).then(async (response) => {
     if (response.ok && response.type === 'basic') {
       const cache = await caches.open(CACHE_NAME);

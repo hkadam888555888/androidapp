@@ -42,4 +42,16 @@ describe('roadmap parser', () => {
     const parsed = parseRoadmap('A\n      - B', 'r4');
     expect(parsed.issues.some((issue) => issue.code === 'impossible_indent')).toBe(true);
   });
+  it('nests Markdown lists beneath headings when pasted indentation is missing', () => {
+    const parsed = parseRoadmap(
+      '# AI/ML ROADMAP\n## Python\n- Fundamentals\n  - Variables and data types\n  - Functions\n## NumPy\n- Arrays',
+      'r6',
+    );
+
+    expect(parsed.nodes.map((node) => node.depth)).toEqual([0, 1, 2, 3, 3, 1, 2]);
+    expect(parsed.nodes[2].parentId).toBe(parsed.nodes[1].id);
+    expect(parsed.nodes[3].parentId).toBe(parsed.nodes[2].id);
+    expect(parsed.nodes[6].parentId).toBe(parsed.nodes[5].id);
+    expect(parsed.issues.some((issue) => issue.code === 'duplicate_sibling')).toBe(false);
+  });
 });

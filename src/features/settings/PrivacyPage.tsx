@@ -22,7 +22,7 @@ export function PrivacyPage() {
       <p>Exported JSON backups may contain personal routine and progress information. You choose where to save or share them; the app does not upload them automatically. Importing a backup replaces the app's stored records. “Delete all local data” clears the app's local records in this browser and returns setup to its first-run state. It does not delete backup files that you saved outside the app.</p>
 
       <h2>Notifications</h2>
-      <p>Browser reminders are optional and require notification permission. Delivery is foreground-only in this release: reminders are not guaranteed while the app is closed, suspended, or the browser is stopped.</p>
+      <p>Reminders are optional and require notification permission. In the native Android build, reminders are scheduled locally on the device and can fire while the app is closed; battery-saving modes may delay inexact alarms. In the web/PWA build, browser notifications only fire while the app is open. No remote push service is used.</p>
 
       <h2>Analytics and diagnostics</h2>
       <p>This build does not include a third-party analytics SDK or remote crash-reporting service. The diagnostics view is local to the app. If you share an exported backup or diagnostic information yourself, that sharing happens outside the app's automatic data flow.</p>

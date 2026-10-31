@@ -2,7 +2,9 @@
 
 **Result: NOT RELEASE-READY.** This is an improved source candidate, not a verified production build or Android release.
 
-## Environment
+> **Scope note (2026-10-31):** The environment and check results in the historical sections below describe earlier snapshots, not a live verification of every later commit. The consolidated candidate is `product/complete-first-run-2026-10-30` (PR #11). Its web dependencies are locked in `package-lock.json` (lockfile v3). The Android APK workflow now pins Node `22.16.0` and direct Capacitor packages `@capacitor/core`, `@capacitor/cli`, and `@capacitor/android` to `8.5.2`; `@capacitor/local-notifications` remains locked at `8.3.1`. The workflow checks those direct versions and uploads `npm ls --all --json` output with the APK. The Android project is still generated during CI, and the resolved transitive native dependency graph is recorded per run rather than committed as a second lockfile.
+
+## Historical environment snapshot (earlier offline source archive)
 
 - Node: `v22.16.0`
 - npm: `10.9.2`
@@ -12,7 +14,7 @@
 - npm registry access: unavailable during prior install attempts (timeout / `EAI_AGAIN` DNS error)
 - Playwright browser binaries: unavailable
 
-## Checks that passed
+## Historical checks that passed on that snapshot
 
 - `node scripts/source-audit.mjs`: **PASS — 16 checks**, plus one explicit warning because `package-lock.json` is absent.
 - Dependency-free compatibility runner: **PASS — 96 tests passed, 0 failed**. This runner uses a small shim to execute eligible existing test bodies; it is *not* the official Vitest runner and is supplementary evidence only.
@@ -21,7 +23,7 @@
 - `node --check public/sw.js`, `scripts/source-audit.mjs`, and `scripts/check-bundle-size.mjs`: **PASS**.
 - The final source/archive and evidence manifest are integrity-checked in the accompanying report/bundle.
 
-## Official checks attempted but blocked
+## Historical official checks attempted but blocked
 
 - `npm test -- --reporter=verbose`: **BLOCKED**, exits 127 because `vitest` is not installed (`vitest: not found`).
 - `npm run build`: **NOT VERIFIED**, exits 1 because the project dependencies and React/Vite type packages are absent. The observed React/JSX TypeScript errors cascade from missing packages and are not treated as isolated proof of application defects.
@@ -32,12 +34,16 @@
 
 Current dependency-free checks are valuable for source regression screening but cannot replace a dependency-backed build, official Vitest/coverage/lint/audit checks, or browser/device evidence.
 
-## Reproducibility gate
+## Reproducibility gate (consolidated PR #11 candidate)
 
-Direct versions in `package.json` are exact, but the transitive dependency graph is **not reproducible yet** because there is no committed `package-lock.json`. On a network-enabled development machine:
+The current candidate includes a committed `package-lock.json` (lockfile v3), and the direct web dependencies in `package.json` are exact versions. This locks the web dependency graph for `npm ci`; it does not prove that the current candidate's tests or build passed unless the corresponding run is tied to the exact candidate.
+
+The direct Android/Capacitor toolchain packages are now version-pinned in `.github/workflows/android-apk.yml` and verified with `npm ls`. The workflow records the complete resolved npm dependency tree as an artifact for each build. The transitive CLI dependency graph is not committed to `package-lock.json`, so exact replay of that native build requires retaining the corresponding artifact and workflow run. The generated Android project and Gradle wrapper are also not checked into the repository.
+
+On a network-enabled development machine, run the web checks against the exact candidate:
 
 ```bash
-npm install
+npm ci
 npm test
 npm run test:coverage
 npm run lint
@@ -47,7 +53,7 @@ npm run test:e2e
 npm audit
 ```
 
-Review and commit the generated lockfile only after the install succeeds; then verify from a clean checkout with `npm ci`, rerun all commands, and retain CI logs. Do not call the release reproducible before this gate passes.
+For the Android boundary, separately pin exact Capacitor package versions and preserve the resolved dependency graph, then retain the generated `AndroidManifest.xml`, Capacitor config, FileProvider paths XML, and resolved package-version evidence as artifacts from the same exact candidate. Verify those artifacts and run supported native/device checks before claiming native reproducibility. Do not dispatch a new workflow until a verified zero-cost route is confirmed; do not call the release reproducible before the required checks pass.
 
 ## Browser and data-integrity gate
 

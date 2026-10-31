@@ -7,7 +7,6 @@ import type {
   Roadmap,
   RoadmapTask,
   TimePatternProfile,
-  TaskDefinition,
 } from '../entities/models';
 
 export type PaceStatus = 'AHEAD' | 'ON_TRACK' | 'AT_RISK' | 'DELAYED';

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ChangeEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { appStore, useAppStore } from '../../application/appStore';
 import type { Habit, Roadmap, TaskPriority } from '../../domain/entities/models';
@@ -8,12 +8,19 @@ import { parseRoadmap } from '../../domain/services/roadmapParser';
 import { validateDependencyGraph } from '../../domain/engine/dependencyEngine';
 import { createId } from '../../lib/id';
 
-const STARTER_ROADMAP = `# My learning roadmap
-## Foundations
-### First concept to learn
-### Practice the first concept
-## Build something
-### Small practical project`;
+const STARTER_ROADMAP = `# Practical data skills starter
+## Python foundations
+### Variables and data types
+### Functions and return values
+### Loops and boundary cases
+## Pandas workflows
+### Inspect a DataFrame
+### Select rows with loc and iloc
+### Handle missing values
+### Group data with groupby
+## Data visualization
+### Choose a chart for a data question
+### Explain one finding and its limitations`;
 
 type Step = 0 | 1 | 2;
 
@@ -50,10 +57,32 @@ export function OnboardingPage() {
     return { valid: tasks.valid && dependencies.valid, issues: [...tasks.issues.map((issue) => issue.message), ...dependencies.cycles.map((cycle) => `Dependency cycle: ${cycle.join(' → ')}`), ...dependencies.missing.map((item) => `Missing prerequisite: ${item}`)], taskCount: curriculum.tasks.length, conceptCount: curriculum.concepts.length };
   }, [parsed]);
 
+  async function importRoadmapFile(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    try {
+      if (file.size > 1_000_000) throw new Error('Choose a text or Markdown roadmap under 1 MB.');
+      if (!/\.(md|markdown|txt)$/iu.test(file.name)) throw new Error('Choose a .md, .markdown, or .txt roadmap file.');
+      const contents = await file.text();
+      if (!contents.trim()) throw new Error('That file is empty. Choose another file or paste your roadmap.');
+      setRoadmapText(contents);
+      setError('');
+      setStep(0);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Could not read that roadmap file.');
+    } finally {
+      event.target.value = '';
+    }
+  }
+
   async function skipOnboarding() {
-    if (!state.preferences) return;
-    await appStore.savePreferences({ ...state.preferences, onboardingCompleted: true });
-    navigate('/today');
+    if (!state.preferences) { setError('Your local preferences are not ready yet.'); return; }
+    try {
+      await appStore.savePreferences({ ...state.preferences, onboardingCompleted: true });
+      navigate('/today');
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Could not save the first-run preference. Please retry.');
+    }
   }
 
   async function finishSetup() {
@@ -87,18 +116,16 @@ export function OnboardingPage() {
       let hash = 2166136261;
       for (let i = 0; i < source.length; i += 1) hash = Math.imul(hash ^ source.charCodeAt(i), 16777619);
       const version = { id: `${roadmapId}:curriculum:v1`, roadmapId, version: 1, createdAt: now, sourceTextHash: (hash >>> 0).toString(16), status: 'approved' as const, conceptIds: curriculum.concepts.map((concept) => concept.id), taskDefinitionIds: curriculum.tasks.map((task) => task.id), warnings: [] };
-      await appStore.createRoadmap(roadmap, taskRows, { version, concepts: curriculum.concepts, definitions: curriculum.tasks });
       const preferences = {
         ...state.preferences, onboardingCompleted: true, notificationsEnabled: false, wakeTime, sleepTime,
         defaultStudyWindows: [{ start: studyStart, end: studyEnd }],
         maxStudyMinutesPerDay: Math.round(dailyHours * 60), maxCognitiveMinutesPerDay: Math.round(dailyHours * 60),
         maxContinuousFocusMinutes: Math.min(90, Math.round(dailyHours * 30)), bufferPercentage: 15,
       };
-      await appStore.savePreferences(preferences);
       const habits: Habit[] = [];
       if (enableExercise && exerciseGoal > 0) habits.push({ id: createId('habit'), name: 'Exercise', kind: 'exercise', targetValue: exerciseGoal, unit: 'minutes', minimumValue: Math.min(15, exerciseGoal), active: true, preferredWindows: [{ start: wakeTime, end: studyStart }], reminderTimes: [], frequencyDays: [0, 1, 2, 3, 4, 5, 6], recurrence: 'daily', streakPolicy: 'target_or_partial', allowPartial: true, carryOverAllowed: false, priority: 'high' });
       if (enableWater && waterGoal > 0) habits.push({ id: createId('habit'), name: 'Water', kind: 'water', targetValue: waterGoal, unit: 'ml', minimumValue: waterGoal, active: true, preferredWindows: [{ start: wakeTime, end: sleepTime }], reminderTimes: [], frequencyDays: [0, 1, 2, 3, 4, 5, 6], recurrence: 'daily', streakPolicy: 'strict', allowPartial: false, carryOverAllowed: false, priority: 'medium' });
-      for (const habit of habits) await appStore.saveHabit(habit);
+      await appStore.saveFirstRunSetup(roadmap, taskRows, { version, concepts: curriculum.concepts, definitions: curriculum.tasks }, preferences, habits);
       navigate('/today');
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Could not finish setup. Your existing local data was not intentionally changed.');
@@ -111,8 +138,12 @@ export function OnboardingPage() {
       <div className="onboarding-progress" aria-label={`Step ${step + 1} of 3`}>{[0, 1, 2].map((item) => <span key={item} className={item <= step ? 'done' : ''} />)}</div>
       {step === 0 && <>
         <p className="eyebrow">Step 1 of 3 · Your learning map</p><h1>Turn your goals into a routine.</h1><p className="muted">Start with a roadmap you already have. The app converts it into manageable tasks; it does not mark anything complete for you.</p>
-        <div className="setting-form"><label>Roadmap title<input value={title} maxLength={100} onChange={(event) => setTitle(event.target.value)} placeholder="AI/ML, DSA, College…" /></label><label>Paste your roadmap<textarea rows={9} value={roadmapText} onChange={(event) => setRoadmapText(event.target.value)} placeholder={'# AI/ML\n## Python\n### Fundamentals\n### Functions\n## Mathematics\n### Probability'} /></label></div>
-        <div className="toolbar"><button className="button secondary" onClick={() => setRoadmapText(STARTER_ROADMAP)}>Load starter outline</button><span className="muted small-copy">Headings, bullets and indented outlines are supported.</span></div>
+        <div className="setting-form"><label>Roadmap title<input value={title} maxLength={100} onChange={(event) => setTitle(event.target.value)} placeholder="AI/ML, DSA, College…" /></label><label>Paste your roadmap (or edit the practical starter)<textarea rows={9} value={roadmapText} onChange={(event) => setRoadmapText(event.target.value)} placeholder={'# AI/ML\n## Python\n### Fundamentals\n### Functions\n## Mathematics\n### Probability'} /></label></div>
+        <div className="toolbar onboarding-roadmap-tools">
+          <button className="button secondary" onClick={() => { setTitle('Practical data skills starter'); setRoadmapText(STARTER_ROADMAP); setError(''); }}>Load practical starter</button>
+          <label className="button secondary onboarding-file-button">Choose .md or .txt file<input className="onboarding-file-input" type="file" accept=".md,.markdown,.txt,text/plain,text/markdown" aria-label="Choose a Markdown or text roadmap file" onChange={(event) => void importRoadmapFile(event)} /></label>
+          <span className="muted small-copy">Headings, bullets and indented outlines are supported.</span>
+        </div>
         <div className="onboarding-actions"><span className="muted small-copy">Your roadmap stays in local browser storage.</span><button className="button primary" onClick={() => { setError(''); setStep(1); }}>Next: routine</button></div>
       </>}
       {step === 1 && <>
@@ -122,7 +153,7 @@ export function OnboardingPage() {
         <div className="onboarding-actions"><button className="button secondary" onClick={() => { setError(''); setStep(0); }}>Back</button><button className="button primary" onClick={() => { setError(''); setStep(2); }}>Next: review</button></div>
       </>}
       {step === 2 && <>
-        <p className="eyebrow">Step 3 of 3 · Review before saving</p><h1>Ready to build your first plan?</h1><p className="muted">Nothing is scheduled until you generate a plan. Your first curriculum stays deterministic and can be reviewed in Roadmap.</p>
+        <p className="eyebrow">Step 3 of 3 · Review before saving</p><h1>Ready to build your first plan?</h1><p className="muted">Saving creates your roadmap, curriculum, preferences, and enabled habits together. Today then prepares your first schedule automatically; you can adjust the plan before starting. A scheduled task is never marked complete for you.</p>
         <div className="onboarding-summary"><div><span>Roadmap</span><strong>{title.trim() || 'Untitled roadmap'}</strong></div><div><span>Roadmap structure</span><strong>{parsed?.nodes.length ?? 0} nodes</strong></div><div><span>Generated work</span><strong>{validation?.taskCount ?? 0} tasks</strong></div><div><span>Daily capacity</span><strong>{dailyHours} hours</strong></div><div><span>Study window</span><strong>{studyStart}–{studyEnd}</strong></div><div><span>Habits</span><strong>{Number(enableExercise && exerciseGoal > 0) + Number(enableWater && waterGoal > 0)} enabled</strong></div></div>
         {validation && <div className={`onboarding-validation ${validation.valid ? 'valid' : 'invalid'}`}><strong>{validation.valid ? 'Roadmap checks passed' : 'Roadmap needs attention'}</strong><span>{validation.valid ? `${validation.conceptCount} concepts and ${validation.taskCount} task definitions validated.` : validation.issues.slice(0, 3).join(' ')}</span></div>}
         <div className="onboarding-actions"><button className="button secondary" onClick={() => { setError(''); setStep(1); }}>Back</button><button className="button primary" disabled={saving || !validation?.valid} onClick={() => void finishSetup()}>{saving ? 'Saving local setup…' : 'Save setup & open Today'}</button></div>

@@ -59,7 +59,6 @@ export function StatisticsPage() {
       <div>
         <p className="eyebrow">Evidence-based progress</p>
         <h1>Statistics</h1>
-        <p className="muted">Your routine, measured across execution, workload, roadmaps, milestones, subjects, and the signals the planner is learning.</p>
       </div>
       <div className="period-tabs" role="tablist" aria-label="Analytics period">
         {(['week', 'month', 'year'] as AnalyticsPeriod[]).map((item) => <button key={item} className={period === item ? 'period-tab active' : 'period-tab'} onClick={() => setPeriod(item)}>{item === 'week' ? 'Weekly' : item === 'month' ? 'Monthly' : 'Yearly'}</button>)}
@@ -128,7 +127,7 @@ export function StatisticsPage() {
 
     <div className="content-grid">
       <article className="card">
-        <div className="card-heading"><div><span className="eyebrow">Adaptation</span><h2>What the planner has learned</h2></div><span className="pill">v0.8</span></div>
+        <div className="card-heading"><div><span className="eyebrow">Adaptation</span><h2>What the planner has learned</h2></div><span className="pill">Adaptive planning</span></div>
         <div className="analysis-metrics"><span><strong>{report.adaptation.estimationProfileCount}</strong>estimate scopes</span><span><strong>{report.adaptation.highConfidenceProfiles}</strong>high confidence</span><span><strong>{report.adaptation.timingProfileCount}</strong>timing profiles</span><span><strong>{report.adaptation.repeatedSkipTaskCount}</strong>repeat-skip tasks</span></div>
         <div className="analysis-stack analytics-detail-stack">
           <div className="setting-row"><div><strong>Average learned estimate shift</strong><span>Across scopes with learned estimates</span></div><strong>{signed(report.adaptation.learnedEstimateDeltaPercent)}</strong></div>

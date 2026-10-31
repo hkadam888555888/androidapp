@@ -34,13 +34,34 @@ export function parseRoadmap(sourceText: string, roadmapId: ID = 'roadmap-import
   const nodes: NormalizedRoadmapNode[] = [];
   let previousDepth = 0;
   let hasPrevious = false;
+  let activeHeadingDepth: number | null = null;
+  let sectionBaseIndent: number | null = null;
   const stack: Array<{ depth: number; id: ID }> = [];
   const siblingTitlesByParent = new Map<string, Set<string>>();
 
   for (const info of infos) {
     if (!info.cleaned) continue;
 
-    const depth = Math.max(0, info.depth);
+    const indent = info.raw.replace(/\t/g, '    ').match(/^ */u)?.[0].length ?? 0;
+    let depth = Math.max(0, info.depth);
+
+    // Markdown headings define section levels. Put following list/plain items
+    // beneath the active heading even when a mobile clipboard removed indentation.
+    if (info.marker === 'heading') {
+      activeHeadingDepth = depth;
+      sectionBaseIndent = null;
+    } else if (info.marker === 'tree') {
+      activeHeadingDepth = null;
+      sectionBaseIndent = null;
+    } else if (activeHeadingDepth !== null) {
+      if (sectionBaseIndent === null) sectionBaseIndent = indent;
+      const relativeIndent = Math.floor(Math.max(0, indent - sectionBaseIndent) / 2);
+      const numberingDepth = info.marker === 'numbered' && indent === 0
+        ? Math.max(0, (info.numbering?.split('.').length ?? 1) - 1)
+        : 0;
+      depth = activeHeadingDepth + 1 + relativeIndent + numberingDepth;
+    }
+    const inMarkdownSection = activeHeadingDepth !== null;
     if (hasPrevious && depth > previousDepth + 1) {
       issues.push({ lineNumber: info.lineNumber, code: 'impossible_indent', message: `Indentation jumped from depth ${previousDepth} to ${depth}.` });
     }
@@ -72,7 +93,7 @@ export function parseRoadmap(sourceText: string, roadmapId: ID = 'roadmap-import
       numbering: info.numbering,
       marker: info.marker,
       nodeType: classifyNode(depth, info.marker, info.cleaned),
-      confidence: info.explicitDepth || info.marker === 'heading' || info.marker === 'tree' ? 'high' : 'medium',
+      confidence: info.explicitDepth || info.marker === 'heading' || info.marker === 'tree' || inMarkdownSection ? 'high' : 'medium',
       userApproved: false,
     };
     nodes.push(node);

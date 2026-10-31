@@ -1,49 +1,43 @@
-name: Repair and dispatch build checks
+name: Manual read-only verification
 
 on:
   workflow_dispatch:
 
 permissions:
-  contents: write
-  actions: write
+  contents: read
+
+concurrency:
+  group: manual-verify-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  repair:
+  verify:
+    name: Source, lint, tests, and build checks (no deployment)
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
-      - name: Check out main
-        uses: actions/checkout@v4
+      - name: Check out selected ref
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          ref: main
+          node-version: 22
+          cache: npm
 
-      - name: Apply TypeScript fixes
-        run: |
-          set -euo pipefail
-          python3 -c "from pathlib import Path; p=Path('src/application/appStore.ts'); s=p.read_text(); old='exerciseType: entry.exerciseType,'; new='exerciseType: entry.exerciseType ?? null,'; assert s.count(old)==1, f'expected one exerciseType line, got {s.count(old)}'; p.write_text(s.replace(old,new,1)); print('Patched appStore.ts')"
-          python3 -c "from pathlib import Path; p=Path('src/features/diagnostics/DiagnosticsPage.tsx'); s=p.read_text(); old='  const checks = ['; new='  const checks: [string, boolean, string][] = ['; assert s.count(old)==1, f'expected one checks declaration, got {s.count(old)}'; p.write_text(s.replace(old,new,1)); print('Patched DiagnosticsPage.tsx')"
+      - name: Install locked dependencies
+        run: npm ci
 
-      - name: Validate and commit fixes
-        run: |
-          set -euo pipefail
-          git diff --check
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add src/application/appStore.ts src/features/diagnostics/DiagnosticsPage.tsx eslint.config.js
-          if git diff --cached --quiet; then
-            echo "No source changes needed; fixes already present."
-          else
-            git commit -m "fix: resolve TypeScript and ESLint build blockers"
-            git push origin HEAD:main
-          fi
+      - name: Run source audit
+        run: npm run audit:source
+      - name: Run Arena Security 100 source checks
+        run: npm run security:arena100
 
-      - name: Dispatch verification and APK builds
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-          for workflow in verify.yml android-apk.yml; do
-            code=$(curl -sS -o /tmp/dispatch-body -w "%{http_code}" -X POST -H "Accept: application/vnd.github+json" -H "Authorization: Bearer $GH_TOKEN" "https://api.github.com/repos/hkadam888555888/androidapp/actions/workflows/$workflow/dispatches" -d '{"ref":"main"}')
-            echo "$workflow dispatch returned HTTP $code"
-            if [ "$code" != "204" ]; then cat /tmp/dispatch-body; exit 1; fi
-          done
+      - name: Check lint
+        run: npm run lint
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build application for verification
+        run: npm run build
