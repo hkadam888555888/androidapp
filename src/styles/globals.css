@@ -881,12 +881,45 @@ label{display:grid;gap:7px;color:var(--muted);font-size:12px;font-weight:600}inp
     linear-gradient(116deg,color-mix(in srgb,var(--surface) 84%,var(--primary-container)),var(--surface) 70%);
   box-shadow:0 18px 48px rgba(14,34,37,.09),inset 0 1px 0 rgba(255,255,255,.24);
 }
-.today-hero.next-session::before {
-  content:""; position:absolute; z-index:-1; width:370px; height:370px; top:-242px; right:-65px; border-radius:50%;
-  background:radial-gradient(circle,color-mix(in srgb,var(--accent) 35%,transparent),transparent 68%);
-  animation:marHeroLight 16s ease-in-out infinite; pointer-events:none;
+.today-hero.next-session::before,
+.today-hero.next-session::after {
+  content:"";
+  position:absolute;
+  pointer-events:none;
+  border-radius:50%;
+  z-index:0;
+  will-change:transform,opacity;
 }
-@keyframes marHeroLight { 0%,100% { opacity:.28; transform:scale(.9); } 50% { opacity:.68; transform:scale(1.12); } }
+.today-hero.next-session::before {
+  width:clamp(300px,48vw,620px);
+  height:clamp(300px,48vw,620px);
+  top:-22%;
+  right:-8%;
+  background:
+    radial-gradient(ellipse at 42% 46%,rgba(124,220,207,.36) 0%,rgba(93,177,184,.20) 24%,rgba(86,135,183,.10) 43%,transparent 69%);
+  filter:blur(3px);
+  opacity:.68;
+  animation:marHeroLight 10.5s cubic-bezier(.45,0,.55,1) infinite;
+}
+.today-hero.next-session::after {
+  width:clamp(240px,34vw,440px);
+  height:clamp(240px,34vw,440px);
+  top:18%;
+  right:12%;
+  background:radial-gradient(ellipse at center,rgba(112,180,235,.17) 0%,rgba(112,180,235,.08) 34%,transparent 70%);
+  filter:blur(8px);
+  opacity:.55;
+  animation:marHeroDrift 16s ease-in-out infinite alternate;
+}
+.today-hero-copy,.today-progress-widget { position:relative; z-index:1; }
+@keyframes marHeroLight {
+  0%,100% { opacity:.44; transform:translate3d(4%,2%,0) scale(.88); }
+  48% { opacity:.92; transform:translate3d(-4%,-3%,0) scale(1.08); }
+}
+@keyframes marHeroDrift {
+  0% { transform:translate3d(8%,5%,0) scale(.92); }
+  100% { transform:translate3d(-10%,-7%,0) scale(1.1); }
+}
 .today-hero-copy { min-width:0; }
 .today-hero-kicker { display:flex; flex-wrap:wrap; align-items:center; gap:9px; margin-bottom:13px; }
 .today-hero-kicker>span:nth-child(2) { font-size:10px; font-weight:850; letter-spacing:.14em; }
