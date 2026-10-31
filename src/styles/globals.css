@@ -769,3 +769,28 @@ label{display:grid;gap:7px;color:var(--muted);font-size:12px;font-weight:600}inp
   .setting-row > span { overflow-wrap: anywhere; }
   .setting-row input[type="checkbox"] { flex: 0 0 18px; }
 }
+
+
+/* Today: give the next real commitment a clear visual priority without another stats tile. */
+.next-session{
+  display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:20px;
+  margin:0 0 14px;padding:20px 22px;
+  border:1px solid color-mix(in srgb,var(--accent) 30%,var(--border));
+  border-left:4px solid var(--accent);border-radius:16px;
+  background:linear-gradient(105deg,color-mix(in srgb,var(--primary-container) 54%,var(--surface)),var(--surface) 72%);
+}
+.next-session-copy{min-width:0}
+.next-session-kicker{display:flex;align-items:center;gap:9px;margin-bottom:9px;color:var(--accent);font-size:10px;font-weight:800;letter-spacing:.12em}
+.next-session-indicator{width:8px;height:8px;flex:0 0 8px;border-radius:50%;background:var(--success);box-shadow:0 0 0 4px var(--success-soft)}
+.next-session-time{margin-left:4px;color:var(--muted);font-variant-numeric:tabular-nums;letter-spacing:.02em}
+.next-session h2{margin:0 0 5px;font-size:clamp(19px,2.3vw,25px);line-height:1.2;overflow-wrap:anywhere}
+.next-session p{margin:0;color:var(--muted);font-size:12px;line-height:1.5}
+.next-session-actions{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:8px}
+@media(max-width:760px){
+  .next-session{grid-template-columns:minmax(0,1fr);gap:14px;padding:17px}
+  .next-session-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+  .next-session-actions .button{min-width:0}
+}
+@media(max-width:390px){
+  .next-session-actions{grid-template-columns:minmax(0,1fr)}
+}
