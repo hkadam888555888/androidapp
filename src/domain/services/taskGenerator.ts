@@ -25,6 +25,107 @@ function classifyTopic(
   return 'general';
 }
 
+
+type TaskDraft = Pick<TaskDefinition, 'title' | 'objective' | 'type' | 'estimatedMinutes' | 'minMinutes' | 'maxMinutes' | 'completionCriteria'>;
+
+interface TopicBlueprint {
+  learning: TaskDraft;
+  practice: TaskDraft;
+}
+
+// Give common roadmap topics a concrete first exercise and a meaningful
+// follow-up. Unknown topics still use the safe category-level fallback below.
+function topicBlueprint(title: string, pattern: LearningPattern, contextTitles: string[]): TopicBlueprint | undefined {
+  const topic = title.toLocaleLowerCase().replace(/[_-]+/gu, ' ').trim();
+  const context = contextTitles.join(' ').toLocaleLowerCase();
+  const pair = (learning: TaskDraft, practice: TaskDraft): TopicBlueprint => ({ learning, practice });
+
+  if (pattern === 'data') {
+    if (/\bnumpy\b/u.test(context) && /\b(arrays?|ndarray|broadcasting|vectorization|axes?)\b/u.test(topic)) {
+      return pair(
+        { title: 'Inspect NumPy array shape, dtype, and axes', objective: 'Create a small NumPy array, inspect its shape and dtype, identify what each axis represents, and predict the result of one reshape or axis operation before running it.', type: 'apply', estimatedMinutes: 35, minMinutes: 20, maxMinutes: 50, completionCriteria: 'A runnable example shows the array, shape, dtype, axis meaning, and the verified result of one shape or axis operation.' },
+        { title: 'Solve an array task with broadcasting and vectorization', objective: 'Build two compatible arrays, predict their broadcasted shape, apply one vectorized calculation, and compare it with a short loop-based version on a small input.', type: 'apply', estimatedMinutes: 45, minMinutes: 30, maxMinutes: 65, completionCriteria: 'The broadcast shape is explained, both implementations agree on test data, and an incompatible-shape case is identified.' },
+      );
+    }
+
+    if (/\b(missing values?|null values?|nan|imputation|missing data)\b/u.test(topic)) {
+      return pair(
+        { title: 'Map missing values and their impact', objective: 'Measure missing counts and percentages by column, inspect whether missingness clusters by row or group, and distinguish an unknown value from zero or not applicable.', type: 'apply', estimatedMinutes: 35, minMinutes: 25, maxMinutes: 50, completionCriteria: 'A missingness summary reports counts and percentages and identifies which fields need investigation before modelling.' },
+        { title: 'Compare safe ways to handle missing data', objective: 'Compare leaving, dropping, and filling missing values for one selected column. Explain what information each choice can remove or invent, then validate the resulting row count and dtype.', type: 'apply', estimatedMinutes: 45, minMinutes: 30, maxMinutes: 65, completionCriteria: 'At least two handling strategies are compared, the chosen rule is justified, and row count/dtype checks pass.' },
+      );
+    }
+
+    if (/\b(groupby|grouping|aggregation|aggregate|pivot table)\b/u.test(topic)) {
+      return pair(
+        { title: 'Understand split–apply–combine with groupby', objective: 'Group a dataset by one categorical column, calculate count and mean for a numeric column, and explain what each output row represents.', type: 'apply', estimatedMinutes: 35, minMinutes: 25, maxMinutes: 50, completionCriteria: 'A grouped result contains the expected groups and correctly labelled aggregate columns.' },
+        { title: 'Compare groupby aggregation and transformation', objective: 'Use agg and transform on the same grouping, compare their output shapes, and verify that transform returns values aligned to the original rows.', type: 'apply', estimatedMinutes: 45, minMinutes: 30, maxMinutes: 65, completionCriteria: 'The difference in output shape and row alignment between aggregation and transformation is demonstrated with a checked example.' },
+      );
+    }
+
+    if (/\b(loc|iloc|indexing|selection|filtering|boolean indexing)\b/u.test(topic)) {
+      return pair(
+        { title: 'Select rows by labels and positions', objective: 'Use loc for label-based selection and iloc for position-based selection. Predict the selected rows and columns before executing each expression.', type: 'apply', estimatedMinutes: 30, minMinutes: 20, maxMinutes: 45, completionCriteria: 'A side-by-side example correctly explains label selection versus positional selection, including inclusive label slices.' },
+        { title: 'Build and debug a boolean DataFrame filter', objective: 'Create a boolean condition, inspect its index and dtype, apply it to rows, and select columns using valid label or positional indexing. Test a mask with no matches and one with a missing value.', type: 'apply', estimatedMinutes: 45, minMinutes: 30, maxMinutes: 65, completionCriteria: 'The filter returns intended rows, mask alignment is checked, and empty/missing-value edge cases are handled.' },
+      );
+    }
+
+    if (/\b(eda|exploratory data analysis)\b/u.test(topic)) {
+      return pair(
+        { title: 'Profile a dataset for an EDA question', objective: 'State a question, inspect dimensions and types, quantify missingness and duplicates, summarize numeric columns, and inspect important categorical columns.', type: 'apply', estimatedMinutes: 40, minMinutes: 25, maxMinutes: 60, completionCriteria: 'A compact EDA profile includes the question, shape, dtypes, missingness, duplicates, numeric summaries, and categorical counts.' },
+        { title: 'Turn EDA findings into a modelling decision', objective: 'Choose two findings from the profile and explain how each affects cleaning, feature selection, leakage risk, or evaluation. Support each decision with a measured value or plot.', type: 'apply', estimatedMinutes: 50, minMinutes: 35, maxMinutes: 75, completionCriteria: 'Two evidence-backed preparation decisions are recorded with the supporting statistic or visualization.' },
+      );
+    }
+
+    if (/\b(regression|linear regression|classification|model evaluation|machine learning)\b/u.test(topic)) {
+      return pair(
+        { title: 'Build a baseline model for ' + title, objective: 'Define the target and input features, create a train/test split before fitting, train the simplest suitable baseline, and record the metric that matches the problem type.', type: 'apply', estimatedMinutes: 45, minMinutes: 30, maxMinutes: 65, completionCriteria: 'A reproducible baseline has a clear target, leakage-safe split, fitted model, and correctly selected evaluation metric.' },
+        { title: 'Evaluate and challenge the ' + title + ' baseline', objective: 'Compare predictions with actual values, inspect residuals or a confusion matrix as appropriate, test a simple baseline comparator, and explain one limitation of the evaluation.', type: 'apply', estimatedMinutes: 55, minMinutes: 35, maxMinutes: 80, completionCriteria: 'Evaluation includes a baseline comparison, one diagnostic, and a limitation tied to the data or metric.' },
+      );
+    }
+  }
+
+  if (pattern === 'programming') {
+    if (/\b(variables?|data types?|type conversion|casting)\b/u.test(topic)) {
+      return pair(
+        { title: 'Trace variable values and data types', objective: 'Create variables of different types, inspect their types, convert one value safely, and trace how reassignment changes the value.', type: 'code', estimatedMinutes: 25, minMinutes: 15, maxMinutes: 40, completionCriteria: 'A runnable example prints values and types before and after conversion and explains the result.' },
+        { title: 'Test variable operations with valid and invalid inputs', objective: 'Perform a small operation and check normal, boundary, and incompatible-type inputs. Handle the invalid case intentionally.', type: 'code', estimatedMinutes: 35, minMinutes: 20, maxMinutes: 50, completionCriteria: 'Three cases are tested, including an invalid input, and the failure is handled intentionally.' },
+      );
+    }
+
+    if (/\b(functions?|methods?|parameters?|arguments?|return values?)\b/u.test(topic)) {
+      return pair(
+        { title: 'Design a function contract for ' + title, objective: 'Define what the function receives, what it returns, and what assumptions it makes. Implement a small function with meaningful parameter names and an explicit return value.', type: 'code', estimatedMinutes: 35, minMinutes: 20, maxMinutes: 50, completionCriteria: 'A callable function has a clear input/output contract and at least one worked example.' },
+        { title: 'Test function behaviour and edge cases', objective: 'Test normal, boundary, and invalid inputs; distinguish printing from returning; and correct one failure discovered by the tests.', type: 'code', estimatedMinutes: 40, minMinutes: 25, maxMinutes: 60, completionCriteria: 'At least three input cases pass, return values are asserted, and one edge case is explained.' },
+      );
+    }
+
+    if (/\b(loops?|iteration|while loop|for loop)\b/u.test(topic)) {
+      return pair(
+        { title: 'Trace loop state and termination', objective: 'Write a for loop and a while loop for a small problem, record how the loop variable changes, and explain the condition that makes each loop stop.', type: 'code', estimatedMinutes: 30, minMinutes: 20, maxMinutes: 45, completionCriteria: 'Both loop traces show initialization, updates, termination, and final output.' },
+        { title: 'Test loop boundaries and empty inputs', objective: 'Run the loop solution with an empty sequence, one item, several items, and a boundary value. Detect and fix an off-by-one or non-terminating case if present.', type: 'code', estimatedMinutes: 40, minMinutes: 25, maxMinutes: 60, completionCriteria: 'The solution handles empty, single-item, and boundary inputs without off-by-one or termination errors.' },
+      );
+    }
+  }
+
+  if (pattern === 'mathematics') {
+    if (/\b(probability|conditional probability|bayes)\b/u.test(topic)) {
+      return pair(
+        { title: 'Define events and calculate a probability', objective: 'Write the sample space, define the events, identify whether outcomes are equally likely, and calculate one probability with the assumptions stated.', type: 'exercise', estimatedMinutes: 35, minMinutes: 20, maxMinutes: 50, completionCriteria: 'A worked solution defines the sample space and events and gives a probability between zero and one with its assumptions.' },
+        { title: 'Solve conditional probability problems', objective: 'Solve problems using conditional probability and, where relevant, Bayes theorem. Draw a table or tree and compare the result with an intuitive estimate.', type: 'exercise', estimatedMinutes: 45, minMinutes: 30, maxMinutes: 65, completionCriteria: 'At least four problems are solved with working shown and conditional events clearly distinguished.' },
+      );
+    }
+
+    if (/\b(statistics|descriptive statistics|mean|median|variance|standard deviation|distribution)\b/u.test(topic)) {
+      return pair(
+        { title: 'Explain centre and spread in a dataset', objective: 'Calculate mean, median, range, variance, and standard deviation for a small dataset and explain how an outlier changes the summary.', type: 'exercise', estimatedMinutes: 35, minMinutes: 20, maxMinutes: 50, completionCriteria: 'Summary statistics are calculated correctly and the effect of an outlier is explained.' },
+        { title: 'Choose a statistical summary for a real question', objective: 'Compare two distributions, choose a robust measure where appropriate, and explain what the summary does not reveal about the underlying data.', type: 'exercise', estimatedMinutes: 45, minMinutes: 30, maxMinutes: 65, completionCriteria: 'A comparison uses appropriate measures of centre and spread and explains at least one limitation.' },
+      );
+    }
+  }
+
+  return undefined;
+}
+
 export function generateTasksForConcept(
   concept: CurriculumConcept,
   orderIndex: number,
@@ -34,6 +135,23 @@ export function generateTasksForConcept(
   const pattern = classifyTopic(base, concept.nodeType, contextTitles);
   const priority: TaskPriority = pattern === 'project' ? 'high' : 'medium';
   const difficulty: Difficulty = pattern === 'project' ? 'very_hard' : concept.nodeType === 'concept' || concept.nodeType === 'skill' ? 'medium' : 'easy';
+  const blueprint = topicBlueprint(base, pattern, contextTitles);
+  if (blueprint) {
+    return [blueprint.learning, blueprint.practice].map((template, index) => ({
+      ...template,
+      id: concept.id + ':task:' + (orderIndex + 1) + '-' + (index + 1),
+      roadmapId: concept.roadmapId,
+      sourceNodeId: concept.sourceNodeId,
+      conceptId: concept.id,
+      difficulty,
+      priority,
+      dependencyIds: index === 0 ? [] : [concept.id + ':task:' + (orderIndex + 1) + '-' + index],
+      confidence: 'high',
+      active: true,
+      splittable: template.estimatedMinutes >= 45,
+    }));
+  }
+
 
   const learningTask = pattern === 'programming'
     ? { title: `Implement ${base} in a small program`, objective: `Write a small, runnable example that uses ${base}; explain the input, output, and the role of each important line.`, type: 'code' as const, estimatedMinutes: 40, minMinutes: 25, maxMinutes: 60, completionCriteria: `A runnable example demonstrates ${base}, and you can explain its output.` }
