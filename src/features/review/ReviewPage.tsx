@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { appStore, useAppStore, getCurrentDate } from '../../application/appStore';
 import { previousISO } from '../../application/date';
 import { buildDailyReview } from '../../domain/services/reviewService';
@@ -8,12 +8,16 @@ import type { DailyTask } from '../../domain/entities/models';
 
 export function ReviewPage() {
   const state = useAppStore();
+  const location = useLocation();
   const [notice, setNotice] = useState('');
   const [energy, setEnergy] = useState<'low' | 'medium' | 'high' | ''>('');
   const [reflection, setReflection] = useState('');
   const [blocker, setBlocker] = useState('');
   const [actuals, setActuals] = useState<Record<string, string>>({});
-  const targetDate = previousISO(getCurrentDate());
+  const requestedReviewDate = (location.state as { reviewDate?: unknown } | null)?.reviewDate;
+  const targetDate = typeof requestedReviewDate === 'string' && /^\\d{4}-\\d{2}-\\d{2}$/.test(requestedReviewDate)
+    ? requestedReviewDate
+    : previousISO(getCurrentDate());
   const tasks = useMemo(() => state.dailyTasks.filter((task) => task.date === targetDate), [state.dailyTasks, targetDate]);
   const unresolved = tasks.filter((task) => task.status === 'unreported' || task.status === 'planned');
   const review = buildDailyReview(state.dailyTasks, targetDate);
