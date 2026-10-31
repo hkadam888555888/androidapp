@@ -794,3 +794,68 @@ label{display:grid;gap:7px;color:var(--muted);font-size:12px;font-weight:600}inp
 @media(max-width:390px){
   .next-session-actions{grid-template-columns:minmax(0,1fr)}
 }
+
+
+/* ──────────────────────────────────────────────────────────────────────────
+   My Adaptive Routine — calm, cinematic product layer
+   Transform/opacity-only ambience; content and motion remain data-driven.
+   ────────────────────────────────────────────────────────────────────────── */
+.app-shell {
+  position: relative;
+  isolation: isolate;
+  overflow-x: clip;
+  background:
+    radial-gradient(ellipse at 4% 4%, color-mix(in srgb, var(--primary-container) 22%, transparent), transparent 34rem),
+    var(--bg);
+}
+.app-shell::before,
+.app-shell::after {
+  content: "";
+  position: fixed;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: 50%;
+  transform: translate3d(0,0,0);
+}
+.app-shell::before {
+  width: min(66vw, 820px);
+  height: min(66vw, 820px);
+  top: -34vw;
+  right: -18vw;
+  background: radial-gradient(circle, rgba(111,184,169,.17) 0%, rgba(111,184,169,.07) 34%, transparent 70%);
+  animation: marLightBreath 22s ease-in-out infinite;
+}
+.app-shell::after {
+  width: min(58vw, 720px);
+  height: min(58vw, 720px);
+  bottom: -38vw;
+  left: -22vw;
+  background: radial-gradient(circle, rgba(128,143,183,.12) 0%, rgba(128,143,183,.045) 40%, transparent 72%);
+  animation: marLightDrift 29s ease-in-out infinite;
+}
+.app-shell > .sidebar,
+.app-shell > .main-content { position: relative; z-index: 1; }
+
+@keyframes marLightBreath {
+  0%,100% { opacity:.34; transform:translate3d(0,0,0) scale(.94); }
+  48% { opacity:.72; transform:translate3d(-1.4vw,1.1vw,0) scale(1.04); }
+}
+@keyframes marLightDrift {
+  0%,100% { opacity:.28; transform:translate3d(0,0,0) scale(.96); }
+  54% { opacity:.58; transform:translate3d(1.1vw,-1.2vw,0) scale(1.035); }
+}
+@keyframes marContentArrive {
+  from { opacity:0; transform:translateY(8px); }
+  to { opacity:1; transform:translateY(0); }
+}
+.main-content > .page { animation:marContentArrive .38s cubic-bezier(.2,.75,.25,1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .app-shell::before,
+  .app-shell::after,
+  .main-content > .page {
+    animation:none !important;
+    opacity:.24 !important;
+    transform:none !important;
+  }
+}
