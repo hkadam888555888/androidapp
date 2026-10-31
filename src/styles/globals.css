@@ -1044,6 +1044,7 @@ label{display:grid;gap:7px;color:var(--muted);font-size:12px;font-weight:600}inp
     transform:none!important;
   }
   .today-progress-value { transition:none!important; }
+  .next-session-indicator.is-active { animation:none!important; }
   .today-metric.stat-card,.today-timeline .timeline-card,.today-habit-action { transition:none!important; }
 }
 
