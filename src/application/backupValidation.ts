@@ -1,4 +1,12 @@
 /** Validation for untrusted JSON backups. Keep this module dependency-free so it can be tested without IndexedDB. */
+
+export const MAX_BACKUP_BYTES = 5_000_000;
+
+export function assertBackupSize(serialized: string): void {
+  if (new TextEncoder().encode(serialized).byteLength > MAX_BACKUP_BYTES) {
+    throw new Error('Backup is too large (maximum 5 MB).');
+  }
+}
 export const BACKUP_STORES = [
   'roadmaps', 'curriculumVersions', 'curriculumConcepts', 'taskDefinitions', 'roadmapTasks', 'externalTasks', 'habits', 'habitLogs', 'busyEvents',
   'dailyTasks', 'waterLogs', 'exerciseLogs', 'dayPlans', 'dailyReviews', 'preferences', 'plannerSettings', 'notifications', 'plannerDecisions', 'estimationProfiles', 'timePatternProfiles', 'plannerOverrides', 'adaptationSnapshots', 'aiArtifacts', 'aiSettings', 'audits',
