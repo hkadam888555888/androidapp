@@ -14,14 +14,16 @@ function backupFor(schemaVersion = 9) {
 }
 
 describe('backup payload validation', () => {
-
-it('rejects UTF-8 payloads above the byte limit even when UTF-16 length is below it', () => {
+  it('rejects UTF-8 payloads above the byte limit even when UTF-16 length is below it', () => {
     const payload = '"' + '😀'.repeat(Math.floor(MAX_BACKUP_BYTES / 4) + 1) + '"';
     const utf16CodeUnits = payload.length;
     const utf8Bytes = new TextEncoder().encode(payload).byteLength;
     expect(utf16CodeUnits).toBeLessThan(MAX_BACKUP_BYTES);
     expect(utf8Bytes).toBeGreaterThan(MAX_BACKUP_BYTES);
     expect(() => assertBackupSize(payload)).toThrow(/Backup is too large \(maximum 5 MB\)/u);
+  });
+  it('accepts a backup exactly at the byte limit', () => {
+    expect(() => assertBackupSize('a'.repeat(MAX_BACKUP_BYTES))).not.toThrow();
   });
   it('accepts a complete current-schema empty snapshot', () => {
     expect(validateBackupPayload(backupFor())).toMatchObject({ schemaVersion: 9 });
