@@ -29,3 +29,28 @@ test('Arena cycle 040: oversized backup is rejected without clearing existing ap
   await page.goto('/roadmap');
   await expect(page.locator('.portfolio-main').filter({ hasText: 'Arena oversized backup preservation' })).toBeVisible();
 });
+
+test('Arena cycle 041: multi-byte oversized backup is rejected before file contents are read', async ({ page }) => {
+  await createSyntheticRoadmap(page);
+  await page.addInitScript(() => {
+    const marker = window as Window & { __backupFileTextCalls: number };
+    marker.__backupFileTextCalls = 0;
+    const originalText = File.prototype.text;
+    File.prototype.text = function (this: File) {
+      marker.__backupFileTextCalls += 1;
+      return originalText.call(this);
+    };
+  });
+  await page.goto('/settings');
+  const tooLarge = '😀'.repeat(1_250_001);
+  await page.locator('input[type="file"][accept="application/json"]').setInputFiles({
+    name: 'oversized-multibyte-backup.json',
+    mimeType: 'application/json',
+    buffer: Buffer.from(tooLarge),
+  });
+  await expect(page.locator('.notice-bar')).toContainText('Backup is too large (maximum 5 MB).');
+  const textCalls = await page.evaluate(() => (window as Window & { __backupFileTextCalls: number }).__backupFileTextCalls);
+  expect(textCalls).toBe(0);
+  await page.goto('/roadmap');
+  await expect(page.locator('.portfolio-main').filter({ hasText: 'Arena oversized backup preservation' })).toBeVisible();
+});

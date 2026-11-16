@@ -2,6 +2,7 @@ import { useState, type ChangeEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { appStore, useAppStore } from '../../application/appStore';
 import { localISODate } from '../../application/date';
+import { MAX_BACKUP_BYTES } from '../../application/backupValidation';
 import type { PlannerMode } from '../../domain/entities/models';
 import { normalizeLocalEndpoint, OpenAICompatibleLocalProvider } from '../../domain/ai/openAICompatibleLocalProvider';
 
@@ -75,6 +76,11 @@ export function SettingsPage() {
 
   async function importBackup(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]; if (!file) return;
+    if (file.size > MAX_BACKUP_BYTES) {
+      setNotice('Backup is too large (maximum 5 MB).');
+      event.target.value = '';
+      return;
+    }
     try { await appStore.importBackup(await file.text()); setNotice('Backup restored successfully.'); } catch (e) { setNotice(e instanceof Error ? e.message : 'Backup import failed.'); }
     event.target.value = '';
   }

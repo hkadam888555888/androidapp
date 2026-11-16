@@ -13,7 +13,7 @@ import { canReportHabitPartial, evaluateHabitOutcome } from '../domain/services/
 import { isValidISODate, todayISO } from './date';
 import { buildEstimationProfiles, buildTimePatternProfiles } from '../domain/services/adaptationService';
 import { normalizeLocalEndpoint } from '../domain/ai/openAICompatibleLocalProvider';
-import { BACKUP_STORES, validateBackupPayload } from './backupValidation';
+import { assertBackupSize, BACKUP_STORES, validateBackupPayload } from './backupValidation';
 
 export interface AppState {
   ready: boolean;
@@ -660,7 +660,7 @@ class AppStore {
   }
 
   async importBackup(serialized: string): Promise<void> {
-    if (serialized.length > 5_000_000) throw new Error('Backup is too large (maximum 5 MB).');
+    assertBackupSize(serialized);
     let value: unknown;
     try { value = JSON.parse(serialized); } catch { throw new Error('Backup is not valid JSON.'); }
     // Validate the complete snapshot, including row schemas and required stores, before any destructive write.
